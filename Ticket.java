@@ -15,6 +15,8 @@ public class Ticket{
         this.id = id;
         this.price = price;
         this.status = status;
+        //this.showtime = showtime;
+        //this.seat = seat;
     }
-    
+
 }
