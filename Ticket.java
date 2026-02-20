@@ -1,9 +1,3 @@
-import java.util.Scanner;
-public enum TicketStatus{
-    Available,
-    Sold,
-    Used;
-}
 public class Ticket{
     String id;
     double price;
@@ -17,6 +11,9 @@ public class Ticket{
         this.status = status;
         //this.showtime = showtime;
         //this.seat = seat;
+    }
+    public void setStatus(TicketStatus status){
+        this.status = status;
     }
 
 }
