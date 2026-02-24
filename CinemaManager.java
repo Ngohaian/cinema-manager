@@ -26,8 +26,5 @@ public class CinemaManager {
         }
         return null;
     }
-
-
-     
 }
 
