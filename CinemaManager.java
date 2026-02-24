@@ -86,8 +86,14 @@ public class CinemaManager {
             }
         });
     }
-    public void Manager(){}
-    public void staff(){}
-    public void checker(){}
+    public void Manager(){
+        /* danh sách menu bên trái: thống kê, phim, phòng chiếu, suất chiếu
+        , khách hàng, nhân viên, hóa đơn, đăng xuất
+        */ 
+    }      
+    public void Staff(){
+        
+    }
+    public void Checker(){}
 }
 
