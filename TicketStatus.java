@@ -1,5 +1,5 @@
 public enum TicketStatus{
-    Available,
     Sold,
-    Used;
+    Used, 
+    Canceled;
 }
