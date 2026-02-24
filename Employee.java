@@ -29,6 +29,8 @@ public class Employee {
 
     private String id;
     private String name;
+    private String username;
+    private String password;
     private String phone;
     private String email;
     private Position position;
@@ -37,11 +39,13 @@ public class Employee {
     private EmployeeStatus status;
     private String note;
 
-    public Employee(String name, String phone, String email,Position position, double salary) {
+    public Employee(String name, String phone, String email,String username, String password,Position position, double salary) {
         this.id = String.format("EMP%03d", autoId++);
         this.name = name;
         this.phone = phone;
         this.email = email;
+        this.username = username;
+        this.password = password;
         this.position = position;
         this.salary = salary;
         this.hireDate = LocalDate.now();
@@ -56,11 +60,15 @@ public class Employee {
     public Position getPosition() { return position; }
     public double getSalary() { return salary; }
     public EmployeeStatus getStatus() { return status; }
+    public String getUsername() { return username; }
+    public String getPassword() { return password; }
 
     public void setName(String name) { this.name = name; }
     public void setPhone(String phone) { this.phone = phone; }
     public void setEmail(String email) { this.email = email; }
     public void setNote(String note) { this.note = note; }
+    public void setUsername(String username) { this.username = username; }
+    public void setPassword(String password) { this.password = password; }
 
     public double calculateSalary() {
         return salary * position.getSalaryMultiplier();
