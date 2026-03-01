@@ -10,7 +10,7 @@ public class Ticket{
         this.showtime = showtime;
         this.price = showtime.calculateSeatPrice(seat.getRowIndex(),seat.getColIndex());
         this.seat = seat;
-        this.status = TicketStatus.Sold;
+        this.status = TicketStatus.Available;
     }
     public void cancel(){
         if (status == TicketStatus.Sold) {
