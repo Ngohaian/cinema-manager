@@ -1,3 +1,4 @@
+package cinema.models;
 public class InvoiceDetail {
 
     private String invoiceDetailId;

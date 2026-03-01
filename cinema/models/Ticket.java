@@ -1,3 +1,6 @@
+package cinema.models;
+import cinema.enums.TicketStatus;
+
 public class Ticket{
     private String ticketId;
     private double price;

@@ -1,6 +1,10 @@
+package cinema.models;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import cinema.enums.SeatStatus;
+import cinema.enums.SeatType;
 
 /**
  * Showtime đại diện cho 1 suất chiếu cụ thể.

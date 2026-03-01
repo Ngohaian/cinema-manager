@@ -1,3 +1,4 @@
+package cinema.models;
 public class Movie {
     private String id;
     private String title;

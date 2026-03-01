@@ -1,3 +1,5 @@
+package cinema.models;
+import cinema.enums.SeatType;
 
 /**
  * SeatLayout quản lý sơ đồ ghế của phòng chiếu.

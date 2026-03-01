@@ -1,5 +1,9 @@
+package cinema.models;
 import java.util.ArrayList;
 import java.util.List;
+
+import cinema.models.InvoiceDetail.ItemType;
+import cinema.enums.TicketStatus;
 
 public class Invoice {
 

@@ -1,3 +1,4 @@
+package cinema.models;
 public class Room {
     private String roomId;
     private String name;

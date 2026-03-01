@@ -1,6 +1,9 @@
+package cinema.models;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import cinema.managers.Customer;
 
 public class Employee {
     private static final List<Employee> employeeList = new ArrayList<>();
