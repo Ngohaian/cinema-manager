@@ -9,7 +9,7 @@ public class Invoice {
     private String customerPhone;
     private List<InvoiceDetail> invoiceDetails;
     private double totalAmount;
-
+    
     public Invoice() {
         invoiceDetails = new ArrayList<>();
     }
@@ -39,6 +39,17 @@ public class Invoice {
             totalAmount += d.getTotalPrice();
         }
         return totalAmount;
+    }
+    public void completeInvoice(List<Ticket> tickets) {
+        for (InvoiceDetail detail : invoiceDetails) {
+            if(detail.getItemType() == InvoiceDetail.ItemType.TICKET) {
+                for (Ticket ticket : tickets) {
+                    if (ticket.getTicketId().equals(detail.getInvoiceDetailId())) {
+                        ticket.setStatus(TicketStatus.Sold);
+                    }
+                }
+            }
+        }
     }
 
     public String getInvoiceId() {
