@@ -1,8 +1,14 @@
-package cinema.managers;
+
 
 import java.util.ArrayList;
 import java.util.List;
 
+import cinema.managers.CustomerManager;
+import cinema.managers.EmployeeManager;
+import cinema.managers.InvoiceManager;
+import cinema.managers.MovieManager;
+import cinema.managers.RoomManager;
+import cinema.managers.ShowTimeManager;
 import cinema.models.Employee;
 
 public class CinemaManager {

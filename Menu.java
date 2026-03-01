@@ -1,7 +1,6 @@
 import javax.swing.*;
 import javax.swing.border.*;
 
-import cinema.managers.CinemaManager;
 import cinema.models.Employee;
 
 import java.awt.*;
