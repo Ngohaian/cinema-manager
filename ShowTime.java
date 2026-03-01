@@ -1,13 +1,12 @@
-import enums.SeatStatus;
-import enums.SeatType;
-
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Showtime đại diện cho 1 suất chiếu cụ thể.
  * Mỗi suất có trạng thái ghế riêng.
  */
-public class Showtime {
+public class ShowTime {
 
     private String showtimeId;
 
@@ -18,6 +17,8 @@ public class Showtime {
     private LocalDateTime endTime;
 
     private SeatStatus[][] seatStatus;
+    private List<Ticket> tickets;
+    private int ticketCounter = 1;
 
     private double basePrice;
     private double vipExtra;
@@ -25,7 +26,7 @@ public class Showtime {
 
     private boolean active;
 
-    public Showtime(String showtimeId,
+    public ShowTime(String showtimeId,
                     Movie movie,
                     Screen screen,
                     LocalDateTime startTime,
@@ -36,6 +37,8 @@ public class Showtime {
         this.screen = screen;
         this.startTime = startTime;
         this.basePrice = basePrice;
+        this.tickets = new ArrayList<>();
+        
 
         // Tính endTime theo thời lượng phim
         this.endTime = startTime.plusMinutes(movie.getDuration());
@@ -62,6 +65,21 @@ public class Showtime {
             for (int j = 0; j < cols; j++)
                 seatStatus[i][j] = SeatStatus.AVAILABLE;
     }
+    public Ticket generateTicket(Seat seat){
+        int rows = screen.getSeatLayout().getNumberOfRows();
+        int cols = screen.getSeatLayout().getSeatsPerRow();
+        int row = seat.getRowIndex();
+        int col = seat.getColIndex();
+        if (row<0 || row >= rows || col >= cols || col < 0)
+            throw new IllegalArgumentException("Ghế không tồn tại!");
+        if (!bookSeat(row, col))
+            throw new IllegalStateException("Ghế đã được đặt trước!");
+
+            String ticketID = getShowtimeId() + String.format("-%03d", ticketCounter++);
+            Ticket ticket = new Ticket(ticketID, seat, this);
+            tickets.add(ticket);
+            return ticket;
+        }
 
     // =============================
     // Kiểm tra và đặt ghế

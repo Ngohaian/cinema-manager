@@ -82,12 +82,12 @@ public class Menu {
             Employee emp = manager.getPosition(username, password);
             if(emp != null){
                 frame.dispose();
-                switch(emp.getPosition){
-                    case "MANAGER"
+                switch(emp.getPosition()){
+                    case MANAGER
                     -> showManagerMenu();
-                    case "TICKET_SELLER"
+                    case TICKET_SELLER
                     -> showSellerMenu();
-                    case "TICKET_CHECKER"
+                    case TICKET_CHECKER
                     -> showCheckerMenu();
 
                 }
