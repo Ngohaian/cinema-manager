@@ -42,10 +42,11 @@ public class Invoice {
     }
     public void completeInvoice(List<Ticket> tickets) {
         for (InvoiceDetail detail : invoiceDetails) {
-            if(detail.getItemType() == InvoiceDetail.ItemType.TICKET) {
+            if(detail.getItemType().equals(InvoiceDetail.ItemType.TICKET.toString())) {
                 for (Ticket ticket : tickets) {
                     if (ticket.getTicketId().equals(detail.getInvoiceDetailId())) {
                         ticket.setStatus(TicketStatus.Sold);
+                        break;
                     }
                 }
             }
