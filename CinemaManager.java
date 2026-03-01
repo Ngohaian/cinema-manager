@@ -18,6 +18,7 @@ public class CinemaManager {
         rooms = new ArrayList<>();
         invoices = new ArrayList<>();
     }
+    // login
     public Employee getPosition(String username, String password){
         for(Employee emp : employees){
             if(emp.getUsername().equals(username) && emp.getPassword().equals(password)){
@@ -26,5 +27,7 @@ public class CinemaManager {
         }
         return null;
     }
+    
+
 }
 

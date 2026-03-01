@@ -11,7 +11,7 @@ public class ShowTime {
     private String showtimeId;
 
     private Movie movie;
-    private Screen screen;
+    private Room room;
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
@@ -28,13 +28,13 @@ public class ShowTime {
 
     public ShowTime(String showtimeId,
                     Movie movie,
-                    Screen screen,
+                    Room room,
                     LocalDateTime startTime,
                     double basePrice) {
 
         this.showtimeId = showtimeId;
         this.movie = movie;
-        this.screen = screen;
+        this.room = room;
         this.startTime = startTime;
         this.basePrice = basePrice;
         this.tickets = new ArrayList<>();
@@ -56,8 +56,8 @@ public class ShowTime {
      */
     private void initializeSeatStatus() {
 
-        int rows = screen.getSeatLayout().getNumberOfRows();
-        int cols = screen.getSeatLayout().getSeatsPerRow();
+        int rows = room.getSeatLayout().getNumberOfRows();
+        int cols = room.getSeatLayout().getSeatsPerRow();
 
         seatStatus = new SeatStatus[rows][cols];
 
@@ -66,8 +66,8 @@ public class ShowTime {
                 seatStatus[i][j] = SeatStatus.AVAILABLE;
     }
     public Ticket generateTicket(Seat seat){
-        int rows = screen.getSeatLayout().getNumberOfRows();
-        int cols = screen.getSeatLayout().getSeatsPerRow();
+        int rows = room.getSeatLayout().getNumberOfRows();
+        int cols = room.getSeatLayout().getSeatsPerRow();
         int row = seat.getRowIndex();
         int col = seat.getColIndex();
         if (row<0 || row >= rows || col >= cols || col < 0)
@@ -113,7 +113,7 @@ public class ShowTime {
      */
     public double calculateSeatPrice(int row, int col) {
 
-        Seat seat = screen.getSeatLayout().getSeat(row, col);
+        Seat seat = room.getSeatLayout().getSeat(row, col);
 
         double price = basePrice;
 
@@ -156,7 +156,7 @@ public class ShowTime {
 
     public double getOccupancyRate() {
 
-        int total = screen.getSeatLayout().getTotalSeats();
+        int total = room.getSeatLayout().getTotalSeats();
         int booked = getBookedSeatCount();
 
         return (double) booked / total * 100;
@@ -203,11 +203,15 @@ public class ShowTime {
         return movie;
     }
 
-    public Screen getScreen() {
-        return screen;
+    public Room getRoom() {
+        return room;
     }
 
     public String getShowtimeId() {
         return showtimeId;
     }
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+    
 }

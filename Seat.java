@@ -1,7 +1,3 @@
-package model;
-
-import enums.SeatType;
-
 /**
  * Seat đại diện cho GHẾ VẬT LÝ trong phòng chiếu.
  * Không chứa trạng thái đặt vé theo suất chiếu.

@@ -1,4 +1,3 @@
-import enums.SeatType;
 
 /**
  * SeatLayout quản lý sơ đồ ghế của phòng chiếu.
