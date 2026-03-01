@@ -1,3 +1,4 @@
+package cinema;
 import javax.swing.*;
 import javax.swing.border.*;
 
