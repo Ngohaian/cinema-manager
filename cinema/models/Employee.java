@@ -6,9 +6,7 @@ import java.util.List;
 import cinema.managers.Customer;
 
 public class Employee {
-    private static final List<Employee> employeeList = new ArrayList<>();
     private static int autoId =1;
-
     public enum EmployeeStatus {
         ACTIVE, INACTIVE
     }
@@ -108,35 +106,5 @@ public class Employee {
     }
     public boolean checkCustomerStatus(Customer customer) {
         return customer.getStatus() == Customer.CustomerStatus.ACTIVE;
-    }
-
-    //CRUD (lưu tạm) 
-    public static boolean addEmployee(Employee employee) {
-        if (findById(employee.getId()) != null) return false;
-        employeeList.add(employee);
-        return true;
-    }
-
-    public static Employee findById(String id) {
-        for (Employee e : employeeList) {
-            if (e.id.equals(id)) return e;
-        }
-        return null;
-    }
-
-    public static boolean deleteEmployee(String id) {
-        Employee e = findById(id);
-        if (e != null) {
-            e.deactivateEmployee();
-            return true;
-        }
-        return false;
-    }
-
-    public static void displayAllEmployees() {
-        for (Employee e : employeeList) {
-            e.displayInfo();
-            System.out.println("----------------------");
-        }
     }
 }
