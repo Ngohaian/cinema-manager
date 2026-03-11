@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Customer{
-    private static final List<Customer> customerList = new ArrayList<>();
-
     private static int autoId = 1;
 
     private static final double discount_Standard = 0.03;
@@ -124,44 +122,4 @@ public class Customer{
             System.out.println("Cashback hien co: " + loyaltyPoints + " VND");
             System.out.println("Trang thai: " + status);
     }
-    //CRUD. tam luu 
-    public static boolean addCustomer(Customer customer){
-    if(findById(customer.getId()) != null){
-        return false; 
-    }
-    customerList.add(customer);
-    return true;
-}
-    public static Customer findById(String id){
-        for(Customer c: customerList){
-            if(c.id.equals(id)) return c;
-        }
-        return null;
-    }
-    public static boolean deleteCustomer(String id){
-        Customer c = findById(id);
-        if(c != null){
-            c.deactivate_Customer();
-            return true;
-        }
-        return false;
-    }
-
-    public static void displayAllCustomers() {
-        for (Customer c : customerList) {
-            c.displayInfo();
-            System.out.println("----------------------");
-        }
-    }
-    public static boolean updateCustomer(String id, String newName, String newPhone, String newEmail){
-        Customer c = findById(id);
-        if(c != null){
-            c.setName(newName);
-            c.setPhone(newPhone);
-            c.setEmail(newEmail);
-            return true;
-        }
-        return false;
-    }
-
 }
