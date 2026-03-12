@@ -1,3 +1,5 @@
+package model;
+
 import enums.SeatStatus;
 import enums.SeatType;
 
@@ -12,7 +14,7 @@ public class Showtime {
     private String showtimeId;
 
     private Movie movie;
-    private Screen screen;
+    private Room room;
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
@@ -27,13 +29,13 @@ public class Showtime {
 
     public Showtime(String showtimeId,
                     Movie movie,
-                    Screen screen,
+                    Room room,
                     LocalDateTime startTime,
                     double basePrice) {
 
         this.showtimeId = showtimeId;
         this.movie = movie;
-        this.screen = screen;
+        this.room = room;
         this.startTime = startTime;
         this.basePrice = basePrice;
 
@@ -53,8 +55,8 @@ public class Showtime {
      */
     private void initializeSeatStatus() {
 
-        int rows = screen.getSeatLayout().getNumberOfRows();
-        int cols = screen.getSeatLayout().getSeatsPerRow();
+        int rows = room.getSeatLayout().getNumberOfRows();
+        int cols = room.getSeatLayout().getSeatsPerRow();
 
         seatStatus = new SeatStatus[rows][cols];
 
@@ -95,7 +97,7 @@ public class Showtime {
      */
     public double calculateSeatPrice(int row, int col) {
 
-        Seat seat = screen.getSeatLayout().getSeat(row, col);
+        Seat seat = room.getSeatLayout().getSeat(row, col);
 
         double price = basePrice;
 
@@ -138,7 +140,7 @@ public class Showtime {
 
     public double getOccupancyRate() {
 
-        int total = screen.getSeatLayout().getTotalSeats();
+        int total = room.getSeatLayout().getTotalSeats();
         int booked = getBookedSeatCount();
 
         return (double) booked / total * 100;
@@ -185,8 +187,8 @@ public class Showtime {
         return movie;
     }
 
-    public Screen getScreen() {
-        return screen;
+    public Room getRoom() {
+        return room;
     }
 
     public String getShowtimeId() {

@@ -1,3 +1,7 @@
-public enum SeatType {
+package Enum;
 
+public enum SeatType {
+	REGULAR,
+    VIP,
+    COUPLE
 }
