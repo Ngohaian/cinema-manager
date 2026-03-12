@@ -2,6 +2,9 @@ package cinema.managers;
 import java.util.ArrayList;
 import java.util.List;
 
+import cinema.models.Customer;
+import cinema.models.Employee;
+
 public class EmployeeManager {
     private List<Employee> employeeList = new ArrayList<>();
 
@@ -33,5 +36,15 @@ public class EmployeeManager {
             e.displayInfo();
             System.out.println("----------------");
         }
+    }
+    public boolean updateEmployee(String id,String name,String phone,String email){
+        Employee e = findById(id);
+        if(e != null){
+            e.setName(name);
+            e.setPhone(phone);
+            e.setEmail(email);
+            return true;
+        }
+        return false;
     }
 }

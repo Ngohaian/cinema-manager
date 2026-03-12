@@ -1,6 +1,9 @@
 package cinema.managers;
+
 import java.util.ArrayList;
 import java.util.List;
+import cinema.models.Customer;
+
 public class CustomerManager {
     private List<Customer> customerList = new ArrayList<>();
 
