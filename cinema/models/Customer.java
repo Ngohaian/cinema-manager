@@ -44,13 +44,11 @@ public class Customer{
     private CustomerStatus status;
     private String note;
 
-    public Customer(String name, String phone, String email, String username, String password ){
+    public Customer(String name, String phone, String email){
         this.id = String.format("CUS%03d", autoId++);
         this.name = name;
         this.phone = phone;
         this.email = email;
-        this.username = username;
-        this.password = password;
         this.type = CustomerType.STANDARD;
         this.loyaltyPoints = 0;
         this.totalSpent = 0;
@@ -67,11 +65,13 @@ public class Customer{
     public double getLoyaltyPoints() {return loyaltyPoints;}
     public CustomerStatus getStatus() { return status; }
     public double getTotalSpent(){return totalSpent;}
+  
 
     public void setName(String Name){name = Name;}
     public void setPhone(String Phone){phone = Phone;}
     public void setEmail(String Email){email = Email;}
     public void setNote(String note) { this.note = note;}
+
     
     private void updateCustomerType(){
         if(totalSpent >= DIAMOND_THRESHOLD) type = CustomerType.DIAMOND;
