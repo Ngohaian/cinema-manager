@@ -35,8 +35,6 @@ public class Customer{
     }
     private String id;
     private String name;
-    private String username;
-    private String password;
     private String phone;
     private String email;
     private CustomerType type;
@@ -69,15 +67,11 @@ public class Customer{
     public double getLoyaltyPoints() {return loyaltyPoints;}
     public CustomerStatus getStatus() { return status; }
     public double getTotalSpent(){return totalSpent;}
-    public String getUsername() {return username;}
-    public String getPassword() {return password;}
 
     public void setName(String Name){name = Name;}
     public void setPhone(String Phone){phone = Phone;}
     public void setEmail(String Email){email = Email;}
     public void setNote(String note) { this.note = note;}
-    public void setUsername(String username) {this.username = username;}
-    public void setPassword(String password) {this.password = password;}
     
     private void updateCustomerType(){
         if(totalSpent >= DIAMOND_THRESHOLD) type = CustomerType.DIAMOND;
