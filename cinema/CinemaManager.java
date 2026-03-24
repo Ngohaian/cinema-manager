@@ -3,7 +3,8 @@ package cinema;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import cinema.form.*;
+import cinema.form.sell_Ticket;
 import cinema.managers.CustomerManager;
 import cinema.managers.EmployeeManager;
 import cinema.managers.InvoiceManager;
@@ -30,16 +31,10 @@ public class CinemaManager {
         customerManager = new CustomerManager();
         invoiceManager = new InvoiceManager();
     }
-    // login
-    // public Employee getPosition(String username, String password){
-    //     for(Employee emp : employeeManager.getEmployees()){
-    //         if(emp.getUsername().equals(username) && emp.getPassword().equals(password)){
-    //             return emp;
-    //         }
-    //     }
-    //     return null;
-    // }
-    
+
+    public static void main(String[] args) {
+        new login().setVisible(true);
+    }
 
 }
-
+S

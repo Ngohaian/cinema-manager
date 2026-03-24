@@ -47,4 +47,13 @@ public class EmployeeManager {
         }
         return false;
     }
+        //login
+    public Employee getPosition(String username, String password){
+        for(Employee emp : employeeList){
+            if(emp.getUsername().equals(username) && emp.getPassword().equals(password)){
+                return emp;
+            }
+        }
+        return null;
+    }
 }

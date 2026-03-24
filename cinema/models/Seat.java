@@ -1,6 +1,7 @@
+package cinema.models;
 import cinema.enums.SeatType;
 
-package cinema.models;
+
 /**
  * Seat đại diện cho GHẾ VẬT LÝ trong phòng chiếu.
  * Không chứa trạng thái đặt vé theo suất chiếu.

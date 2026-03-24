@@ -106,4 +106,5 @@ public class Employee {
     public boolean checkCustomerStatus(Customer customer) {
         return customer.getStatus() == Customer.CustomerStatus.ACTIVE;
     }
+    
 }
