@@ -4,7 +4,6 @@ package cinema;
 import java.util.ArrayList;
 import java.util.List;
 import cinema.form.*;
-import cinema.form.sell_Ticket;
 import cinema.managers.CustomerManager;
 import cinema.managers.EmployeeManager;
 import cinema.managers.InvoiceManager;
@@ -37,4 +36,4 @@ public class CinemaManager {
     }
 
 }
-S
+
