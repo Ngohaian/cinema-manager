@@ -2,9 +2,6 @@ package cinema.models;
 import java.util.ArrayList;
 import java.util.List;
 
-import cinema.models.InvoiceDetail.ItemType;
-import cinema.enums.TicketStatus;
-
 public class Invoice {
 
     private String invoiceId;
@@ -13,7 +10,7 @@ public class Invoice {
     private String customerPhone;
     private List<InvoiceDetail> invoiceDetails;
     private double totalAmount;
-    
+
     public Invoice() {
         invoiceDetails = new ArrayList<>();
     }
@@ -43,18 +40,6 @@ public class Invoice {
             totalAmount += d.getTotalPrice();
         }
         return totalAmount;
-    }
-    public void completeInvoice(List<Ticket> tickets) {
-        for (InvoiceDetail detail : invoiceDetails) {
-            if(detail.getItemType().equals(InvoiceDetail.ItemType.TICKET.toString())) {
-                for (Ticket ticket : tickets) {
-                    if (ticket.getTicketId().equals(detail.getInvoiceDetailId())) {
-                        ticket.setStatus(TicketStatus.Sold);
-                        break;
-                    }
-                }
-            }
-        }
     }
 
     public String getInvoiceId() {

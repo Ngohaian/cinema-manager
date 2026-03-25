@@ -7,11 +7,7 @@ public class InvoiceDetail {
     private int quantity;
     private double unitPrice;
     private double totalPrice;
-    public enum ItemType {
-        TICKET,
-        FOOD,
-        DRINK
-    }
+
     public InvoiceDetail() {
     }
 
