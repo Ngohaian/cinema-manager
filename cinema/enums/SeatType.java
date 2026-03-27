@@ -1,6 +1,7 @@
 package cinema.enums;
+
 public enum SeatType {
-    REGULAR,
+	REGULAR,
     VIP,
     COUPLE
 }

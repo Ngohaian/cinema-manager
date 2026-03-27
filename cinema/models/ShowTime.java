@@ -6,6 +6,8 @@ import java.util.List;
 import cinema.enums.SeatStatus;
 import cinema.enums.SeatType;
 
+import java.time.LocalDateTime;
+
 /**
  * Showtime đại diện cho 1 suất chiếu cụ thể.
  * Mỗi suất có trạng thái ghế riêng.
@@ -43,7 +45,6 @@ public class ShowTime {
         this.basePrice = basePrice;
         this.tickets = new ArrayList<>();
         
-
         // Tính endTime theo thời lượng phim
         this.endTime = startTime.plusMinutes(movie.getDuration());
 
@@ -69,21 +70,6 @@ public class ShowTime {
             for (int j = 0; j < cols; j++)
                 seatStatus[i][j] = SeatStatus.AVAILABLE;
     }
-    public Ticket generateTicket(Seat seat){
-        int rows = room.getSeatLayout().getNumberOfRows();
-        int cols = room.getSeatLayout().getSeatsPerRow();
-        int row = seat.getRowIndex();
-        int col = seat.getColIndex();
-        if (row<0 || row >= rows || col >= cols || col < 0)
-            throw new IllegalArgumentException("Ghế không tồn tại!");
-        if (!bookSeat(row, col))
-            throw new IllegalStateException("Ghế đã được đặt trước!");
-
-            String ticketID = getShowtimeId() + String.format("-%03d", ticketCounter++);
-            Ticket ticket = new Ticket(ticketID, seat, this);
-            tickets.add(ticket);
-            return ticket;
-        }
 
     // =============================
     // Kiểm tra và đặt ghế
@@ -210,7 +196,6 @@ public class ShowTime {
     public Room getRoom() {
         return room;
     }
-
     public String getShowtimeId() {
         return showtimeId;
     }

@@ -1,5 +1,7 @@
 package cinema.enums;
 public enum SeatStatus {
-    AVAILABLE,
-    BOOKED
+	AVAILABLE,
+    RESERVED,
+    BOOKED,
+    OUT_OF_ORDER
 }
