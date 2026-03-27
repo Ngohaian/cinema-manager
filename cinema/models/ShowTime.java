@@ -155,7 +155,7 @@ public class ShowTime {
     /**
      * Kiểm tra trùng lịch chiếu phòng
      */
-    public boolean overlaps(LocalDateTime start, LocalDateTime end) {
+    public boolean isConflict(LocalDateTime start, LocalDateTime end) {
 
         return !(end.isBefore(startTime) || start.isAfter(endTime));
     }
