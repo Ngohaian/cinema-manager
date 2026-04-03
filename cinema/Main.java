@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 import java.sql.Connection;
 
 import cinema.DBConnection;
-import cinema.form.login; 
+import cinema.form.LoginFrame; 
 public class Main {
     public static void main(String[] args) {
         Connection conn = DBConnection.getConnection();
