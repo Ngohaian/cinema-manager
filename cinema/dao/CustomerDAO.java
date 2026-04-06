@@ -1,10 +1,10 @@
-package cinema.managers;
+package cinema.dao;
 
 import java.util.ArrayList;
 import java.util.List;
 import cinema.models.Customer;
 
-public class CustomerManager {
+public class CustomerDAO {
     private List<Customer> customerList = new ArrayList<>();
 
     public boolean addCustomer(Customer customer){

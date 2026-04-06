@@ -1,11 +1,11 @@
-package cinema.managers;
+package cinema.dao;
 import java.util.ArrayList;
 import java.util.List;
 
 import cinema.models.Customer;
 import cinema.models.Employee;
 
-public class EmployeeManager {
+public class EmployeeDAO {
     private List<Employee> employeeList = new ArrayList<>();
 
     public boolean addEmployee(Employee employee){
