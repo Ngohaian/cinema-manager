@@ -1,45 +1,46 @@
 package cinema.models;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Invoice {
 
     private String invoiceId;
+    private String customerId;
     private String invoiceDate;
-    private String customerName;
-    private String customerPhone;
-    private List<InvoiceDetail> invoiceDetails;
     private double totalAmount;
 
+    private List<Ticket> tickets;
+
     public Invoice() {
-        invoiceDetails = new ArrayList<>();
+        tickets = new ArrayList<>();
     }
 
-    public Invoice(String invoiceId, String invoiceDate,
-                   String customerName, String customerPhone) {
+    public Invoice(String invoiceId, String customerId, String invoiceDate) {
         this.invoiceId = invoiceId;
+        this.customerId = customerId;
         this.invoiceDate = invoiceDate;
-        this.customerName = customerName;
-        this.customerPhone = customerPhone;
-        this.invoiceDetails = new ArrayList<>();
+        this.tickets = new ArrayList<>();
     }
 
-    public void addInvoiceDetail(InvoiceDetail detail) {
-        invoiceDetails.add(detail);
+    public void addTicket(Ticket ticket) {
+        tickets.add(ticket);
     }
 
-    public void removeInvoiceDetail(String invoiceDetailId) {
-        invoiceDetails.removeIf(
-            d -> d.getInvoiceDetailId().equals(invoiceDetailId)
-        );
+    public void removeTicket(String ticketId) {
+        tickets.removeIf(t -> t.getTicketId().equals(ticketId));
     }
 
     public double calculateTotalAmount() {
         totalAmount = 0;
-        for (InvoiceDetail d : invoiceDetails) {
-            totalAmount += d.getTotalPrice();
+        for (Ticket t : tickets) {
+            totalAmount += t.getPrice();
         }
         return totalAmount;
+    }
+
+    public void completeInvoice() {
+        calculateTotalAmount();
     }
 
     public String getInvoiceId() {
@@ -50,6 +51,14 @@ public class Invoice {
         this.invoiceId = invoiceId;
     }
 
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
+    }
+
     public String getInvoiceDate() {
         return invoiceDate;
     }
@@ -58,27 +67,11 @@ public class Invoice {
         this.invoiceDate = invoiceDate;
     }
 
-    public String getCustomerName() {
-        return customerName;
-    }
-
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-    }
-
-    public String getCustomerPhone() {
-        return customerPhone;
-    }
-
-    public void setCustomerPhone(String customerPhone) {
-        this.customerPhone = customerPhone;
-    }
-
-    public List<InvoiceDetail> getInvoiceDetails() {
-        return invoiceDetails;
-    }
-
     public double getTotalAmount() {
         return calculateTotalAmount();
+    }
+
+    public List<Ticket> getTickets() {
+        return tickets;
     }
 }

@@ -3,6 +3,7 @@ import cinema.enums.TicketStatus;
 
 public class Ticket{
     private String ticketId;
+    private String invoiceId;
     private double price;
     private Seat seat;
     private ShowTime showtime;
@@ -39,5 +40,7 @@ public class Ticket{
     public TicketStatus getStatus() {
         return status;
     }
-
+    public String getInvoiceId() {
+        return invoiceId;
+    }
 }
