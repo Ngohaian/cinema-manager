@@ -4,9 +4,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBConnection {
-    private static final String URL = "jdbc:mysql://gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/cinemaManager";
-    private static final String USER = "4PC2jUXDSJ4Qq31.root";
-    private static final String PASSWORD = "8jJQYnbmDYZbGTMP";
+    private static final String URL = 
+        "jdbc:mysql://127.0.0.1:3306/cinemaManager?useSSL=false&serverTimezone=UTC";
+    private static final String USER = "root";
+    private static final String PASSWORD = "123456";
 
     public static Connection getConnection() {
         try {
