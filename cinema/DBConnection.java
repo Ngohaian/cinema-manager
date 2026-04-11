@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 public class DBConnection {
     private static final String URL = 
-        "jdbc:mysql://127.0.0.1:3306/cinemaManager?useSSL=false&serverTimezone=UTC";
+        "jdbc:mysql://192.168.1.5:3306/cinemaManager?useSSL=false&serverTimezone=UTC";
     private static final String USER = "test";
     private static final String PASSWORD = "123456";
 
