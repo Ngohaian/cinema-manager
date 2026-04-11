@@ -40,7 +40,7 @@ public class Main {
                 System.err.println("Lỗi khi truy vấn dữ liệu: " + e.getMessage());
             }
         } else {
-                System.out.println("Kết nối thất bại, kiểm tra lại URL/User/Pass nhé An!");
+                System.out.println("Kết nối thất bại!");
         }
     }
 }
