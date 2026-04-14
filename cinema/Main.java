@@ -14,12 +14,10 @@ public class Main {
         Connection conn = DBConnection.getConnection();
         if (conn != null) {
             try {
-                // 2. Tạo câu lệnh truy vấn
                 String sql = "SELECT EmployeeId, EmployeeName, Position, salary FROM Employee";
                 Statement stmt = (Statement) conn.createStatement();
                 ResultSet rs = ((java.sql.Statement) stmt).executeQuery(sql);
 
-                // 3. Duyệt và in kết quả ra Console
                 System.out.println("--------------------------------------------------");
                 System.out.printf("%-10s | %-20s | %-15s | %-10s\n", "ID", "Họ Tên", "Chức Vụ", "Lương");
                 System.out.println("--------------------------------------------------");

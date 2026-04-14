@@ -2,7 +2,8 @@ package cinema.models;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import cinema.managers.CustomerManager;
+
+import cinema.dao.CustomerDAO;
 
 public class Employee {
     private static int autoId =1;

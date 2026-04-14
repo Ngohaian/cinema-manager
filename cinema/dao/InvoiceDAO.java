@@ -1,14 +1,14 @@
-package cinema.managers;
+package cinema.dao;
 
 import cinema.models.Invoice;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InvoiceManager {
+public class InvoiceDAO {
 
     private List<Invoice> invoiceList;
 
-    public InvoiceManager() {
+    public InvoiceDAO() {
         invoiceList = new ArrayList<>();
     }
 

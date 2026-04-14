@@ -1,4 +1,4 @@
-package cinema.managers;
+package cinema.dao;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import cinema.models.ShowTime;
 
-public class ShowTimeManager {
+public class ShowTimeDAO {
 	private List<ShowTime> danhSachSuatChieu;
-	    public ShowTimeManager() {
+	    public ShowTimeDAO() {
 	        danhSachSuatChieu = new ArrayList<>();
 	    }
 
