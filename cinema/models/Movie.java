@@ -6,7 +6,9 @@ public class Movie {
     private String genreId;
     private int duration;
     private boolean active;
-
+    private String poster;
+    public Movie() {
+    }
     public Movie(String id, String title, String genreId, int duration) {
         this.id = id;
         this.title = title;
@@ -32,10 +34,13 @@ public class Movie {
     public String getGenre() { return genreId; }
     public int getDuration() { return duration; }
     public boolean isActive() { return active; }
+    public String getPoster() { return poster; }
 
+    public void setId(String id){this.id = id;}
     public void setTitle(String title){this.title = title;}
     public void setGenreId(String genreId){this.genreId = genreId;}
     public void setDuration(int durartion){this.duration = durartion;}
     public void setActive(boolean active) { this.active = active; }
+    public void setPoster(String poster) { this.poster = poster; }
 
 }

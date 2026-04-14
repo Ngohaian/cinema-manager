@@ -4,33 +4,32 @@ package cinema;
 import java.util.ArrayList;
 import java.util.List;
 
-import cinema.dao.CustomerDAO;
-import cinema.dao.EmployeeDAO;
-import cinema.dao.InvoiceDAO;
-import cinema.dao.MovieDAO;
-import cinema.dao.RoomDAO;
-import cinema.dao.ShowTimeDAO;
+import cinema.dao.*;
 import cinema.form.*;
-import cinema.models.Employee;
+import cinema.models.*;
 
 public class CinemaManager {
-    private CustomerDAO customerManager;
-    private MovieDAO movieManager;
-    private EmployeeDAO employeeManager;
-    private InvoiceDAO invoiceManager;
-    private MovieDAO moviesManager;
-    private ShowTimeDAO showTimeManager;
-    private RoomDAO roomManager;
+    private CustomerDAO customerDAO;
+    private MovieDAO movieDAO = new MovieDAO();
+    private EmployeeDAO employeeDAO;
+    private InvoiceDAO invoiceDAO;
+    private MovieDAO moviesDAO;
+    private ShowTimeDAO showTimeDAO;
+    private RoomDAO roomDAO;
     
 
     public CinemaManager(){
-        moviesManager = new MovieDAO();
-        showTimeManager = new ShowTimeDAO();
-        roomManager = new RoomDAO();
-        employeeManager = new EmployeeDAO();
-        customerManager = new CustomerDAO();
-        invoiceManager = new InvoiceDAO();
+        showTimeDAO = new ShowTimeDAO();
+        roomDAO = new RoomDAO();
+        employeeDAO = new EmployeeDAO();
+        customerDAO = new CustomerDAO();
+        invoiceDAO = new InvoiceDAO();
     }
-
+    public void inDSPhim(){
+        List<Movie> list = movieDAO.getDSPhim();
+        for(Movie m : list){
+            System.out.println(m.getId() + " - " + m.getTitle() + " - " + m.getGenre() + " - " + m.getDuration() + " - " + m.isActive());
+        }
+    }
 }
 

@@ -1,6 +1,6 @@
 package cinema.dao;
 
-import cinema.models.;
+import cinema.models.Invoice;
 import java.util.ArrayList;
 import java.util.List;
 
