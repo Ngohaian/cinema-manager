@@ -202,5 +202,15 @@ public class ShowTime {
     public void setActive(boolean active) {
         this.active = active;
     }
-    
+    public double getBasePrice() {
+    return basePrice;
+    }
+
+    public double getVipExtra() {
+        return vipExtra;
+    }
+
+    public double getCoupleExtra() {
+        return coupleExtra;
+    }
 }

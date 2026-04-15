@@ -1,42 +1,56 @@
 package cinema.form.panel;
 
-public class HoaDonManagerPanel extends javax.swing.JPanel {
+import cinema.dao.InvoiceDAO;
+import cinema.models.Invoice;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.List;
+
+public class HoaDonManagerPanel extends JFrame {
+
+    private JTable table;
+    private DefaultTableModel model;
+    private InvoiceDAO dao = new InvoiceDAO();
 
     public HoaDonManagerPanel() {
-        initComponents();
+        setTitle("Quản lý hóa đơn");
+        setSize(800, 500);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        initUI();
+        loadData();
     }
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+    private void initUI() {
+        String[] columns = {"Mã hóa đơn", "Mã khách hàng", "Ngày", "Tổng tiền"};
 
-        setBackground(new java.awt.Color(255, 255, 255));
-        setPreferredSize(new java.awt.Dimension(759, 779));
+        model = new DefaultTableModel(columns, 0);
+        table = new JTable(model);
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
-        jLabel1.setText("Quản lý hóa đơn");
+        JScrollPane scrollPane = new JScrollPane(table);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(91, 91, 91)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 351, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(317, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(112, 112, 112)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(311, Short.MAX_VALUE))
-        );
-    }// </editor-fold>//GEN-END:initComponents
+        add(scrollPane, BorderLayout.CENTER);
+    }
 
+    private void loadData() {
+        model.setRowCount(0);
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    // End of variables declaration//GEN-END:variables
+        List<Invoice> list = dao.getAll();
+
+        for (Invoice inv : list) {
+            model.addRow(new Object[]{
+                    inv.getInvoiceId(),
+                    inv.getCustomerId(),
+                    inv.getInvoiceDate(),
+                    inv.getTotalAmount()
+            });
+        }
+    }
+
+    public static void main(String[] args) {
+        new HoaDonManagerPanel().setVisible(true);
+    }
 }
