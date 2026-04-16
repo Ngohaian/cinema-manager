@@ -134,8 +134,7 @@ public class SellTicketFrame extends javax.swing.JFrame {
         
     }
     
-    
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
+                              
     private void initComponents() {
 
         pSellTicket = new javax.swing.JPanel();
@@ -414,22 +413,10 @@ public class SellTicketFrame extends javax.swing.JFrame {
     }                                      
 
     public static void main(String args[]) {
-
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(SellTicketFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(SellTicketFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(SellTicketFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(SellTicketFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            com.formdev.flatlaf.FlatLightLaf.setup(); 
+        } catch( Exception ex ) {
+            System.err.println( "Failed to initialize LaF" );
         }
 
         java.awt.EventQueue.invokeLater(new Runnable() {
