@@ -1,44 +1,91 @@
 package cinema.dao;
 
 import cinema.models.Invoice;
+import cinema.DBConnection;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class InvoiceDAO {
 
-    private List<Invoice> invoiceList;
+    // Lấy tất cả hóa đơn
+    public List<Invoice> getAll() {
+        List<Invoice> list = new ArrayList<>();
+        String sql = "SELECT * FROM Invoice";
 
-    public InvoiceDAO() {
-        invoiceList = new ArrayList<>();
-    }
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
-    public void addInvoice(Invoice invoice) {
-        invoiceList.add(invoice);
-    }
+            while (rs.next()) {
+                Invoice inv = new Invoice();
+                inv.setInvoiceId(rs.getString("invoiceId"));
+                inv.setCustomerId(rs.getString("customerId"));
+                //inv.setInvoiceDate(rs.getTimestamp("invoiceDate"));
+                //inv.setTotalAmount(rs.getDouble("totalAmount"));
 
-    public Invoice findById(String invoiceId) {
-        for (Invoice invoice : invoiceList) {
-            if (invoice.getInvoiceId().equals(invoiceId)) {
-                return invoice;
+                list.add(inv);
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return null;
+        return list;
     }
 
-    public void updateInvoice(Invoice updatedInvoice) {
-        for (int i = 0; i < invoiceList.size(); i++) {
-            if (invoiceList.get(i).getInvoiceId().equals(updatedInvoice.getInvoiceId())) {
-                invoiceList.set(i, updatedInvoice);
-                return;
-            }
+    // Thêm hóa đơn
+    public boolean insert(Invoice inv) {
+        String sql = "INSERT INTO Invoice(invoiceId, customerId, invoiceDate, totalAmount) VALUES (?, ?, ?, ?)";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, inv.getInvoiceId());
+            ps.setString(2, inv.getCustomerId());
+            //ps.setTimestamp(3, new Timestamp(inv.getInvoiceDate().getTime()));
+            ps.setDouble(4, inv.getTotalAmount());
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return false;
     }
 
-    public void deleteInvoice(String invoiceId) {
-        invoiceList.removeIf(invoice -> invoice.getInvoiceId().equals(invoiceId));
+    // Xóa
+    public boolean delete(String id) {
+        String sql = "DELETE FROM Invoice WHERE invoiceId=?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, id);
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
-    public List<Invoice> getAllInvoices() {
-        return invoiceList;
+    // Cập nhật
+    public boolean update(Invoice inv) {
+        String sql = "UPDATE Invoice SET customerId=?, totalAmount=? WHERE invoiceId=?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, inv.getCustomerId());
+            ps.setDouble(2, inv.getTotalAmount());
+            ps.setString(3, inv.getInvoiceId());
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

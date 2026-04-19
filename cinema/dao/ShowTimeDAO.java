@@ -1,204 +1,56 @@
 package cinema.dao;
 
-import java.time.LocalDate;
+import cinema.DBConnection;
+import cinema.models.*;
+import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import cinema.models.ShowTime;
+import java.util.*;
 
 public class ShowTimeDAO {
-	private List<ShowTime> danhSachSuatChieu;
-	    public ShowTimeDAO() {
-	        danhSachSuatChieu = new ArrayList<>();
-	    }
+	private MovieDAO movieDAO = new MovieDAO();
+	private RoomDAO roomDAO = new RoomDAO();
 
-	    /*
-	     * addShowTime
-	     */
-	    public boolean addShowTime(ShowTime suatChieuMoi) {
+	public List<ShowTime> getAll() throws Exception {
+		List<ShowTime> list = new ArrayList<>();
+		String sql = "SELECT * FROM Showtime WHERE active = 1";
+		Connection conn = DBConnection.getConnection();
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(sql);
 
-	        if (isScheduleConflict(suatChieuMoi)) {
-	            System.out.println("Schedule conflict detected!");
-	            return false;
-	        }
+		while(rs.next()) {
+			String movieId = rs.getString("movieId");
+			String roomId = rs.getString("roomId");
 
-	        danhSachSuatChieu.add(suatChieuMoi);
-	        return true;
-	    }
+			Movie movie = movieDAO.getById("movieId");
+			Room room = roomDAO.getById("roomId");
 
-	    /*
-	     * removeShowTime
-	     */
-	    public boolean removeShowTime(String idSuatChieu) {
+			LocalDateTime start = rs.getTimestamp("startTime").toLocalDateTime();
 
-	        for (ShowTime sc : danhSachSuatChieu) {
+			ShowTime s = new ShowTime(
+				rs.getString("showtimeId"),
+				movie,
+				room,
+				start,
+				rs.getDouble("basePrice")
+			);
+			list.add(s);
+		}
+		return list;
+	}
+	public void insert(ShowTime s) throws Exception {
+		String sql = "INSERT INTO Showtime VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-	            if (sc.getShowtimeId().equals(idSuatChieu)) {
-	                danhSachSuatChieu.remove(sc);
-	                return true;
-	            }
-	        }
+		Connection conn = DBConnection.getConnection();
+		PreparedStatement ps = conn.prepareStatement(sql);
 
-	        return false;
-	    }
-
-	    /*
-	     * updateShowTime
-	     */
-	    public boolean updateShowTime(ShowTime suatChieuCapNhat) {
-
-	        for (int i = 0; i < danhSachSuatChieu.size(); i++) {
-
-	            ShowTime sc = danhSachSuatChieu.get(i);
-
-	            if (sc.getShowtimeId().equals(suatChieuCapNhat.getShowtimeId())) {
-
-	                danhSachSuatChieu.set(i, suatChieuCapNhat);
-	                return true;
-	            }
-	        }
-
-	        return false;
-	    }
-
-	    /*
-	     * getAllShowTimes
-	     */
-	    public List<ShowTime> getAllShowTimes() {
-	        return danhSachSuatChieu;
-	    }
-
-	    /*
-	     * findShowTimeById
-	     */
-	    public ShowTime findShowTimeById(String idSuatChieu) {
-
-	        for (ShowTime sc : danhSachSuatChieu) {
-
-	            if (sc.getShowtimeId().equals(idSuatChieu)) {
-	                return sc;
-	            }
-	        }
-
-	        return null;
-	    }
-
-	    /*
-	     * getShowTimesByMovie
-	     */
-	    public List<ShowTime> getShowTimesByMovie(String tenPhim) {
-
-	        List<ShowTime> ketQua = new ArrayList<>();
-
-	        for (ShowTime sc : danhSachSuatChieu) {
-
-	            if (sc.getMovie().getTitle().equalsIgnoreCase(tenPhim)) {
-	                ketQua.add(sc);
-	            }
-	        }
-
-	        return ketQua;
-	    }
-
-	    /*
-	     * getShowTimesByRoom
-	     */
-	    public List<ShowTime> getShowTimesByRoom(String idPhong) {
-
-	        List<ShowTime> ketQua = new ArrayList<>();
-
-	        for (ShowTime sc : danhSachSuatChieu) {
-
-	            if (sc.getRoom().getRoomId() == idPhong) {
-	                ketQua.add(sc);
-	            }
-	        }
-
-	        return ketQua;
-	    }
-
-	    /*
-	     * getShowTimesByDate
-	     */
-	    public List<ShowTime> getShowTimesByDate(LocalDate ngay) {
-
-	        List<ShowTime> ketQua = new ArrayList<>();
-
-	        for (ShowTime sc : danhSachSuatChieu) {
-
-	            LocalDate ngayChieu = sc.getStartTime().toLocalDate();
-
-	            if (ngayChieu.equals(ngay)) {
-	                ketQua.add(sc);
-	            }
-	        }
-
-	        return ketQua;
-	    }
-
-	    /*
-	     * isScheduleConflict
-	     */
-	    public boolean isScheduleConflict(ShowTime suatChieuMoi) {
-
-	        for (ShowTime sc : danhSachSuatChieu) {
-
-	           
-	            if (sc.getRoom().getRoomId() == suatChieuMoi.getRoom().getRoomId()) {
-
-	                boolean conflict = sc.isConflict(
-	                        suatChieuMoi.getStartTime(),
-	                        suatChieuMoi.getEndTime()
-	                );
-
-	                if (conflict) {
-	                    return true;
-	                }
-	            }
-	        }
-
-	        return false;
-	    }
-
-	    /*
-	     * getNextAvailableTime
-	     */
-	    public LocalDateTime getNextAvailableTime(String idPhong) {
-
-	        LocalDateTime latestTime = null;
-
-	        for (ShowTime sc : danhSachSuatChieu) {
-
-	            if (sc.getRoom().getRoomId() == idPhong) {
-
-	                if (latestTime == null ||
-	                        sc.getEndTime().isAfter(latestTime)) {
-
-	                    latestTime = sc.getEndTime();
-	                }
-	            }
-	        }
-
-	        return latestTime;
-	    }
-
-	    /*
-	     * displaySchedule
-	     */
-	    public void displaySchedule() {
-
-	        System.out.println("===== CINEMA SCHEDULE =====");
-
-	        for (ShowTime sc : danhSachSuatChieu) {
-
-	            System.out.println(
-	                    "Movie: " + sc.getMovie().getTitle()
-	                    + " | Room: " + sc.getRoom().getRoomId()
-	                    + " | Start: " + sc.getStartTime()
-	                    + " | End: " + sc.getEndTime()
-	            );
-	        }
-	    }
-	
-
+		ps.setString(1, s.getShowtimeId());
+		ps.setString(2, s.getMovie().getId());
+		ps.setString(3, s.getRoom().getRoomId());
+		ps.setTimestamp(4, Timestamp.valueOf(s.getStartTime()));
+		ps.setTimestamp(5, Timestamp.valueOf(s.getEndTime()));
+		ps.setDouble(6, s.getBasePrice());
+		ps.setDouble(7, 30); // vipExtra
+		ps.setDouble(8, 50); // coupleExtra
+		ps.setBoolean(9, true);
+	} 
 }
