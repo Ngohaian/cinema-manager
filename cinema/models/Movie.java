@@ -34,7 +34,7 @@ public class Movie {
     public String getTitle() { return title; }
     public GenreType getGenre() { return getGenreFromId(genreId); }
     public int getDuration() { return duration; }
-    public MovieStatus getStatus() { return active; }
+    public MovieStatus getActive() { return active; }
     public String getPoster() { return poster; }
 
     public void setId(String id){this.id = id;}

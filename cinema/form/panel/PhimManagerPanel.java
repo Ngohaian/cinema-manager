@@ -13,7 +13,7 @@ public class PhimManagerPanel extends javax.swing.JPanel {
                 posterIcon != null ? new javax.swing.ImageIcon(posterIcon) : null,
                 m.getTitle(),
                 m.getGenre(),
-                m.isActive(),
+                m.getActive(),
                 editIcon != null ? new javax.swing.ImageIcon(editIcon) : null
         });
     }

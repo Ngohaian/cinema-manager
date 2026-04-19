@@ -42,7 +42,7 @@ public class CinemaManager {
     public void inDSPhim(){
         List<Movie> list = movieDAO.getDSPhim();
         for(Movie m : list){
-            System.out.println(m.getId() + " - " + m.getTitle() + " - " + m.getGenre() + " - " + m.getDuration() + " - " + m.isActive());
+            System.out.println(m.getId() + " - " + m.getTitle() + " - " + m.getGenre() + " - " + m.getDuration() + " - " + m.getActive());
         }
     }
 }
