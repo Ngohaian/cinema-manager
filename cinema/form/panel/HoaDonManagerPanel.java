@@ -8,18 +8,13 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-public class HoaDonManagerPanel extends JFrame {
+public class HoaDonManagerPanel extends JPanel {
 
     private JTable table;
     private DefaultTableModel model;
     private InvoiceDAO dao = new InvoiceDAO();
 
     public HoaDonManagerPanel() {
-        setTitle("Quản lý hóa đơn");
-        setSize(800, 500);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-
         initUI();
         loadData();
     }

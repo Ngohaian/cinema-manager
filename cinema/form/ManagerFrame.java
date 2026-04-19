@@ -13,15 +13,49 @@ public class ManagerFrame extends javax.swing.JFrame {
     private JPanel indicator = new JPanel(); // Tao thanh danh dau cho chuc nang dang duoc chon
     private JLabel selectedButton = null;
     private JLabel[] menuLabels_1;
-    private ThongKePanel thongKePanel = new ThongKePanel();
-    private NhanVienManagerPanel nhanVienMP = new NhanVienManagerPanel();
+    private NhanVienManagerPanel thongKePanel = new NhanVienManagerPanel();
+    private BanVePanel nhanVienMP = new BanVePanel();
     private KhachHangManagerPanel khachHangMP = new KhachHangManagerPanel();
     private SuatChieuManagerPanel suatChieuMP = new SuatChieuManagerPanel();
     private PhimManagerPanel phimMP = new PhimManagerPanel();
     private PhongManagerPanel phongMP = new PhongManagerPanel();
     private HoaDonManagerPanel hoaDonMP = new HoaDonManagerPanel();
     private ThongTinPanel thongTinPanel = new ThongTinPanel();
-    private void setHoverChucNang(JLabel JLabel){
+
+    public ManagerFrame() {
+        initComponents();
+        menuLabels_1 = new JLabel[]{btnThongKe, btnNhanVien, btnKhachHang, btnSuatChieu, btnPhimMP, btnPhong, btnHoaDon};
+        for(int i=0;i<menuLabels_1.length;i++){
+            final int index = i;
+            setHoverChucNang(menuLabels_1[i]);
+            menuLabels_1[i].addMouseListener(new MouseAdapter(){
+                @Override
+                public void mouseClicked(MouseEvent e){
+                    setSelectedButton(menuLabels_1[index]);
+                }
+            });
+        }
+        setHoverLogOut(btnDangXuat);
+        indicator.setBackground(new Color(0,74,130));
+        indicator.setSize(10,btnThongKe.getHeight());
+        indicator.setVisible(false);
+        pMenu.add(indicator);
+        
+        // chuyen doi giua cac trang
+        CardLayout card = new CardLayout();
+        pContent.setLayout(card);
+        pContent.add(wrap(thongKePanel), "ThongKe");
+        pContent.add(wrap(nhanVienMP), "NhanVien");
+        pContent.add(wrap(khachHangMP),"KhachHang");
+        pContent.add(wrap(phimMP),"Phim");
+        pContent.add(wrap(phongMP),"Phong");
+        pContent.add(wrap(suatChieuMP),"SuatChieu");
+        pContent.add(wrap(hoaDonMP),"HoaDon");
+        pContent.add(wrap(thongTinPanel), "ThongTin");
+        pContent.revalidate();
+        pContent.repaint();
+    }
+        private void setHoverChucNang(JLabel JLabel){
         MouseAdapter hoverEffect = new MouseAdapter(){
             @Override
             public void mouseEntered(MouseEvent e){
@@ -65,8 +99,8 @@ public class ManagerFrame extends javax.swing.JFrame {
         cl.show(pContent, name);
     }
     private void customizeScrollBar(JScrollPane JScroll){
-        scrollPane2.getVerticalScrollBar().setUnitIncrement(20);
-        scrollPane2.getVerticalScrollBar().setUI(new BasicScrollBarUI(){
+        JScroll.getVerticalScrollBar().setUnitIncrement(20);
+        JScroll.getVerticalScrollBar().setUI(new BasicScrollBarUI(){
 
             @Override
             protected void paintThumb(java.awt.Graphics g, javax.swing.JComponent c, java.awt.Rectangle thumbBounds) {
@@ -99,48 +133,20 @@ public class ManagerFrame extends javax.swing.JFrame {
             }
         });
 
-        scrollPane2.setBorder(null);
-        scrollPane2.getViewport().setBackground(java.awt.Color.WHITE);
+        JScroll.setBorder(null);
+        JScroll.getViewport().setBackground(java.awt.Color.WHITE);
     }
-    public ManagerFrame() {
-        initComponents();
-        customizeScrollBar(scrollPane2);
-        menuLabels_1 = new JLabel[]{btnThongKe, btnNhanVien, btnKhachHang, btnSuatChieu, btnPhimMP, btnPhong, btnHoaDon};
-        for(int i=0;i<menuLabels_1.length;i++){
-            final int index = i;
-            setHoverChucNang(menuLabels_1[i]);
-            menuLabels_1[i].addMouseListener(new MouseAdapter(){
-                @Override
-                public void mouseClicked(MouseEvent e){
-                    setSelectedButton(menuLabels_1[index]);
-                }
-            });
-        }
-        setHoverLogOut(btnDangXuat);
-        indicator.setBackground(new Color(0,74,130));
-        indicator.setSize(10,btnThongKe.getHeight());
-        indicator.setVisible(false);
-        pMenu.add(indicator);
-        
-        // chuyen doi giua cac trang
-        CardLayout card = new CardLayout();
-        pContent.setLayout(card);
-        pContent.add(thongKePanel, "ThongKe");
-        pContent.add(nhanVienMP, "NhanVien");
-        pContent.add(khachHangMP,"KhachHang");
-        pContent.add(phimMP,"Phim");
-        pContent.add(phongMP,"Phong");
-        pContent.add(suatChieuMP,"SuatChieu");
-        pContent.add(hoaDonMP,"HoaDon");
-        pContent.add(thongTinPanel, "ThongTin");
-        
+    private JScrollPane wrap(JPanel panel){
+        JScrollPane sp = new JScrollPane(panel);
+        customizeScrollBar(sp);
+        return sp;
     }
-    
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 
         pSellTicket = new javax.swing.JPanel();
+        pContent = new javax.swing.JPanel();
         pMenu = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -155,8 +161,6 @@ public class ManagerFrame extends javax.swing.JFrame {
         btnSuatChieu = new javax.swing.JLabel();
         btnPhong = new javax.swing.JLabel();
         btnHoaDon = new javax.swing.JLabel();
-        scrollPane2 = new javax.swing.JScrollPane();
-        pContent = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setName("frameSellTicket"); // NOI18N
@@ -168,6 +172,20 @@ public class ManagerFrame extends javax.swing.JFrame {
         });
 
         pSellTicket.setBackground(new java.awt.Color(255, 255, 255));
+
+        pContent.setBackground(new java.awt.Color(255, 255, 255));
+        pContent.setToolTipText("");
+
+        javax.swing.GroupLayout pContentLayout = new javax.swing.GroupLayout(pContent);
+        pContent.setLayout(pContentLayout);
+        pContentLayout.setHorizontalGroup(
+            pContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 762, Short.MAX_VALUE)
+        );
+        pContentLayout.setVerticalGroup(
+            pContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
 
         pMenu.setBackground(new java.awt.Color(0, 146, 255));
         pMenu.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
@@ -357,22 +375,17 @@ public class ManagerFrame extends javax.swing.JFrame {
             .addGroup(pMenuLayout.createSequentialGroup()
                 .addGap(32, 32, 32)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(101, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(pMenuLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pMenuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(pMenuLayout.createSequentialGroup()
-                        .addGroup(pMenuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnThongKe, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnNhanVien, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnKhachHang, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnSuatChieu, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnPhimMP, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btnThongKe, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnNhanVien, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnKhachHang, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnSuatChieu, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnPhimMP, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnPhong, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(pMenuLayout.createSequentialGroup()
-                        .addComponent(btnHoaDon, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                    .addComponent(btnHoaDon, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         pMenuLayout.setVerticalGroup(
@@ -396,27 +409,12 @@ public class ManagerFrame extends javax.swing.JFrame {
                 .addComponent(btnPhong, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnHoaDon, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 74, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 60, Short.MAX_VALUE)
                 .addComponent(pThongTin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(39, 39, 39)
+                .addGap(18, 18, 18)
                 .addComponent(btnDangXuat)
                 .addGap(18, 18, 18))
         );
-
-        pContent.setBackground(new java.awt.Color(255, 255, 255));
-
-        javax.swing.GroupLayout pContentLayout = new javax.swing.GroupLayout(pContent);
-        pContent.setLayout(pContentLayout);
-        pContentLayout.setHorizontalGroup(
-            pContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 990, Short.MAX_VALUE)
-        );
-        pContentLayout.setVerticalGroup(
-            pContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 779, Short.MAX_VALUE)
-        );
-
-        scrollPane2.setViewportView(pContent);
 
         javax.swing.GroupLayout pSellTicketLayout = new javax.swing.GroupLayout(pSellTicket);
         pSellTicket.setLayout(pSellTicketLayout);
@@ -424,13 +422,20 @@ public class ManagerFrame extends javax.swing.JFrame {
             pSellTicketLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pSellTicketLayout.createSequentialGroup()
                 .addComponent(pMenu, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(2, 2, 2)
-                .addComponent(scrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 752, Short.MAX_VALUE))
+                .addGap(0, 0, 0)
+                .addComponent(pContent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
         );
         pSellTicketLayout.setVerticalGroup(
             pSellTicketLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pMenu, javax.swing.GroupLayout.DEFAULT_SIZE, 779, Short.MAX_VALUE)
-            .addComponent(scrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 779, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pSellTicketLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(pSellTicketLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pMenu, javax.swing.GroupLayout.PREFERRED_SIZE, 744, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(pSellTicketLayout.createSequentialGroup()
+                        .addComponent(pContent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(0, 0, 0)))
+                .addGap(41, 41, 41))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -441,10 +446,12 @@ public class ManagerFrame extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pSellTicket, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(pSellTicket, javax.swing.GroupLayout.PREFERRED_SIZE, 750, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        setSize(new java.awt.Dimension(1010, 787));
+        setSize(new java.awt.Dimension(1018, 754));
         setLocationRelativeTo(null);
     }// </editor-fold>                        
 
@@ -493,22 +500,10 @@ public class ManagerFrame extends javax.swing.JFrame {
 
     public static void main(String args[]) {
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ManagerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ManagerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ManagerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ManagerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            com.formdev.flatlaf.FlatLightLaf.setup(); 
+        } catch( Exception ex ) {
+            System.err.println( "Failed to initialize LaF" );
         }
-
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -517,7 +512,8 @@ public class ManagerFrame extends javax.swing.JFrame {
             }
         });
     }
-                  
+
+    // Variables declaration - do not modify                     
     private javax.swing.JLabel btnDangXuat;
     private javax.swing.JLabel btnHoaDon;
     private javax.swing.JLabel btnKhachHang;
@@ -534,6 +530,5 @@ public class ManagerFrame extends javax.swing.JFrame {
     private javax.swing.JPanel pMenu;
     private javax.swing.JPanel pSellTicket;
     private javax.swing.JPanel pThongTin;
-    private javax.swing.JScrollPane scrollPane2;
-                
+    // End of variables declaration                   
 }
