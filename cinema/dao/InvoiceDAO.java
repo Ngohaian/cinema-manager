@@ -23,8 +23,8 @@ public class InvoiceDAO {
                 Invoice inv = new Invoice();
                 inv.setInvoiceId(rs.getString("invoiceId"));
                 inv.setCustomerId(rs.getString("customerId"));
-                //inv.setInvoiceDate(rs.getTimestamp("invoiceDate"));
-                //inv.setTotalAmount(rs.getDouble("totalAmount"));
+                inv.setInvoiceDate(rs.getTimestamp("invoiceDate"));
+                inv.setTotalAmount(rs.getDouble("totalAmount"));
 
                 list.add(inv);
             }

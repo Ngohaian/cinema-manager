@@ -347,7 +347,7 @@ public class ManagerFrame extends javax.swing.JFrame {
         btnHoaDon.setForeground(new java.awt.Color(255, 255, 255));
         btnHoaDon.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         btnHoaDon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cinema/images/bill.png"))); // NOI18N
-        btnHoaDon.setText("Hóa đơn");
+        btnHoaDon.setText(" Hóa đơn");
         btnHoaDon.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 5, 1, 1));
         btnHoaDon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnHoaDon.setOpaque(true);
