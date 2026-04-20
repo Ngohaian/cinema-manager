@@ -13,8 +13,8 @@ public class ManagerFrame extends javax.swing.JFrame {
     private JPanel indicator = new JPanel(); // Tao thanh danh dau cho chuc nang dang duoc chon
     private JLabel selectedButton = null;
     private JLabel[] menuLabels_1;
-    private NhanVienManagerPanel thongKePanel = new NhanVienManagerPanel();
-    private BanVePanel nhanVienMP = new BanVePanel();
+    private ThongKePanel thongKePanel = new ThongKePanel();
+    private NhanVienManagerPanel nhanVienMP = new NhanVienManagerPanel();
     private KhachHangManagerPanel khachHangMP = new KhachHangManagerPanel();
     private SuatChieuManagerPanel suatChieuMP = new SuatChieuManagerPanel();
     private PhimManagerPanel phimMP = new PhimManagerPanel();

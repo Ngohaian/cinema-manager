@@ -31,7 +31,7 @@ public class HoaDonManagerPanel extends JPanel {
                 inv.getInvoiceId(),
                 "Nguyễn Văn A",
                 "0912345678",
-                new SimpleDateFormat("dd/MM/yyyy HH:mm").format(inv.getInvoiceDate()),
+                inv.getInvoiceDate() != null ? inv.getInvoiceDate().toString() : "Chưa có ngày",
                 "EMP001",
                 String.format("%.0f đ", inv.getTotalAmount()),
                 "Đã thanh toán",
@@ -106,7 +106,6 @@ public class HoaDonManagerPanel extends JPanel {
         table.getColumnModel().getColumn(0).setCellRenderer(center);
         table.getColumnModel().getColumn(2).setCellRenderer(center);
         table.getColumnModel().getColumn(4).setCellRenderer(center);
-        table.getColumnModel().getColumn(7).setCellRenderer(center);
 
         table.getColumnModel().getColumn(7).setMaxWidth(40);
     }

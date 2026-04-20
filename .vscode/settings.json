@@ -1,7 +1,8 @@
 {
     "java.project.referencedLibraries": [
-        "d:\\JAVA\\cinema-manager\\lib\\flatlaf-3.4.1.jar",
-        "d:\\JAVA\\cinema-manager\\lib\\mysql-connector-j-9.6.0.jar"
+        "lib/**/*.jar"
     ],
-    "java.project.sourcePaths": []
+    "java.project.sourcePaths": [
+        "."
+    ]
 }
