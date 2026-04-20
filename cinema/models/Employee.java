@@ -1,9 +1,5 @@
 package cinema.models;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
-import cinema.dao.CustomerDAO;
 
 public class Employee {
     private static int autoId =1;
@@ -12,22 +8,36 @@ public class Employee {
     }
 
     public enum Position {
-        TICKET_SELLER("Nhan vien ban ve", 1.2),
-        MANAGER("Quan ly", 1.5),
-        TICKET_CHECKER("Nhan vien check ve", 1.0);
-
-        private final String displayName;
-        private final double salaryMultiplier;
-
-        Position(String displayName, double salaryMultiplier) {
-            this.displayName = displayName;
-            this.salaryMultiplier = salaryMultiplier;
-        }
-
-        public String getDisplayName(){return displayName;}
-        public double getSalaryMultiplier(){return salaryMultiplier;}
+    TICKET_SELLER("Nhan vien ban ve", 1.2),
+    MANAGER("Quan ly", 1.5),
+    TICKET_CHECKER("Nhan vien check ve", 1.0);
+    private final String displayName;
+    private final double salaryMultiplier;
+    Position(String displayName, double salaryMultiplier) {
+        this.displayName = displayName;
+        this.salaryMultiplier = salaryMultiplier;
     }
 
+    public String getDisplayName(){return displayName;}
+    public double getSalaryMultiplier(){return salaryMultiplier;}
+    public static Position fromDb(String dbValue) {
+        switch (dbValue) {
+            case "Nhan vien ban ve":
+                return TICKET_SELLER;
+            case "Quan ly":
+                return MANAGER;
+            case "Nhan vien check ve":
+                return TICKET_CHECKER;
+            default:
+                return TICKET_SELLER;
+        }
+    }
+    public String toDb() {
+        return displayName;
+    }
+}
+
+    public Employee() {};
     private String id;
     private String name;
     private String username;
@@ -63,6 +73,8 @@ public class Employee {
     public EmployeeStatus getStatus() { return status; }
     public String getUsername() { return username; }
     public String getPassword() { return password; }
+    public String getNote() { return note; }
+    public LocalDate getHireDate() { return hireDate; }
 
     public void setName(String name) { this.name = name; }
     public void setPhone(String phone) { this.phone = phone; }
@@ -70,14 +82,12 @@ public class Employee {
     public void setNote(String note) { this.note = note; }
     public void setUsername(String username) { this.username = username; }
     public void setPassword(String password) { this.password = password; }
+    public void setId(String id) { this.id = id; }
+    public void setSalary(double salary) { this.salary = salary; }
+    public void setHireDate(LocalDate hireDate) { this.hireDate = hireDate;}
+    public double calculateSalary() {return salary * position.getSalaryMultiplier();}
 
-    public double calculateSalary() {
-        return salary * position.getSalaryMultiplier();
-    }
-
-    public boolean checkWorkingStatus() {
-        return status == EmployeeStatus.ACTIVE;
-    }
+    public boolean checkWorkingStatus() {return status == EmployeeStatus.ACTIVE;}
 
     public void changePosition(Position newPosition) {
         this.position = newPosition;

@@ -1,44 +1,111 @@
-
 package cinema.form.panel;
 
-public class NhanVienManagerPanel extends javax.swing.JPanel {
+import java.awt.*;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+
+public class NhanVienManagerPanel extends JPanel {
+
+    private JTextField txtSearch;
+    private JComboBox<String> cbStatus;
+    private JComboBox<String> cbRole;
+    private JSlider sliderSalary;
+    private JTable table;
+    private JButton btnAdd;
 
     public NhanVienManagerPanel() {
-        initComponents();
+        setLayout(new BorderLayout());
+        setBackground(new Color(248, 250, 252));
+
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.setBorder(new EmptyBorder(40, 30, 40, 30));
+        container.setBackground(new Color(248, 250, 252));
+
+        container.add(createFilterPanel());
+        container.add(Box.createVerticalStrut(30));
+        container.add(createHeader());
+        container.add(Box.createVerticalStrut(15));
+        container.add(createTable());
+
+        add(container, BorderLayout.CENTER);
     }
 
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    // ===== FILTER =====
+    private JPanel createFilterPanel() {
+        JPanel panel = new JPanel(new GridLayout(2, 4, 20, 5));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(220, 220, 220)),
+                new EmptyBorder(15, 15, 15, 15)
+        ));
 
-        jLabel1 = new javax.swing.JLabel();
+        panel.add(new JLabel("Tìm kiếm"));
+        panel.add(new JLabel("Trạng thái"));
+        panel.add(new JLabel("Chức vụ"));
+        panel.add(new JLabel("Mức lương"));
 
-        setBackground(new java.awt.Color(255, 255, 255));
-        setPreferredSize(new java.awt.Dimension(759, 779));
+        txtSearch = new JTextField();
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
-        jLabel1.setText("Quản lý nhân viên");
+        cbStatus = new JComboBox<>(new String[]{"ACTIVE", "INACTIVE"});
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(305, 305, 305)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 311, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(143, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(112, 112, 112)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(311, Short.MAX_VALUE))
-        );
-    }// </editor-fold>//GEN-END:initComponents
+        cbRole = new JComboBox<>(new String[]{
+                "Nhân viên bán vé",
+                "Nhân viên check vé"
+        });
 
+        sliderSalary = new JSlider();
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    // End of variables declaration//GEN-END:variables
+        panel.add(txtSearch);
+        panel.add(cbStatus);
+        panel.add(cbRole);
+        panel.add(sliderSalary);
+
+        return panel;
+    }
+
+    private JPanel createHeader() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(248, 250, 252));
+
+        JLabel title = new JLabel("Danh sách nhân viên");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 24));
+
+        btnAdd = new JButton("+ Thêm nhân viên");
+        btnAdd.setBackground(new Color(0, 146, 255));
+        btnAdd.setForeground(Color.WHITE);
+        btnAdd.setFocusPainted(false);
+
+        panel.add(title, BorderLayout.WEST);
+        panel.add(btnAdd, BorderLayout.EAST);
+
+        return panel;
+    }
+
+    // ===== TABLE =====
+    private JScrollPane createTable() {
+        table = new JTable();
+
+        table.setModel(new DefaultTableModel(
+                new Object[][]{},
+                new String[]{
+                        "Mã NV",
+                        "Tên NV",
+                        "Chức vụ",
+                        "Email",
+                        "SĐT",
+                        "Mức lương",
+                        "Ngày vào làm",
+                        "Trạng thái"
+                }
+        ));
+
+        table.setRowHeight(28);
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
+
+        return scroll;
+    }
 }
