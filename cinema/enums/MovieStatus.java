@@ -20,4 +20,16 @@ public enum MovieStatus {
         }
         return null;
     }
+    public static String getNameMovieStatus(MovieStatus value) {
+        switch(value) {
+            case INACTIVE: 
+                return "Dừng chiếu";
+            case ACTIVE:
+                return "Đang chiếu";
+            case COMING_SOON:
+                return "Sắp ra mắt";
+            default:
+                return null;
+        }
+    }
 }

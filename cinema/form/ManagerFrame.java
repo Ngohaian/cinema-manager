@@ -55,7 +55,7 @@ public class ManagerFrame extends javax.swing.JFrame {
         pContent.revalidate();
         pContent.repaint();
     }
-        private void setHoverChucNang(JLabel JLabel){
+    private void setHoverChucNang(JLabel JLabel){
         MouseAdapter hoverEffect = new MouseAdapter(){
             @Override
             public void mouseEntered(MouseEvent e){

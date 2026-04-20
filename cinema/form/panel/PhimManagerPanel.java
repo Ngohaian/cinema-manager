@@ -1,17 +1,42 @@
-
 package cinema.form.panel;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import cinema.models.Movie;
+
+
 public class PhimManagerPanel extends javax.swing.JPanel {
+
+    public PhimManagerPanel() {
+        initComponents();
+        setTable(DSPhimTable);
+        LoadTableMovie();
+    }
+    private javax.swing.ImageIcon scaleImage(java.net.URL imagePath, int w, int h) {
+        try {
+            java.awt.Image img = new javax.swing.ImageIcon(imagePath).getImage();
+            java.awt.Image scaled = img.getScaledInstance(w, h, java.awt.Image.SCALE_SMOOTH);
+            return new javax.swing.ImageIcon(scaled);
+        } catch (Exception e) {
+            return null; 
+        }
+    }
     public void generateRowTable(Movie m){
-        var posterIcon = getClass().getResource(m.getPoster());
+        var posterURL = getClass().getResource(m.getPoster());
+        javax.swing.ImageIcon posterIcon = null;
         var editIcon = getClass().getResource("/cinema/images/edit(black).png");
+        if (posterURL != null) {
+            posterIcon = scaleImage(posterURL, 30, 45); 
+        } else {
+            System.out.println("Không tìm thấy ảnh tại: " + m.getPoster());
+        }
+        
+        String multiLineTitle = "<html><body style='width: 400px'>" + m.getTitle() + "</body></html>";
         var model = (javax.swing.table.DefaultTableModel) DSPhimTable.getModel();
         model.addRow(new Object []{
+                posterIcon,    
                 m.getId(),
-                posterIcon != null ? new javax.swing.ImageIcon(posterIcon) : null,
-                m.getTitle(),
+                multiLineTitle,
+                m.getDuration(),
                 m.getGenre(),
                 m.getActive(),
                 editIcon != null ? new javax.swing.ImageIcon(editIcon) : null
@@ -22,16 +47,38 @@ public class PhimManagerPanel extends javax.swing.JPanel {
         for(Movie m : list){
             generateRowTable(m);
         }
-    }
-    public PhimManagerPanel() {
-        initComponents();
-        setTable(DSPhimTable);
-        LoadTableMovie();
-    }
+    }          
+    public void setTable(javax.swing.JTable Table){
+        Table.setRowHeight(60);
+        var header = Table.getTableHeader();
+        header.setBackground(new java.awt.Color(235,235,235));
+        header.setPreferredSize(new java.awt.Dimension(0,40));
+        header.setFont(new java.awt.Font("Segoe UI",java.awt.Font.BOLD,15));
 
-                         
+        DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
+        cellRenderer.setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
+        Table.getColumnModel().getColumn(1).setCellRenderer(cellRenderer);
+        Table.getColumnModel().getColumn(3).setCellRenderer(cellRenderer);
+        Table.getColumnModel().getColumn(4).setCellRenderer(cellRenderer);
+        Table.getColumnModel().getColumn(5).setCellRenderer(cellRenderer);
+        
+        Table.getColumnModel().getColumn(0).setPreferredWidth(45); 
+        Table.getColumnModel().getColumn(1).setPreferredWidth(50); 
+        Table.getColumnModel().getColumn(2).setPreferredWidth(430);
+        Table.getColumnModel().getColumn(3).setPreferredWidth(70);
+        Table.getColumnModel().getColumn(4).setPreferredWidth(70);
+        Table.getColumnModel().getColumn(5).setPreferredWidth(70);
+        Table.getColumnModel().getColumn(6).setPreferredWidth(40);
+    }
+    
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 
+        ThemPhimDialog = new javax.swing.JDialog();
+        ThemPhimPanel = new javax.swing.JPanel();
+        jLabel6 = new javax.swing.JLabel();
+        jTextField1 = new javax.swing.JTextField();
         PhanLoaiPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -45,12 +92,73 @@ public class PhimManagerPanel extends javax.swing.JPanel {
         lMaxThoiGianPhim = new javax.swing.JLabel();
         CardPhimPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        DSPhimTable = new javax.swing.JTable();
+        DSPhimTable = new javax.swing.JTable() {
+            @Override
+            public Class getColumnClass(int columnIndex) {
+                // Cột 0 và 6 là Icon
+                if (columnIndex == 0 || columnIndex == 6) {
+                    return javax.swing.Icon.class;
+                }
+                return super.getColumnClass(columnIndex);
+            }
+
+        };
         jLabel5 = new javax.swing.JLabel();
         btnThemPhim = new javax.swing.JButton();
 
+        ThemPhimDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        ThemPhimDialog.setTitle("Thêm phim mới");
+        ThemPhimDialog.setAlwaysOnTop(true);
+        ThemPhimDialog.setBackground(new java.awt.Color(248, 250, 252));
+        ThemPhimDialog.setFont(new java.awt.Font("Dialog", 0, 18)); // NOI18N
+        ThemPhimDialog.setModal(true);
+
+        ThemPhimPanel.setBackground(new java.awt.Color(248, 250, 252));
+
+        jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
+        jLabel6.setText("Tên phim");
+
+        jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout ThemPhimPanelLayout = new javax.swing.GroupLayout(ThemPhimPanel);
+        ThemPhimPanel.setLayout(ThemPhimPanelLayout);
+        ThemPhimPanelLayout.setHorizontalGroup(
+            ThemPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ThemPhimPanelLayout.createSequentialGroup()
+                .addGap(30, 30, 30)
+                .addGroup(ThemPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel6)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 462, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(30, 30, 30))
+        );
+        ThemPhimPanelLayout.setVerticalGroup(
+            ThemPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ThemPhimPanelLayout.createSequentialGroup()
+                .addGap(40, 40, 40)
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(270, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout ThemPhimDialogLayout = new javax.swing.GroupLayout(ThemPhimDialog.getContentPane());
+        ThemPhimDialog.getContentPane().setLayout(ThemPhimDialogLayout);
+        ThemPhimDialogLayout.setHorizontalGroup(
+            ThemPhimDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(ThemPhimPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        ThemPhimDialogLayout.setVerticalGroup(
+            ThemPhimDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(ThemPhimPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
         setBackground(new java.awt.Color(248, 250, 252));
-        setPreferredSize(new java.awt.Dimension(759, 770));
+        setPreferredSize(new java.awt.Dimension(759, 779));
 
         PhanLoaiPanel.setBackground(new java.awt.Color(255, 255, 255));
         PhanLoaiPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
@@ -74,7 +182,7 @@ public class PhimManagerPanel extends javax.swing.JPanel {
         cbTrangThai.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Đang chiếu", "Sắp chiếu", "Đã dừng chiếu" }));
 
         cbTheLoai.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        cbTheLoai.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbTheLoai.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Hoạt hình", "Gia đình", "Hài", "Phiêu lưu", "Hành động", "Kinh dị", "Lãng mạn" }));
 
         lMinThoiGianPhim.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
 
@@ -148,25 +256,21 @@ public class PhimManagerPanel extends javax.swing.JPanel {
         DSPhimTable.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         DSPhimTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                
+
             },
             new String [] {
-                "Mã phim", "Ảnh", "Tiêu đề", "Thể loại", "Trạng thái", "Thao tác"
+                "Ảnh", "Mã phim", "Tiêu đề", "Thời lượng", "Thể loại", "Trạng thái", "Thao tác"
             }
         ) {
-            
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Object.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Object.class
+                java.lang.Object.class, java.lang.String.class, java.lang.String.class, java.lang.Object.class, java.lang.String.class, java.lang.String.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+                false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
-                if (columnIndex == 1 || columnIndex == 5) {
-                    return javax.swing.Icon.class;
-                }
-                return String.class;
+                return types [columnIndex];
             }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -184,8 +288,9 @@ public class PhimManagerPanel extends javax.swing.JPanel {
             DSPhimTable.getColumnModel().getColumn(3).setResizable(false);
             DSPhimTable.getColumnModel().getColumn(4).setResizable(false);
             DSPhimTable.getColumnModel().getColumn(5).setResizable(false);
+            DSPhimTable.getColumnModel().getColumn(6).setResizable(false);
         }
-        
+
         javax.swing.GroupLayout CardPhimPanelLayout = new javax.swing.GroupLayout(CardPhimPanel);
         CardPhimPanel.setLayout(CardPhimPanelLayout);
         CardPhimPanelLayout.setHorizontalGroup(
@@ -194,7 +299,9 @@ public class PhimManagerPanel extends javax.swing.JPanel {
         );
         CardPhimPanelLayout.setVerticalGroup(
             CardPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+            .addGroup(CardPhimPanelLayout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 401, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
@@ -206,6 +313,16 @@ public class PhimManagerPanel extends javax.swing.JPanel {
         btnThemPhim.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cinema/images/add.png"))); // NOI18N
         btnThemPhim.setText("Thêm phim mới");
         btnThemPhim.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnThemPhim.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnThemPhimMouseClicked(evt);
+            }
+        });
+        btnThemPhim.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnThemPhimActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -233,27 +350,31 @@ public class PhimManagerPanel extends javax.swing.JPanel {
                     .addComponent(btnThemPhim, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(19, 19, 19)
                 .addComponent(CardPhimPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(30, 30, 30)
-        ));
+                .addContainerGap(27, Short.MAX_VALUE))
+        );
     }// </editor-fold>                        
-    public void setTable(javax.swing.JTable Table){
-       Table.setRowHeight(40);
-        var header = Table.getTableHeader();
-        header.setBackground(new java.awt.Color(235,235,235));
-        header.setPreferredSize(new java.awt.Dimension(0,40));
-        header.setFont(new java.awt.Font("Segoe UI",java.awt.Font.BOLD,15));
 
-        DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
-        cellRenderer.setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
-        Table.getColumnModel().getColumn(0).setCellRenderer(cellRenderer);
-        Table.getColumnModel().getColumn(3).setCellRenderer(cellRenderer);
-        Table.getColumnModel().getColumn(4).setCellRenderer(cellRenderer);
-   }
+    private void btnThemPhimActionPerformed(java.awt.event.ActionEvent evt) {                                            
+        // TODO add your handling code here:
+    }                                           
 
+    private void btnThemPhimMouseClicked(java.awt.event.MouseEvent evt) {                                         
+
+        ThemPhimDialog.setLocationRelativeTo(null); 
+        ThemPhimDialog.setVisible(true);
+    }                                        
+
+    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {                                            
+        // TODO add your handling code here:
+    }                                           
+   
+   
     // Variables declaration - do not modify                     
     private javax.swing.JPanel CardPhimPanel;
     private javax.swing.JTable DSPhimTable;
     private javax.swing.JPanel PhanLoaiPanel;
+    private javax.swing.JDialog ThemPhimDialog;
+    private javax.swing.JPanel ThemPhimPanel;
     private javax.swing.JButton btnThemPhim;
     private javax.swing.JComboBox<String> cbTheLoai;
     private javax.swing.JComboBox<String> cbTrangThai;
@@ -262,8 +383,10 @@ public class PhimManagerPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSlider jSlider1;
+    private javax.swing.JTextField jTextField1;
     private javax.swing.JLabel lMaxThoiGianPhim;
     private javax.swing.JLabel lMinThoiGianPhim;
     private javax.swing.JTextField txtTimPhim;
