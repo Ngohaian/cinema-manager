@@ -10,9 +10,7 @@ import java.util.Date;
 
 public class InvoiceDAO {
 
-    // =========================
-    // 1. Lấy tất cả hóa đơn
-    // =========================
+    // Lấy tất cả hóa đơn
     public List<Invoice> getAll() {
         List<Invoice> list = new ArrayList<>();
         String sql = "SELECT * FROM Invoice";
@@ -25,13 +23,8 @@ public class InvoiceDAO {
                 Invoice inv = new Invoice();
                 inv.setInvoiceId(rs.getString("invoiceId"));
                 inv.setCustomerId(rs.getString("customerId"));
-
-                Timestamp ts = rs.getTimestamp("invoiceDate");
-                if (ts != null) {
-                    inv.setInvoiceDate(new Date(ts.getTime()));
-                }
-
-                inv.setTotalAmount(rs.getDouble("totalAmount"));
+                //inv.setInvoiceDate(rs.getTimestamp("invoiceDate"));
+                //inv.setTotalAmount(rs.getDouble("totalAmount"));
 
                 list.add(inv);
             }
@@ -39,47 +32,10 @@ public class InvoiceDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return list;
     }
 
-    // =========================
-    // 2. Tìm theo ID
-    // =========================
-    public Invoice findById(String id) {
-        String sql = "SELECT * FROM Invoice WHERE invoiceId=?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, id);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                Invoice inv = new Invoice();
-                inv.setInvoiceId(rs.getString("invoiceId"));
-                inv.setCustomerId(rs.getString("customerId"));
-
-                Timestamp ts = rs.getTimestamp("invoiceDate");
-                if (ts != null) {
-                    inv.setInvoiceDate(new Date(ts.getTime()));
-                }
-
-                inv.setTotalAmount(rs.getDouble("totalAmount"));
-
-                return inv;
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    // =========================
-    // 3. Thêm hóa đơn
-    // =========================
+    // Thêm hóa đơn
     public boolean insert(Invoice inv) {
         String sql = "INSERT INTO Invoice(invoiceId, customerId, invoiceDate, totalAmount) VALUES (?, ?, ?, ?)";
 
@@ -88,13 +44,7 @@ public class InvoiceDAO {
 
             ps.setString(1, inv.getInvoiceId());
             ps.setString(2, inv.getCustomerId());
-
-            if (inv.getInvoiceDate() != null) {
-                ps.setTimestamp(3, new Timestamp(inv.getInvoiceDate().getTime()));
-            } else {
-                ps.setTimestamp(3, null);
-            }
-
+            //ps.setTimestamp(3, new Timestamp(inv.getInvoiceDate().getTime()));
             ps.setDouble(4, inv.getTotalAmount());
 
             return ps.executeUpdate() > 0;
@@ -102,42 +52,10 @@ public class InvoiceDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return false;
     }
 
-    // =========================
-    // 4. Cập nhật hóa đơn
-    // =========================
-    public boolean update(Invoice inv) {
-        String sql = "UPDATE Invoice SET customerId=?, invoiceDate=?, totalAmount=? WHERE invoiceId=?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, inv.getCustomerId());
-
-            if (inv.getInvoiceDate() != null) {
-                ps.setTimestamp(2, new Timestamp(inv.getInvoiceDate().getTime()));
-            } else {
-                ps.setTimestamp(2, null);
-            }
-
-            ps.setDouble(3, inv.getTotalAmount());
-            ps.setString(4, inv.getInvoiceId());
-
-            return ps.executeUpdate() > 0;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
-    // =========================
-    // 5. Xóa hóa đơn
-    // =========================
+    // Xóa
     public boolean delete(String id) {
         String sql = "DELETE FROM Invoice WHERE invoiceId=?";
 
@@ -150,7 +68,25 @@ public class InvoiceDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return false;
+    }
 
+    // Cập nhật
+    public boolean update(Invoice inv) {
+        String sql = "UPDATE Invoice SET customerId=?, totalAmount=? WHERE invoiceId=?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, inv.getCustomerId());
+            ps.setDouble(2, inv.getTotalAmount());
+            ps.setString(3, inv.getInvoiceId());
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return false;
     }
 }

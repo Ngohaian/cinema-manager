@@ -10,7 +10,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 public class SellTicketFrame extends javax.swing.JFrame {
-    private JPanel indicator = new JPanel(); // Tao thanh danh dau cho chuc nang dang duoc chon
+    private JPanel indicator = new JPanel();
     private JLabel selectedButton = null;
     private JLabel[] menuLabels;
     private BanVePanel banVePanel = new BanVePanel();
@@ -18,6 +18,41 @@ public class SellTicketFrame extends javax.swing.JFrame {
     private PhimPanel phimPanel = new PhimPanel();
     private LichChieuPanel lichChieuPanel = new LichChieuPanel();
     private ThongTinPanel thongTinPanel = new ThongTinPanel();
+    
+
+    public SellTicketFrame() {
+        initComponents();
+        
+        menuLabels = new JLabel[]{btnBanVe, btnPhim, btnLichChieu, btnLichSu};
+        for(int i=0;i<menuLabels.length;i++){
+            final int index = i;
+            setHoverChucNang(menuLabels[i]);
+            menuLabels[i].addMouseListener(new MouseAdapter(){
+                @Override
+                public void mouseClicked(MouseEvent e){
+                    setSelectedButton(menuLabels[index]);
+                }
+            });
+        }
+        setHoverLogOut(btnDangXuat);
+        indicator.setBackground(new Color(0,74,130));
+        indicator.setSize(10,btnBanVe.getHeight());
+        indicator.setVisible(false);
+        pMenu.add(indicator);
+        
+        
+        // chuyen doi giua cac trang
+        CardLayout card = new CardLayout();
+        pContent.setLayout(card);
+        pContent.add(wrap(banVePanel),"BanVe");
+        pContent.add(wrap(phimPanel),"Phim");
+        pContent.add(wrap(lichChieuPanel),"LichChieu");
+        pContent.add(wrap(lichSuPanel),"LichSu");
+        pContent.add(wrap(thongTinPanel),"ThongTin");
+        pContent.revalidate();
+        pContent.repaint();
+        
+    }
     private void setHoverChucNang(JLabel JLabel){
         MouseAdapter hoverEffect = new MouseAdapter(){
             @Override
@@ -62,8 +97,8 @@ public class SellTicketFrame extends javax.swing.JFrame {
         cl.show(pContent, name);
     }
     private void customizeScrollBar(JScrollPane JScroll){
-        scrollPane1.getVerticalScrollBar().setUnitIncrement(20);
-        scrollPane1.getVerticalScrollBar().setUI(new BasicScrollBarUI(){
+        JScroll.getVerticalScrollBar().setUnitIncrement(20);
+        JScroll.getVerticalScrollBar().setUI(new BasicScrollBarUI(){
 
         @Override
         protected void paintThumb(java.awt.Graphics g, javax.swing.JComponent c, java.awt.Rectangle thumbBounds) {
@@ -97,48 +132,20 @@ public class SellTicketFrame extends javax.swing.JFrame {
         
     });
     
-    scrollPane1.setBorder(null);
-    scrollPane1.getViewport().setBackground(java.awt.Color.WHITE);
+    JScroll.setBorder(null);
+    JScroll.getViewport().setBackground(java.awt.Color.WHITE);
 }
-
-    public SellTicketFrame() {
-        initComponents();
-        customizeScrollBar(scrollPane1);
-        menuLabels = new JLabel[]{btnBanVe, btnPhim, btnLichChieu, btnLichSu};
-        for(int i=0;i<menuLabels.length;i++){
-            final int index = i;
-            setHoverChucNang(menuLabels[i]);
-            menuLabels[i].addMouseListener(new MouseAdapter(){
-                @Override
-                public void mouseClicked(MouseEvent e){
-                    setSelectedButton(menuLabels[index]);
-                }
-            });
-        }
-        setHoverLogOut(btnDangXuat);
-        indicator.setBackground(new Color(0,74,130));
-        indicator.setSize(10,btnBanVe.getHeight());
-        indicator.setVisible(false);
-        pMenu.add(indicator);
-        
-        // chuyen doi giua cac trang
-        CardLayout card = new CardLayout();
-        pContent.setLayout(card);
-        pContent.add(banVePanel, "BanVe");
-        pContent.add(phimPanel, "Phim");
-        pContent.add(lichChieuPanel,"LichChieu");
-        pContent.add(lichSuPanel,"LichSu");
-        pContent.add(thongTinPanel, "ThongTin");
-        
-        
-        
-    }
-    
+    private JScrollPane wrap(JPanel panel){
+    JScrollPane sp = new JScrollPane(panel);
+    customizeScrollBar(sp);
+    return sp;
+}
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 
         pSellTicket = new javax.swing.JPanel();
+        pContent = new javax.swing.JPanel();
         pMenu = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -150,8 +157,6 @@ public class SellTicketFrame extends javax.swing.JFrame {
         pThongTin = new javax.swing.JPanel();
         lTen = new javax.swing.JLabel();
         lChucVu = new javax.swing.JLabel();
-        scrollPane1 = new javax.swing.JScrollPane();
-        pContent = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setName("frameSellTicket"); // NOI18N
@@ -163,6 +168,19 @@ public class SellTicketFrame extends javax.swing.JFrame {
         });
 
         pSellTicket.setBackground(new java.awt.Color(255, 255, 255));
+
+        pContent.setBackground(new java.awt.Color(255, 255, 255));
+
+        javax.swing.GroupLayout pContentLayout = new javax.swing.GroupLayout(pContent);
+        pContent.setLayout(pContentLayout);
+        pContentLayout.setHorizontalGroup(
+            pContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 748, Short.MAX_VALUE)
+        );
+        pContentLayout.setVerticalGroup(
+            pContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
 
         pMenu.setBackground(new java.awt.Color(0, 146, 255));
         pMenu.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
@@ -330,27 +348,12 @@ public class SellTicketFrame extends javax.swing.JFrame {
                 .addComponent(btnLichChieu, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(12, 12, 12)
                 .addComponent(btnLichSu, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 167, Short.MAX_VALUE)
                 .addComponent(pThongTin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(39, 39, 39)
                 .addComponent(btnDangXuat)
                 .addGap(18, 18, 18))
         );
-
-        pContent.setBackground(new java.awt.Color(255, 255, 255));
-
-        javax.swing.GroupLayout pContentLayout = new javax.swing.GroupLayout(pContent);
-        pContent.setLayout(pContentLayout);
-        pContentLayout.setHorizontalGroup(
-            pContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 752, Short.MAX_VALUE)
-        );
-        pContentLayout.setVerticalGroup(
-            pContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 779, Short.MAX_VALUE)
-        );
-
-        scrollPane1.setViewportView(pContent);
 
         javax.swing.GroupLayout pSellTicketLayout = new javax.swing.GroupLayout(pSellTicket);
         pSellTicket.setLayout(pSellTicketLayout);
@@ -358,13 +361,15 @@ public class SellTicketFrame extends javax.swing.JFrame {
             pSellTicketLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pSellTicketLayout.createSequentialGroup()
                 .addComponent(pMenu, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(2, 2, 2)
-                .addComponent(scrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 752, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(pContent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pSellTicketLayout.setVerticalGroup(
             pSellTicketLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pMenu, javax.swing.GroupLayout.DEFAULT_SIZE, 779, Short.MAX_VALUE)
-            .addComponent(scrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 779, Short.MAX_VALUE)
+            .addComponent(pMenu, javax.swing.GroupLayout.PREFERRED_SIZE, 744, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(pSellTicketLayout.createSequentialGroup()
+                .addComponent(pContent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(1, 1, 1))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -378,7 +383,7 @@ public class SellTicketFrame extends javax.swing.JFrame {
             .addComponent(pSellTicket, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        setSize(new java.awt.Dimension(1010, 787));
+        setSize(new java.awt.Dimension(1010, 752));
         setLocationRelativeTo(null);
     }// </editor-fold>                        
 
@@ -414,31 +419,20 @@ public class SellTicketFrame extends javax.swing.JFrame {
     }                                      
 
     public static void main(String args[]) {
-
+        
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(SellTicketFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(SellTicketFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(SellTicketFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(SellTicketFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            com.formdev.flatlaf.FlatLightLaf.setup(); 
+        } catch( Exception ex ) {
+            System.err.println( "Failed to initialize LaF" );
         }
-
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new SellTicketFrame().setVisible(true);
             }
         });
     }
-                  
+
+    // Variables declaration - do not modify                     
     private javax.swing.JLabel btnBanVe;
     private javax.swing.JLabel btnDangXuat;
     private javax.swing.JLabel btnLichChieu;
@@ -452,5 +446,5 @@ public class SellTicketFrame extends javax.swing.JFrame {
     private javax.swing.JPanel pMenu;
     private javax.swing.JPanel pSellTicket;
     private javax.swing.JPanel pThongTin;
-    private javax.swing.JScrollPane scrollPane1;            
+    // End of variables declaration                   
 }
