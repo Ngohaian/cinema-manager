@@ -77,8 +77,8 @@ public void addExampleMovies() {
     CardPhimPanel.setLayout(new java.awt.GridLayout(0, 4, 30, 30));
     CardPhimPanel.removeAll(); 
 
-    CardPhimPanel.add(createMovieCard("Godzilla x Kong", "Hành Động", 115, "src/cinema/images/edit(black).png"));
-    CardPhimPanel.add(createMovieCard("Kung Fu Panda 4", "Hoạt Hình", 94, "src/images/p2.jpg"));
+    CardPhimPanel.add(createMovieCard("Godzilla x Kong", "Hành Động", 115, "cinema/images/poster/M001.JPG"));
+    CardPhimPanel.add(createMovieCard("Kung Fu Panda 4", "Hoạt Hình", 94, "cinema/images/poster/M002.JPG"));
     CardPhimPanel.add(createMovieCard("Lật Mặt 7", "Tâm Lý", 112, "src/images/p3.jpg"));
     CardPhimPanel.add(createMovieCard("Mai", "Tình Cảm", 131, "src/images/p4.jpg"));
     
