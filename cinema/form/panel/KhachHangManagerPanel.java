@@ -3,6 +3,7 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 
 public class KhachHangManagerPanel extends JPanel {
 
@@ -24,9 +25,9 @@ public class KhachHangManagerPanel extends JPanel {
         container.setBackground(new Color(248, 250, 252));
 
         container.add(createFilterPanel());
-        container.add(Box.createVerticalStrut(30));
+        container.add(Box.createVerticalStrut(50)); 
         container.add(createHeader());
-        container.add(Box.createVerticalStrut(15));
+        container.add(Box.createVerticalStrut(20)); 
         container.add(createTable());
 
         add(container, BorderLayout.CENTER);
@@ -34,10 +35,12 @@ public class KhachHangManagerPanel extends JPanel {
 
     // ===== FILTER =====
     private JPanel createFilterPanel() {
-        JPanel panel = new JPanel(new GridLayout(2, 4, 20, 5));
+        JPanel panel = new JPanel(new GridLayout(2, 4, 20, 10)); 
         panel.setBackground(Color.WHITE);
+        panel.setPreferredSize(new Dimension(0, 100)); 
+
         panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 220, 220)),
+                BorderFactory.createLineBorder(new Color(204, 204, 204)), 
                 new EmptyBorder(15, 15, 15, 15)
         ));
 
@@ -89,7 +92,8 @@ public class KhachHangManagerPanel extends JPanel {
         btnAdd.setBackground(new Color(0, 146, 255));
         btnAdd.setForeground(Color.WHITE);
         btnAdd.setFocusPainted(false);
-
+        btnAdd.setPreferredSize(new Dimension(210, 40)); 
+        btnAdd.setFont(new Font("Segoe UI", Font.BOLD, 14)); 
         panel.add(title, BorderLayout.WEST);
         panel.add(btnAdd, BorderLayout.EAST);
 
@@ -112,13 +116,26 @@ public class KhachHangManagerPanel extends JPanel {
                         "Điểm tích lũy",
                         "Trạng thái"
                 }
-        ));
+        ){
+            public boolean isCellEditable(int row, int column) {
+                return false; 
+            }
+        });
 
-        table.setRowHeight(28);
+        table.setRowHeight(40); 
+        table.setShowVerticalLines(false); 
+        table.setShowHorizontalLines(true); 
+        table.setGridColor(new Color(235,235,235));
+
+        JTableHeader header = table.getTableHeader();
+        header.setBackground(new Color(235,235,235)); 
+        header.setFont(new Font("Segoe UI", Font.BOLD, 15)); 
+
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14)); 
 
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
-
+        scroll.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204))); 
+        
         return scroll;
     }
 }
