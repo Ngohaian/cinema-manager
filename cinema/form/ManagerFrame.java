@@ -13,8 +13,8 @@ public class ManagerFrame extends javax.swing.JFrame {
     private JPanel indicator = new JPanel(); // Tao thanh danh dau cho chuc nang dang duoc chon
     private JLabel selectedButton = null;
     private JLabel[] menuLabels_1;
-    private NhanVienManagerPanel thongKePanel = new NhanVienManagerPanel();
-    private BanVePanel nhanVienMP = new BanVePanel();
+    private ThongKePanel thongKePanel = new ThongKePanel();
+    private NhanVienManagerPanel nhanVienMP = new NhanVienManagerPanel();
     private KhachHangManagerPanel khachHangMP = new KhachHangManagerPanel();
     private SuatChieuManagerPanel suatChieuMP = new SuatChieuManagerPanel();
     private PhimManagerPanel phimMP = new PhimManagerPanel();
@@ -45,7 +45,7 @@ public class ManagerFrame extends javax.swing.JFrame {
         CardLayout card = new CardLayout();
         pContent.setLayout(card);
         pContent.add(wrap(thongKePanel), "ThongKe");
-        pContent.add(wrap(nhanVienMP), "NhanVien");
+        pContent.add(wrap(nhanVienMP), "NhanVie.n");
         pContent.add(wrap(khachHangMP),"KhachHang");
         pContent.add(wrap(phimMP),"Phim");
         pContent.add(wrap(phongMP),"Phong");
@@ -347,7 +347,7 @@ public class ManagerFrame extends javax.swing.JFrame {
         btnHoaDon.setForeground(new java.awt.Color(255, 255, 255));
         btnHoaDon.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         btnHoaDon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cinema/images/bill.png"))); // NOI18N
-        btnHoaDon.setText("Hóa đơn");
+        btnHoaDon.setText(" Hóa đơn");
         btnHoaDon.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 5, 1, 1));
         btnHoaDon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnHoaDon.setOpaque(true);
