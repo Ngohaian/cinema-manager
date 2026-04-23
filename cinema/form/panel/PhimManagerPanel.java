@@ -1,14 +1,22 @@
 package cinema.form.panel;
+import cinema.enums.GenreType;
+import static cinema.enums.GenreType.getNameGenreType;
+import cinema.enums.MovieStatus;
+import static cinema.enums.MovieStatus.getNameMovieStatus;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import cinema.models.Movie;
-
 
 public class PhimManagerPanel extends javax.swing.JPanel {
 
     public PhimManagerPanel() {
         initComponents();
         setTable(DSPhimTable);
+        cbTheLoai.addItem("Tất cả");
+        setCBGenre(cbTheLoai);
+        cbTrangThai.addItem("Tất cả");
+        setCBStatus(cbTrangThai);
+        
         LoadTableMovie();
     }
     private javax.swing.ImageIcon scaleImage(java.net.URL imagePath, int w, int h) {
@@ -37,8 +45,8 @@ public class PhimManagerPanel extends javax.swing.JPanel {
                 m.getId(),
                 multiLineTitle,
                 m.getDuration(),
-                m.getGenre(),
-                m.getActive(),
+                getNameGenreType(m.getGenre()),
+                getNameMovieStatus(m.getActive()),
                 editIcon != null ? new javax.swing.ImageIcon(editIcon) : null
         });
     }
@@ -50,19 +58,19 @@ public class PhimManagerPanel extends javax.swing.JPanel {
     }          
     public void setTable(javax.swing.JTable Table){
         Table.setRowHeight(60);
-        var header = Table.getTableHeader();
-        header.setBackground(new java.awt.Color(235,235,235));
-        header.setPreferredSize(new java.awt.Dimension(0,40));
-        header.setFont(new java.awt.Font("Segoe UI",java.awt.Font.BOLD,15));
+         var header = Table.getTableHeader();
+         header.setBackground(new java.awt.Color(235,235,235));
+         header.setPreferredSize(new java.awt.Dimension(0,40));
+         header.setFont(new java.awt.Font("Segoe UI",java.awt.Font.BOLD,15));
 
-        DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
-        cellRenderer.setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
-        Table.getColumnModel().getColumn(1).setCellRenderer(cellRenderer);
-        Table.getColumnModel().getColumn(3).setCellRenderer(cellRenderer);
-        Table.getColumnModel().getColumn(4).setCellRenderer(cellRenderer);
-        Table.getColumnModel().getColumn(5).setCellRenderer(cellRenderer);
-        
-        Table.getColumnModel().getColumn(0).setPreferredWidth(45); 
+         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
+         cellRenderer.setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
+         Table.getColumnModel().getColumn(1).setCellRenderer(cellRenderer);
+         Table.getColumnModel().getColumn(3).setCellRenderer(cellRenderer);
+         Table.getColumnModel().getColumn(4).setCellRenderer(cellRenderer);
+         Table.getColumnModel().getColumn(5).setCellRenderer(cellRenderer);
+         
+         Table.getColumnModel().getColumn(0).setPreferredWidth(45); 
         Table.getColumnModel().getColumn(1).setPreferredWidth(50); 
         Table.getColumnModel().getColumn(2).setPreferredWidth(430);
         Table.getColumnModel().getColumn(3).setPreferredWidth(70);
@@ -70,7 +78,18 @@ public class PhimManagerPanel extends javax.swing.JPanel {
         Table.getColumnModel().getColumn(5).setPreferredWidth(70);
         Table.getColumnModel().getColumn(6).setPreferredWidth(40);
     }
-    
+    private javax.swing.JComboBox setCBGenre(javax.swing.JComboBox ComboBox){
+        for(GenreType g : GenreType.values()){
+            ComboBox.addItem(getNameGenreType(g));
+        }
+        return ComboBox;
+    }
+    private javax.swing.JComboBox setCBStatus(javax.swing.JComboBox ComboBox){
+        for(MovieStatus g : MovieStatus.values()){
+            ComboBox.addItem(getNameMovieStatus(g));
+        }
+        return ComboBox;
+    }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
@@ -78,7 +97,19 @@ public class PhimManagerPanel extends javax.swing.JPanel {
         ThemPhimDialog = new javax.swing.JDialog();
         ThemPhimPanel = new javax.swing.JPanel();
         jLabel6 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        txtThemTenPhim = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        cbThemTrangThai = new javax.swing.JComboBox<>();
+        jLabel8 = new javax.swing.JLabel();
+        txtURLAnh = new javax.swing.JTextField();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        cbThemTheLoai = new javax.swing.JComboBox<>();
+        btnThemAnh = new javax.swing.JButton();
+        txtThemThoiLuong1 = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
+        ThemAnhDialog = new javax.swing.JFileChooser();
         PhanLoaiPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -108,22 +139,74 @@ public class PhimManagerPanel extends javax.swing.JPanel {
 
         ThemPhimDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         ThemPhimDialog.setTitle("Thêm phim mới");
-        ThemPhimDialog.setAlwaysOnTop(true);
         ThemPhimDialog.setBackground(new java.awt.Color(248, 250, 252));
         ThemPhimDialog.setFont(new java.awt.Font("Dialog", 0, 18)); // NOI18N
         ThemPhimDialog.setModal(true);
 
-        ThemPhimPanel.setBackground(new java.awt.Color(248, 250, 252));
+        ThemPhimPanel.setBackground(new java.awt.Color(255, 255, 255));
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
-        jLabel6.setText("Tên phim");
 
-        jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+        txtThemTenPhim.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtThemTenPhim.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
+                txtThemTenPhimActionPerformed(evt);
             }
         });
+
+        jLabel7.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
+        jLabel7.setText("Tên phim");
+
+        cbThemTrangThai.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
+        jLabel8.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
+        jLabel8.setText("Thời lượng");
+
+        txtURLAnh.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtURLAnh.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtURLAnhActionPerformed(evt);
+            }
+        });
+
+        jLabel9.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
+        jLabel9.setText("Thể loại");
+
+        jLabel10.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
+        jLabel10.setText("Trạng thái");
+
+        jLabel11.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
+        jLabel11.setText("URL ảnh");
+
+        cbThemTheLoai.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
+        btnThemAnh.setBackground(new java.awt.Color(0, 146, 255));
+        btnThemAnh.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnThemAnh.setForeground(new java.awt.Color(255, 255, 255));
+        btnThemAnh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cinema/images/add.png"))); // NOI18N
+        btnThemAnh.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnThemAnhMouseClicked(evt);
+            }
+        });
+        btnThemAnh.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnThemAnhActionPerformed(evt);
+            }
+        });
+
+        txtThemThoiLuong1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtThemThoiLuong1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtThemThoiLuong1ActionPerformed(evt);
+            }
+        });
+
+        jButton1.setBackground(new java.awt.Color(0, 146, 255));
+        jButton1.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
+        jButton1.setForeground(new java.awt.Color(255, 255, 255));
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cinema/images/add.png"))); // NOI18N
+        jButton1.setText("Thêm mới");
 
         javax.swing.GroupLayout ThemPhimPanelLayout = new javax.swing.GroupLayout(ThemPhimPanel);
         ThemPhimPanel.setLayout(ThemPhimPanelLayout);
@@ -132,18 +215,70 @@ public class PhimManagerPanel extends javax.swing.JPanel {
             .addGroup(ThemPhimPanelLayout.createSequentialGroup()
                 .addGap(30, 30, 30)
                 .addGroup(ThemPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel6)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 462, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(30, 30, 30))
+                    .addGroup(ThemPhimPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, 74, Short.MAX_VALUE)
+                        .addGap(430, 430, 430))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, ThemPhimPanelLayout.createSequentialGroup()
+                        .addGroup(ThemPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(txtThemTenPhim, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(ThemPhimPanelLayout.createSequentialGroup()
+                                .addComponent(jLabel8)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(ThemPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel9)
+                                    .addComponent(cbThemTheLoai, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGap(30, 30, 30))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, ThemPhimPanelLayout.createSequentialGroup()
+                        .addGroup(ThemPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jButton1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, ThemPhimPanelLayout.createSequentialGroup()
+                                .addGroup(ThemPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jLabel10)
+                                    .addComponent(txtThemThoiLuong1)
+                                    .addComponent(cbThemTrangThai, 0, 205, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(ThemPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(ThemPhimPanelLayout.createSequentialGroup()
+                                        .addComponent(txtURLAnh, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(0, 0, 0)
+                                        .addComponent(btnThemAnh, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(jLabel11)))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, ThemPhimPanelLayout.createSequentialGroup()
+                                .addGap(78, 78, 78)
+                                .addComponent(jLabel6)
+                                .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(30, 30, 30))))
         );
         ThemPhimPanelLayout.setVerticalGroup(
             ThemPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(ThemPhimPanelLayout.createSequentialGroup()
-                .addGap(40, 40, 40)
+                .addGap(60, 60, 60)
+                .addComponent(jLabel7)
+                .addGap(6, 6, 6)
+                .addComponent(txtThemTenPhim, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(30, 30, 30)
                 .addComponent(jLabel6)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(270, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(ThemPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel8)
+                    .addComponent(jLabel9))
+                .addGap(20, 20, 20)
+                .addGroup(ThemPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtThemThoiLuong1, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cbThemTheLoai, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(43, 43, 43)
+                .addGroup(ThemPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel11)
+                    .addComponent(jLabel10))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(ThemPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnThemAnh, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(ThemPhimPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(cbThemTrangThai, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtURLAnh, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 45, Short.MAX_VALUE)
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(35, 35, 35))
         );
 
         javax.swing.GroupLayout ThemPhimDialogLayout = new javax.swing.GroupLayout(ThemPhimDialog.getContentPane());
@@ -156,6 +291,8 @@ public class PhimManagerPanel extends javax.swing.JPanel {
             ThemPhimDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(ThemPhimPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
+
+        ThemAnhDialog.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Ảnh jpg","jpg"));
 
         setBackground(new java.awt.Color(248, 250, 252));
         setPreferredSize(new java.awt.Dimension(759, 779));
@@ -179,10 +316,8 @@ public class PhimManagerPanel extends javax.swing.JPanel {
         txtTimPhim.setToolTipText("Nhập vào phim bạn muốn tìm kiếm");
 
         cbTrangThai.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        cbTrangThai.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Đang chiếu", "Sắp chiếu", "Đã dừng chiếu" }));
 
         cbTheLoai.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        cbTheLoai.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Hoạt hình", "Gia đình", "Hài", "Phiêu lưu", "Hành động", "Kinh dị", "Lãng mạn" }));
 
         lMinThoiGianPhim.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
 
@@ -350,7 +485,7 @@ public class PhimManagerPanel extends javax.swing.JPanel {
                     .addComponent(btnThemPhim, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(19, 19, 19)
                 .addComponent(CardPhimPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(27, Short.MAX_VALUE))
+                .addContainerGap(50, Short.MAX_VALUE))
         );
     }// </editor-fold>                        
 
@@ -359,36 +494,69 @@ public class PhimManagerPanel extends javax.swing.JPanel {
     }                                           
 
     private void btnThemPhimMouseClicked(java.awt.event.MouseEvent evt) {                                         
-
+        ThemPhimDialog.setSize(545, 520);
+        ThemPhimDialog.setResizable(false);
         ThemPhimDialog.setLocationRelativeTo(null); 
         ThemPhimDialog.setVisible(true);
     }                                        
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {                                            
+    private void txtThemTenPhimActionPerformed(java.awt.event.ActionEvent evt) {                                               
         // TODO add your handling code here:
-    }                                           
+    }                                              
+
+    private void txtURLAnhActionPerformed(java.awt.event.ActionEvent evt) {                                          
+        // TODO add your handling code here:
+    }                                         
+
+    private void btnThemAnhMouseClicked(java.awt.event.MouseEvent evt) {                                        
+        int result = ThemAnhDialog.showOpenDialog(this);
+        if (result == javax.swing.JFileChooser.APPROVE_OPTION) {
+            java.io.File selectedFile = ThemAnhDialog.getSelectedFile();
+            String path = selectedFile.getAbsolutePath();
+        }
+    }                                       
+
+    private void txtThemThoiLuong1ActionPerformed(java.awt.event.ActionEvent evt) {                                                  
+        // TODO add your handling code here:
+    }                                                 
+
+    private void btnThemAnhActionPerformed(java.awt.event.ActionEvent evt) {                                           
+        // TODO add your handling code here:
+    }                                          
    
    
     // Variables declaration - do not modify                     
     private javax.swing.JPanel CardPhimPanel;
     private javax.swing.JTable DSPhimTable;
     private javax.swing.JPanel PhanLoaiPanel;
+    private javax.swing.JFileChooser ThemAnhDialog;
     private javax.swing.JDialog ThemPhimDialog;
     private javax.swing.JPanel ThemPhimPanel;
+    private javax.swing.JButton btnThemAnh;
     private javax.swing.JButton btnThemPhim;
     private javax.swing.JComboBox<String> cbTheLoai;
+    private javax.swing.JComboBox<String> cbThemTheLoai;
+    private javax.swing.JComboBox<String> cbThemTrangThai;
     private javax.swing.JComboBox<String> cbTrangThai;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSlider jSlider1;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JLabel lMaxThoiGianPhim;
     private javax.swing.JLabel lMinThoiGianPhim;
+    private javax.swing.JTextField txtThemTenPhim;
+    private javax.swing.JTextField txtThemThoiLuong1;
     private javax.swing.JTextField txtTimPhim;
+    private javax.swing.JTextField txtURLAnh;
     // End of variables declaration                   
 }
