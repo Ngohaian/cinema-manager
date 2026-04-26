@@ -45,7 +45,7 @@ public class ManagerFrame extends javax.swing.JFrame {
         CardLayout card = new CardLayout();
         pContent.setLayout(card);
         pContent.add(wrap(thongKePanel), "ThongKe");
-        pContent.add(wrap(nhanVienMP), "NhanVien");
+        pContent.add(wrap(nhanVienMP), "NhanVie.n");
         pContent.add(wrap(khachHangMP),"KhachHang");
         pContent.add(wrap(phimMP),"Phim");
         pContent.add(wrap(phongMP),"Phong");
