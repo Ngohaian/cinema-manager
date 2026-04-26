@@ -11,7 +11,6 @@ public class DBConnection {
     public static Connection getConnection() {
         try {
             Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-            System.out.println("Ket noi thanh cong!");
             return conn;
         } catch (SQLException e) {
             System.out.println("Ket noi that bai!");

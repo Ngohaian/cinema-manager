@@ -44,7 +44,7 @@ public class SellTicketFrame extends javax.swing.JFrame {
         // chuyen doi giua cac trang
         CardLayout card = new CardLayout();
         pContent.setLayout(card);
-        pContent.add(wrap(banVePanel),"BanVe");
+        pContent.add(banVePanel, "BanVe");
         pContent.add(wrap(phimPanel),"Phim");
         pContent.add(wrap(lichChieuPanel),"LichChieu");
         pContent.add(wrap(lichSuPanel),"LichSu");
@@ -175,7 +175,7 @@ public class SellTicketFrame extends javax.swing.JFrame {
         pContent.setLayout(pContentLayout);
         pContentLayout.setHorizontalGroup(
             pContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 748, Short.MAX_VALUE)
+            .addGap(0, 754, Short.MAX_VALUE)
         );
         pContentLayout.setVerticalGroup(
             pContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -361,7 +361,7 @@ public class SellTicketFrame extends javax.swing.JFrame {
             pSellTicketLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pSellTicketLayout.createSequentialGroup()
                 .addComponent(pMenu, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addComponent(pContent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pSellTicketLayout.setVerticalGroup(
@@ -369,7 +369,7 @@ public class SellTicketFrame extends javax.swing.JFrame {
             .addComponent(pMenu, javax.swing.GroupLayout.PREFERRED_SIZE, 744, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addGroup(pSellTicketLayout.createSequentialGroup()
                 .addComponent(pContent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(1, 1, 1))
+                .addGap(0, 0, 0))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
