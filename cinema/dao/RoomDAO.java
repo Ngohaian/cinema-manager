@@ -18,7 +18,7 @@ public class RoomDAO {
         while (rs.next()){
             Room r = new Room(
                 rs.getString("roomId"),
-                rs.getString("'name"),
+                rs.getString("name"),
                 rs.getInt("capacity"),
                 rs.getString("type"),
                 null
