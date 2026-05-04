@@ -2,11 +2,14 @@ package cinema.dao;
 
 import cinema.DBConnection;
 import cinema.models.Room;
+import cinema.models.SeatLayout;
 import java.sql.*;
 import java.util.*;
+
 public class RoomDAO {
 
-    private Object cinema;
+    private SeatLayoutDAO seatLayoutDao = new SeatLayoutDAO();
+
     public List<Room> getAll() throws Exception {
         List<Room> list = new ArrayList<>();
 
@@ -24,34 +27,34 @@ public class RoomDAO {
                 null
             );
             r.setActive(rs.getBoolean("active"));
-
             list.add(r);
         }
         return list;
     }
+
     public Room getById(String id) throws Exception {
-        Room r = null ;
+        Room r = null;
         String sql = "SELECT * FROM Room WHERE roomId = ?";
-        cinema.models.SeatLayout layout = new cinema.models.SeatLayout(10, 10,0,0,0);
+        
         try(Connection conn = DBConnection.getConnection();
-        PreparedStatement ps = conn.prepareStatement(sql);){
+            PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
             ResultSet rs = ps.executeQuery();
             
             if(rs.next()) {
-                 r = new Room(
+            	SeatLayout layout = seatLayoutDao.getByRoomId(id);
+                r = new Room(
                     rs.getString("roomId"),
                     rs.getString("name"),
                     rs.getInt("capacity"),
                     rs.getString("type"),
-                    layout  
+                    layout
                 );
                 r.setActive(rs.getBoolean("active"));
             }
+        } catch(Exception ex) {
+            System.out.println("Loi: " + ex);
         }
-        catch(Exception ex){
-               System.out.print("Loi : "+ex);
-        }
-       return r;
+        return r;
     }
 }

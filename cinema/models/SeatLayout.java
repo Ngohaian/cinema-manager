@@ -136,4 +136,15 @@ public class SeatLayout {
     public Seat[][] getSeats() {
         return seats;
     }
+    public int getVipStartRow() {
+        return vipStartRow;
+    }
+
+    public int getVipEndRow() {
+        return vipEndRow;
+    }
+
+    public int getCoupleRow() {
+        return coupleRow;
+    }
 }
