@@ -8,6 +8,7 @@ import javax.swing.JScrollPane;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import cinema.dao.MovieDAO;
 import cinema.dao.ShowTimeDAO;
+import static cinema.enums.GenreType.getNameGenreType;
 import cinema.models.Movie;
 import cinema.models.ShowTime;
 import java.awt.Color;
@@ -15,106 +16,112 @@ import java.util.List;
 public class BanVePanel extends javax.swing.JPanel {
     MovieDAO movieDao ;
     ShowTimeDAO showtimeDao;
-    List<Movie> movies = new java.util.ArrayList<>(); 
-    List<ShowTime> showtimes = new java.util.ArrayList<>();
+    List<Movie> movies ;
+    List<ShowTime> showtimes ;
+    private java.util.Map<Movie, JPanel> movieCardCache = new java.util.HashMap<>();
+    private javax.swing.Timer searchTimer;
     private int currentStep = 0;
     private JLabel[] stepLabels;
     public BanVePanel() {
         try{
             movieDao= new MovieDAO();
             showtimeDao = new ShowTimeDAO();
-            this.movies = movieDao.getDSPhim();
+            this.movies = movieDao.GetAvailableMovies();
             this.showtimes = showtimeDao.getAll();
         }
         catch(Exception ex){
             System.out.println("Loi: " + ex.getMessage());
         }
         initComponents();
-        setJLabelChon();
+        addMovies(movies);
         customizeScrollBar(jScrollPane1);
         ShowPanel("ChonPhim");
-        addMovies();
+        setJLabelChon();
     
-}
-    public javax.swing.JPanel createMovieCard(String title, String genre, int duration, String poster) {
-    javax.swing.JPanel card = new javax.swing.JPanel();
-    card.setLayout(new java.awt.BorderLayout());
-    card.setPreferredSize(new java.awt.Dimension(185, 320)); 
-    card.setBackground(java.awt.Color.WHITE);
+    }   
+    public void loadData() {
+        this.movies = movieDao.GetAvailableMovies();
+        addMovies(this.movies);
+    }
+    private javax.swing.JPanel createMovieCard(Movie m) {
+        javax.swing.JPanel card = new javax.swing.JPanel();
+        card.setLayout(new java.awt.BorderLayout());
+        card.setPreferredSize(new java.awt.Dimension(185, 320)); 
+        card.setBackground(java.awt.Color.WHITE);
 
-    card.putClientProperty("Component.arc", 15);
-    card.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(245, 245, 245), 1, true));
+        card.putClientProperty("Component.arc", 15);
+        card.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(245, 245, 245), 1, true));
 
-    // Poster
-    javax.swing.JLabel lblPoster = new javax.swing.JLabel();
-    lblPoster.setHorizontalAlignment(javax.swing.JLabel.CENTER);
-    var posterURL = getClass().getResource(poster);
-    lblPoster.setIcon(scaleImage(posterURL, 185, 220)); 
+        // Poster
+        javax.swing.JLabel lblPoster = new javax.swing.JLabel();
+        lblPoster.setHorizontalAlignment(javax.swing.JLabel.CENTER);
+        var posterURL = getClass().getResource(m.getPoster());
+        lblPoster.setIcon(scaleImage(posterURL, 185, 220)); 
 
-    // Thông tin
-    javax.swing.JPanel pnlInfo = new javax.swing.JPanel();
-    pnlInfo.setLayout(new javax.swing.BoxLayout(pnlInfo, javax.swing.BoxLayout.Y_AXIS));
-    pnlInfo.setBackground(java.awt.Color.WHITE);
-    pnlInfo.setBorder(new javax.swing.border.EmptyBorder(8, 10, 10, 10));
+        // Thông tin
+        javax.swing.JPanel pnlInfo = new javax.swing.JPanel();
+        pnlInfo.setLayout(new javax.swing.BoxLayout(pnlInfo, javax.swing.BoxLayout.Y_AXIS));
+        pnlInfo.setBackground(java.awt.Color.WHITE);
+        pnlInfo.setBorder(new javax.swing.border.EmptyBorder(8, 10, 10, 10));
 
-    javax.swing.JLabel lblTitle = new javax.swing.JLabel(
-        "<html><body style='width: 150px; text-align: center;'><b>" + title + "</b></body></html>"
-    );
-    lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
-    lblTitle.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT); // Căn giữa component trong BoxLayout
-    lblTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER); // Căn giữa nội dung label
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel(
+            "<html><body style='width: 150px; text-align: center;'><b>" + m.getTitle() + "</b></body></html>"
+        );
+        lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
+        lblTitle.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT); // Căn giữa component trong BoxLayout
+        lblTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER); // Căn giữa nội dung label
 
-    //Thời lượng và thể loại
-    javax.swing.JPanel pnlBottom = new javax.swing.JPanel(new java.awt.BorderLayout());
-    pnlBottom.setBackground(java.awt.Color.WHITE);
-    pnlBottom.setMaximumSize(new java.awt.Dimension(200, 20)); // Khống chế chiều cao dòng cuối
-    
-    javax.swing.JLabel lblTime = new javax.swing.JLabel(duration + "m");
-    lblTime.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 10));
-    lblTime.setForeground(java.awt.Color.GRAY);
+        //Thời lượng và thể loại
+        javax.swing.JPanel pnlBottom = new javax.swing.JPanel(new java.awt.BorderLayout());
+        pnlBottom.setBackground(java.awt.Color.WHITE);
+        pnlBottom.setMaximumSize(new java.awt.Dimension(200, 20)); // Khống chế chiều cao dòng cuối
 
-    javax.swing.JLabel lblGenreText = new javax.swing.JLabel(genre);
-    lblGenreText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 10));
-    lblGenreText.setForeground(new java.awt.Color(59, 130, 246));
+        javax.swing.JLabel lblTime = new javax.swing.JLabel(m.getDuration() + "m");
+        lblTime.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 10));
+        lblTime.setForeground(java.awt.Color.GRAY);
 
-    pnlBottom.add(lblTime, java.awt.BorderLayout.WEST);
-    pnlBottom.add(lblGenreText, java.awt.BorderLayout.EAST);
+        javax.swing.JLabel lblGenreText = new javax.swing.JLabel(getNameGenreType(m.getGenre()));
+        lblGenreText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 10));
+        lblGenreText.setForeground(new java.awt.Color(59, 130, 246));
 
-    pnlInfo.add(lblTitle);
-    pnlInfo.add(javax.swing.Box.createVerticalGlue()); 
-    pnlInfo.add(javax.swing.Box.createVerticalStrut(10));
-    pnlInfo.add(pnlBottom);
+        pnlBottom.add(lblTime, java.awt.BorderLayout.WEST);
+        pnlBottom.add(lblGenreText, java.awt.BorderLayout.EAST);
 
-    card.add(lblPoster, java.awt.BorderLayout.CENTER);
-    card.add(pnlInfo, java.awt.BorderLayout.SOUTH);
+        pnlInfo.add(lblTitle);
+        pnlInfo.add(javax.swing.Box.createVerticalGlue()); 
+        pnlInfo.add(javax.swing.Box.createVerticalStrut(10));
+        pnlInfo.add(pnlBottom);
 
-    card.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-    java.awt.Color hoverGrey = new java.awt.Color(204, 204, 204);
-    java.awt.Color originalGrey = new java.awt.Color(245, 245, 245); 
+        card.add(lblPoster, java.awt.BorderLayout.CENTER);
+        card.add(pnlInfo, java.awt.BorderLayout.SOUTH);
 
-    javax.swing.border.Border hoverBorder = new javax.swing.border.LineBorder(hoverGrey, 2, true);
-    javax.swing.border.Border normalBorder = new javax.swing.border.LineBorder(originalGrey, 1, true);
+        card.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        java.awt.Color hoverGrey = new java.awt.Color(204, 204, 204);
+        java.awt.Color originalGrey = new java.awt.Color(245, 245, 245); 
 
-    card.addMouseListener(new java.awt.event.MouseAdapter() {
-        @Override
-        public void mouseEntered(java.awt.event.MouseEvent e) {
-            card.setBorder(hoverBorder);
-            pnlInfo.setBorder(new javax.swing.border.EmptyBorder(3, 10, 15, 10)); 
-            card.revalidate();
-            card.repaint();
-        }
+        javax.swing.border.Border hoverBorder = new javax.swing.border.LineBorder(hoverGrey, 2, true);
+        javax.swing.border.Border normalBorder = new javax.swing.border.LineBorder(originalGrey, 1, true);
 
-        @Override
-        public void mouseExited(java.awt.event.MouseEvent e) {
-            card.setBorder(normalBorder);
-            pnlInfo.setBorder(new javax.swing.border.EmptyBorder(8, 10, 10, 10));
+        card.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                card.setBorder(hoverBorder);
+                pnlInfo.setBorder(new javax.swing.border.EmptyBorder(3, 10, 15, 10)); 
+                card.revalidate();
+                card.repaint();
+            }
 
-            card.revalidate();
-            card.repaint();
-        }
-    });
-    return card;
-}
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                card.setBorder(normalBorder);
+                pnlInfo.setBorder(new javax.swing.border.EmptyBorder(8, 10, 10, 10));
+
+                card.revalidate();
+                card.repaint();
+            }
+        });
+        return card;
+    }
     private javax.swing.ImageIcon scaleImage(java.net.URL imagePath, int w, int h) {
         try {
             java.awt.Image img = new javax.swing.ImageIcon(imagePath).getImage();
@@ -124,36 +131,41 @@ public class BanVePanel extends javax.swing.JPanel {
             return null; 
         }
     }
-    public void addMovies() {
+    private void addMovies(java.util.List<Movie> listToDisplay) {
         DSPhimPanel.removeAll();
         DSPhimPanel.setLayout(new java.awt.GridLayout(0, 4, 30, 30));
-        for (Movie m : movies) {
-            JPanel movieCard = createMovieCard(m.getTitle(), m.getGenre().toString(), m.getDuration(), m.getPoster());
-            
-            movieCard.addMouseListener(new java.awt.event.MouseAdapter() {
-                @Override
-                public void mouseClicked(java.awt.event.MouseEvent e) {
-                    List<ShowTime> ST = showtimeDao.getByMovieId(m.getId());
-                    String[] times = new String[ST.size()];
-                    for(int i=0; i<ST.size();i++){
-                        java.time.LocalDateTime start = ST.get(i).getStartTime();
-                        times[i] = String.format("%02d:%02d", start.getHour(), start.getMinute());
+        for (Movie m : listToDisplay) {
+            JPanel movieCard;
+            if (movieCardCache.containsKey(m)) {
+                movieCard = movieCardCache.get(m);
+            } else {
+                movieCard = createMovieCard(m);
+                movieCardCache.put(m, movieCard);
+                
+                movieCard.addMouseListener(new java.awt.event.MouseAdapter() {
+                    @Override
+                    public void mouseClicked(java.awt.event.MouseEvent e) {
+                        displayShowTime(m);
                     }
-                    renderSuatChieu(m.getTitle(), m.getPoster(), "Phòng 01", "2D Phụ đề", times);
-                    ShowPanel("ChonSuatChieu"); 
-                    currentStep=1;
-                    updateNavigationUI();
-                }
-            });
-            
+                });
+            }
             DSPhimPanel.add(movieCard);
-            
         }
-
         DSPhimPanel.revalidate();
         DSPhimPanel.repaint();
     }
-  
+    public void displayShowTime(Movie m){
+        List<ShowTime> ST = showtimeDao.getByMovieId(m.getId());
+        String[] times = new String[ST.size()];
+        for(int i=0; i<ST.size();i++){
+            java.time.LocalDateTime start = ST.get(i).getStartTime();
+            times[i] = String.format("%02d:%02d", start.getHour(), start.getMinute());
+        }
+        renderSuatChieu(m, times);
+        ShowPanel("ChonSuatChieu"); 
+        currentStep=1;
+        updateNavigation();
+    }
     private void setJLabelChon(){
         stepLabels = new JLabel[]{LChonPhim, LChonSuatChieu, LChonGhe, LHoaDon};
         for (int i = 0; i < stepLabels.length; i++) {
@@ -163,7 +175,7 @@ public class BanVePanel extends javax.swing.JPanel {
                 public void mouseClicked(java.awt.event.MouseEvent e) {
                     if (index < currentStep) {
                         currentStep = index;
-                        updateNavigationUI();
+                        updateNavigation();
                         String[] panelNames = {"ChonPhim", "ChonSuatChieu", "ChonGhe", "HoaDon"};
                         ShowPanel(panelNames[index]);
                     }
@@ -171,7 +183,7 @@ public class BanVePanel extends javax.swing.JPanel {
             });
         }
     }
-    private void updateNavigationUI(){
+    private void updateNavigation(){
         for(int i=0;i<stepLabels.length;i++){
             if(i==currentStep){
                 stepLabels[i].setBackground(Color.white);
@@ -235,7 +247,7 @@ public class BanVePanel extends javax.swing.JPanel {
         cl.show(ContentPanel, name);
         jScrollPane1.getVerticalScrollBar().setValue(0);
     }
-    public void renderSuatChieu(String title, String posterPath, String room, String type, String[] times) {
+    public void renderSuatChieu(Movie m, String[] times) {
         ChonSuatChieuPanel.removeAll();
         ChonSuatChieuPanel.setLayout(new java.awt.GridBagLayout()); 
 
@@ -254,7 +266,7 @@ public class BanVePanel extends javax.swing.JPanel {
 
         // Poster bên trái
         javax.swing.JLabel lblPoster = new javax.swing.JLabel();
-        var posterURL = getClass().getResource(posterPath);
+        var posterURL = getClass().getResource(m.getPoster());
         lblPoster.setIcon(scaleImage(posterURL, 200, 250));
         pnlHeader.add(lblPoster, java.awt.BorderLayout.WEST);
 
@@ -263,18 +275,18 @@ public class BanVePanel extends javax.swing.JPanel {
         pnlInfo.setLayout(new javax.swing.BoxLayout(pnlInfo, javax.swing.BoxLayout.Y_AXIS));
         pnlInfo.setOpaque(false);
         
-        String lblMultiLineTitle = "<html><body style='width: 400px'>" + title + "</body></html>";
+        String lblMultiLineTitle = "<html><body style='width: 400px'>" + m.getTitle() + "</body></html>";
         javax.swing.JLabel lblTitle = new javax.swing.JLabel(lblMultiLineTitle.toUpperCase());
         lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
         lblTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblTitle.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
         
-        // Panel chứa Tag (2D, Phòng)
+        String theLoai = getNameGenreType(m.getGenre()); 
         javax.swing.JPanel pnlTags = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 0));
         pnlTags.setOpaque(false);
-        pnlTags.add(createTag(type, new java.awt.Color(239, 246, 255), new java.awt.Color(59, 130, 246)));
-        pnlTags.add(createTag(room, new java.awt.Color(243, 244, 246), new java.awt.Color(107, 114, 128)));
-
+        pnlTags.add(createTag(theLoai, new java.awt.Color(239, 246, 255), new java.awt.Color(59, 130, 246)));
+        pnlTags.add(createTag(String.valueOf(m.getDuration() +" phút"), new java.awt.Color(239, 246, 255), new java.awt.Color(59, 130, 246)));
+        
         javax.swing.JLabel lblNote = new javax.swing.JLabel("Lưu ý: Suất chiếu hiển thị là lịch chiếu của ngày hôm nay.");
         lblNote.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
         lblNote.setFont(new java.awt.Font("Segoe UI", 2, 11));
@@ -327,7 +339,6 @@ public class BanVePanel extends javax.swing.JPanel {
         lbl.putClientProperty("Component.arc", 10);
         return lbl;
     }
-
     private javax.swing.JButton createTimeButton(String time) {
         javax.swing.JButton btn = new javax.swing.JButton(time);
         btn.setFont(new java.awt.Font("Segoe UI", 1, 13));
@@ -357,6 +368,7 @@ public class BanVePanel extends javax.swing.JPanel {
         ChonSuatChieuPanel = new javax.swing.JPanel();
         SuatChieuPanel = new javax.swing.JPanel();
         ChonGhePanel = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
         HoaDonPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         ChonPhimPanel = new javax.swing.JPanel();
@@ -464,15 +476,32 @@ public class BanVePanel extends javax.swing.JPanel {
 
         ChonGhePanel.setBackground(new java.awt.Color(248, 250, 252));
 
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 619, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 625, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout ChonGhePanelLayout = new javax.swing.GroupLayout(ChonGhePanel);
         ChonGhePanel.setLayout(ChonGhePanelLayout);
         ChonGhePanelLayout.setHorizontalGroup(
             ChonGhePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 951, Short.MAX_VALUE)
+            .addGroup(ChonGhePanelLayout.createSequentialGroup()
+                .addGap(70, 70, 70)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(70, 70, 70))
         );
         ChonGhePanelLayout.setVerticalGroup(
             ChonGhePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 562, Short.MAX_VALUE)
+            .addGroup(ChonGhePanelLayout.createSequentialGroup()
+                .addGap(50, 50, 50)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(50, 50, 50))
         );
 
         ContentPanel.add(ChonGhePanel, "ChonGhe");
@@ -495,6 +524,11 @@ public class BanVePanel extends javax.swing.JPanel {
         ChonPhimPanel.setBackground(new java.awt.Color(248, 250, 252));
 
         txtTimPhim.setFont(new java.awt.Font("Segoe UI", 0, 15)); // NOI18N
+        txtTimPhim.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtTimPhimKeyReleased(evt);
+            }
+        });
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(102, 102, 102));
@@ -537,7 +571,7 @@ public class BanVePanel extends javax.swing.JPanel {
                     .addComponent(jLabel1))
                 .addGap(40, 40, 40)
                 .addComponent(DSPhimPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(181, Short.MAX_VALUE))
+                .addGap(50, 50, 50))
         );
 
         jScrollPane1.setViewportView(ChonPhimPanel);
@@ -577,6 +611,19 @@ public class BanVePanel extends javax.swing.JPanel {
         );
     }// </editor-fold>                        
 
+    private void txtTimPhimKeyReleased(java.awt.event.KeyEvent evt) {                                       
+        String title = txtTimPhim.getText().trim().toLowerCase();
+        if (searchTimer != null && searchTimer.isRunning()) {
+            searchTimer.stop(); 
+        }
+        java.util.List ds = movieDao.searchMovies(title, 0,0,movieDao.getMaxDuration());
+        searchTimer = new javax.swing.Timer(300, e -> {
+            addMovies(ds);
+        });
+        searchTimer.setRepeats(false);
+        searchTimer.start();
+    }                                      
+
 
     // Variables declaration - do not modify                     
     private javax.swing.JPanel ChonGhePanel;
@@ -593,6 +640,7 @@ public class BanVePanel extends javax.swing.JPanel {
     private javax.swing.JPanel SuatChieuPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField txtTimPhim;
     // End of variables declaration                   
