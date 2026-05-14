@@ -1,7 +1,5 @@
 package cinema.models;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Customer{
     private static int autoId = 1;
@@ -71,6 +69,7 @@ public class Customer{
     public void setPhone(String Phone){phone = Phone;}
     public void setEmail(String Email){email = Email;}
     public void setNote(String note) { this.note = note;}
+    public void setId(String id) { this.id = id;}
 
     
     private void updateCustomerType(){

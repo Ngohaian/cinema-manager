@@ -428,11 +428,11 @@ public class SellTicketFrame extends javax.swing.JFrame {
 
     public static void main(String args[]) {
         
-        try {
-            com.formdev.flatlaf.FlatLightLaf.setup(); 
-        } catch( Exception ex ) {
-            System.err.println( "Failed to initialize LaF" );
-        }
+        // try {
+        //     com.formdev.flatlaf.FlatLightLaf.setup(); 
+        // } catch( Exception ex ) {
+        //     System.err.println( "Failed to initialize LaF" );
+        // }
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new SellTicketFrame().setVisible(true);

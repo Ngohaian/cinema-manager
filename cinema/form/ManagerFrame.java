@@ -22,7 +22,14 @@ public class ManagerFrame extends javax.swing.JFrame {
     private HoaDonManagerPanel hoaDonMP = new HoaDonManagerPanel();
     private ThongTinPanel thongTinPanel = new ThongTinPanel();
 
+      public ManagerFrame(cinema.models.Employee emp) {
+        this(); 
+        lTen.setText(emp.getName());
+        lChucVu.setText(emp.getPosition().getDisplayName());
+    }
+
     public ManagerFrame() {
+        
         initComponents();
         menuLabels_1 = new JLabel[]{btnThongKe, btnNhanVien, btnKhachHang, btnSuatChieu, btnPhimMP, btnPhong, btnHoaDon};
         for(int i=0;i<menuLabels_1.length;i++){
@@ -499,11 +506,11 @@ public class ManagerFrame extends javax.swing.JFrame {
     }                                      
 
     public static void main(String args[]) {
-        try {
-            com.formdev.flatlaf.FlatLightLaf.setup(); 
-        } catch( Exception ex ) {
-            System.err.println( "Failed to initialize LaF" );
-        }
+        // try {
+        //     com.formdev.flatlaf.FlatLightLaf.setup(); 
+        // } catch( Exception ex ) {
+        //     System.err.println( "Failed to initialize LaF" );
+        // }
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {

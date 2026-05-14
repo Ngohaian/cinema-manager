@@ -37,8 +37,8 @@ public class HoaDonManagerPanel extends JPanel {
                 inv.getInvoiceId(),
                 "Nguyễn Văn A",
                 "0912345678",
-                date,
-                "EMP01",
+                inv.getInvoiceDate() != null ? inv.getInvoiceDate().toString() : "Chưa có ngày",
+                "EMP001",
                 String.format("%.0f đ", inv.getTotalAmount()),
                 "Đã thanh toán",
                 editIcon()
@@ -227,14 +227,9 @@ public class HoaDonManagerPanel extends JPanel {
         DefaultTableCellRenderer left = new DefaultTableCellRenderer();
         left.setHorizontalAlignment(SwingConstants.LEFT);
 
-        table.getColumnModel().getColumn(0).setPreferredWidth(80);
-        table.getColumnModel().getColumn(1).setPreferredWidth(180);
-        table.getColumnModel().getColumn(2).setPreferredWidth(120);
-        table.getColumnModel().getColumn(3).setPreferredWidth(140);
-        table.getColumnModel().getColumn(4).setPreferredWidth(100);
-        table.getColumnModel().getColumn(5).setPreferredWidth(120);
-        table.getColumnModel().getColumn(6).setPreferredWidth(150);
-        table.getColumnModel().getColumn(7).setMaxWidth(50);
+        table.getColumnModel().getColumn(0).setCellRenderer(center);
+        table.getColumnModel().getColumn(2).setCellRenderer(center);
+        table.getColumnModel().getColumn(4).setCellRenderer(center);
 
         table.getColumnModel().getColumn(7).setCellRenderer(new DefaultTableCellRenderer() {
             @Override

@@ -70,6 +70,8 @@ public class Employee {
     public void setNote(String note) { this.note = note; }
     public void setUsername(String username) { this.username = username; }
     public void setPassword(String password) { this.password = password; }
+    public void setPosition(Position position) { this.position = position; }
+    public void setId(String id) { this.id = id; }
 
     public double calculateSalary() {
         return salary * position.getSalaryMultiplier();
