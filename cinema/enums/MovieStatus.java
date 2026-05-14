@@ -1,9 +1,9 @@
 package cinema.enums;
 
 public enum MovieStatus {
-    INACTIVE(1),
-    ACTIVE(2),
-    COMING_SOON(3);
+    ACTIVE(1),
+    COMING_SOON(2),
+    INACTIVE(3);
 
     private final int value;
     MovieStatus(int value) {

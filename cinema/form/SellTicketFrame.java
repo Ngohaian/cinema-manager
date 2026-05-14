@@ -49,10 +49,17 @@ public class SellTicketFrame extends javax.swing.JFrame {
         pContent.add(wrap(lichChieuPanel),"LichChieu");
         pContent.add(wrap(lichSuPanel),"LichSu");
         pContent.add(wrap(thongTinPanel),"ThongTin");
+        
+        phimPanel.setOnBookTicket(movie -> {
+            showPanel("BanVe");          
+            setSelectedButton(btnBanVe); 
+            banVePanel.displayShowTime(movie);
+        });
         pContent.revalidate();
         pContent.repaint();
         
     }
+        
     private void setHoverChucNang(JLabel JLabel){
         MouseAdapter hoverEffect = new MouseAdapter(){
             @Override
@@ -80,7 +87,6 @@ public class SellTicketFrame extends javax.swing.JFrame {
         };
         JLabel.addMouseListener(hoverEffect);
     } 
-    
     private void setSelectedButton(JLabel clickedButton){
         if(selectedButton != null && selectedButton != clickedButton){
             selectedButton.setForeground(Color.white);
@@ -92,9 +98,11 @@ public class SellTicketFrame extends javax.swing.JFrame {
         pMenu.repaint();
         
     }
-    private void showPanel(String name){
+    private void showPanel(String name) {
         CardLayout cl = (CardLayout) pContent.getLayout();
         cl.show(pContent, name);
+        pContent.revalidate();
+        pContent.repaint();
     }
     private void customizeScrollBar(JScrollPane JScroll){
         JScroll.getVerticalScrollBar().setUnitIncrement(20);

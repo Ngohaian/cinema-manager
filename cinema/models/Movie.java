@@ -8,14 +8,16 @@ public class Movie {
     private int duration;
     private MovieStatus active;
     private String poster;
+    private int count = 0;
     public Movie() {
     }
-    public Movie(String id, String title, int genreId, int duration, MovieStatus active) {
+    public Movie(String id,String title, int genreId, int duration, MovieStatus active, String poster) {
         this.id = id;
         this.title = title;
         this.genreId = genreId;
         this.duration = (duration > 0) ? duration : 0;
         this.active = active;
+        this.poster = poster;
     }
     public GenreType getGenreFromId(int genreId){
         switch (genreId) {
@@ -32,11 +34,12 @@ public class Movie {
     
     public String getId() { return id; }
     public String getTitle() { return title; }
+    public int getGenreId() { return genreId; }
     public GenreType getGenre() { return getGenreFromId(genreId); }
     public int getDuration() { return duration; }
     public MovieStatus getActive() { return active; }
     public String getPoster() { return poster; }
-
+    public int getCountId(){return count;}
     public void setId(String id){this.id = id;}
     public void setTitle(String title){this.title = title;}
     public void setGenreId(int genreId){this.genreId = genreId;}
