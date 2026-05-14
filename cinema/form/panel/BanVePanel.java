@@ -354,10 +354,68 @@ public class BanVePanel extends javax.swing.JPanel {
         });
         return btn;
     }
+    private void setupSummaryPanel(javax.swing.JPanel panel, Movie selectedMovie) {
+        panel.removeAll();
+        panel.setLayout(new java.awt.BorderLayout(20, 0));
+        panel.setBackground(java.awt.Color.WHITE);
+
+        javax.swing.JPanel pnlLeft = new javax.swing.JPanel(new java.awt.GridLayout(2, 1, 0, 5));
+        pnlLeft.setOpaque(false);
+
+        javax.swing.JLabel lblMovieName = new javax.swing.JLabel(selectedMovie != null ? selectedMovie.getTitle().toUpperCase() : "CHƯA CHỌN PHIM");
+        lblMovieName.setFont(new java.awt.Font("Segoe UI", 1, 15));
+
+        lblSummaryInfo = new javax.swing.JLabel("Ghế: Chưa chọn | Tổng tiền: 0 VNĐ");
+        lblSummaryInfo.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        lblSummaryInfo.setForeground(java.awt.Color.GRAY);
+
+        pnlLeft.add(lblMovieName);
+        pnlLeft.add(lblSummaryInfo);
+
+        javax.swing.JButton btnConfirm = new javax.swing.JButton("Đặt vé");
+        btnConfirm.setBackground(new java.awt.Color(192, 36, 36)); 
+        btnConfirm.setForeground(java.awt.Color.WHITE);
+        btnConfirm.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        btnConfirm.setPreferredSize(new java.awt.Dimension(150, 45));
+        btnConfirm.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+
+//        btnConfirm.addActionListener(e -> {
+//            if (selectedSeatsList.isEmpty()) {
+//                javax.swing.JOptionPane.showMessageDialog(this, "Vui lòng chọn ít nhất 1 ghế!");
+//            } else {
+//                currentStep = 3;
+//                updateNavigation();
+//                ShowPanel("HoaDon");
+//            }
+//        });
+
+        panel.add(pnlLeft, java.awt.BorderLayout.CENTER);
+        panel.add(btnConfirm, java.awt.BorderLayout.EAST);
+        panel.revalidate();
+        panel.repaint();
+    }
+//    private void updateSummaryInfo() {
+//        if (lblSummaryInfo == null) return;
+//        long total = 0;
+//        java.util.StringJoiner joiner = new java.util.StringJoiner(", ");
+//        for (cinema.models.Seat s : selectedSeatsList) {
+//            joiner.add(s.getSeatLabel());
+//            if ("VIP".equals(s.getSeatType())) total += 30000;
+//            else if ("COUPLE".equals(s.getSeatType())) total += 50000;
+//            else total += 65000;
+//        }
+//
+//        String listGhe = selectedSeatsList.isEmpty() ? "Chưa chọn" : joiner.toString();
+//        java.text.NumberFormat formatter = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
+//
+//        lblSummaryInfo.setText("<html>Ghế: <b style='color:#3b82f6'>" + listGhe + 
+//                              "</b> | Tổng tiền: <b style='color:#ef4444'>" + formatter.format(total) + " VNĐ</b></html>");
+//    }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 
+        lblSummaryInfo = new javax.swing.JLabel();
         ChonPanel = new javax.swing.JPanel();
         LChonPhim = new javax.swing.JLabel();
         LChonSuatChieu = new javax.swing.JLabel();
@@ -368,7 +426,8 @@ public class BanVePanel extends javax.swing.JPanel {
         ChonSuatChieuPanel = new javax.swing.JPanel();
         SuatChieuPanel = new javax.swing.JPanel();
         ChonGhePanel = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
+        SoDoGhePanel = new javax.swing.JPanel();
+        BookingSummaryPanel = new javax.swing.JPanel();
         HoaDonPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         ChonPhimPanel = new javax.swing.JPanel();
@@ -452,7 +511,7 @@ public class BanVePanel extends javax.swing.JPanel {
         );
         SuatChieuPanelLayout.setVerticalGroup(
             SuatChieuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 542, Short.MAX_VALUE)
+            .addGap(0, 346, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout ChonSuatChieuPanelLayout = new javax.swing.GroupLayout(ChonSuatChieuPanel);
@@ -476,32 +535,47 @@ public class BanVePanel extends javax.swing.JPanel {
 
         ChonGhePanel.setBackground(new java.awt.Color(248, 250, 252));
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 619, Short.MAX_VALUE)
+        SoDoGhePanel.setBackground(new java.awt.Color(248, 250, 252));
+
+        javax.swing.GroupLayout SoDoGhePanelLayout = new javax.swing.GroupLayout(SoDoGhePanel);
+        SoDoGhePanel.setLayout(SoDoGhePanelLayout);
+        SoDoGhePanelLayout.setHorizontalGroup(
+            SoDoGhePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 625, Short.MAX_VALUE)
+        SoDoGhePanelLayout.setVerticalGroup(
+            SoDoGhePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 433, Short.MAX_VALUE)
+        );
+
+        BookingSummaryPanel.setBackground(new java.awt.Color(255, 255, 255));
+
+        javax.swing.GroupLayout BookingSummaryPanelLayout = new javax.swing.GroupLayout(BookingSummaryPanel);
+        BookingSummaryPanel.setLayout(BookingSummaryPanelLayout);
+        BookingSummaryPanelLayout.setHorizontalGroup(
+            BookingSummaryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 770, Short.MAX_VALUE)
+        );
+        BookingSummaryPanelLayout.setVerticalGroup(
+            BookingSummaryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 96, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout ChonGhePanelLayout = new javax.swing.GroupLayout(ChonGhePanel);
         ChonGhePanel.setLayout(ChonGhePanelLayout);
         ChonGhePanelLayout.setHorizontalGroup(
             ChonGhePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(ChonGhePanelLayout.createSequentialGroup()
-                .addGap(70, 70, 70)
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(70, 70, 70))
+            .addComponent(BookingSummaryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(SoDoGhePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         ChonGhePanelLayout.setVerticalGroup(
             ChonGhePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(ChonGhePanelLayout.createSequentialGroup()
-                .addGap(50, 50, 50)
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(50, 50, 50))
+                .addGap(0, 0, 0)
+                .addComponent(SoDoGhePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
+                .addComponent(BookingSummaryPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0))
         );
 
         ContentPanel.add(ChonGhePanel, "ChonGhe");
@@ -516,7 +590,7 @@ public class BanVePanel extends javax.swing.JPanel {
         );
         HoaDonPanelLayout.setVerticalGroup(
             HoaDonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 562, Short.MAX_VALUE)
+            .addGap(0, 529, Short.MAX_VALUE)
         );
 
         ContentPanel.add(HoaDonPanel, "HoaDon");
@@ -591,7 +665,7 @@ public class BanVePanel extends javax.swing.JPanel {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addComponent(ContentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(ContentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE)
                 .addGap(0, 0, 0))
         );
 
@@ -626,6 +700,7 @@ public class BanVePanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify                     
+    private javax.swing.JPanel BookingSummaryPanel;
     private javax.swing.JPanel ChonGhePanel;
     private javax.swing.JPanel ChonPanel;
     private javax.swing.JPanel ChonPhimPanel;
@@ -637,11 +712,12 @@ public class BanVePanel extends javax.swing.JPanel {
     private javax.swing.JLabel LChonPhim;
     private javax.swing.JLabel LChonSuatChieu;
     private javax.swing.JLabel LHoaDon;
+    private javax.swing.JPanel SoDoGhePanel;
     private javax.swing.JPanel SuatChieuPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblSummaryInfo;
     private javax.swing.JTextField txtTimPhim;
     // End of variables declaration                   
 }
