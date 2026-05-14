@@ -22,7 +22,14 @@ public class ManagerFrame extends javax.swing.JFrame {
     private HoaDonManagerPanel hoaDonMP = new HoaDonManagerPanel();
     private ThongTinPanel thongTinPanel = new ThongTinPanel();
 
+      public ManagerFrame(cinema.models.Employee emp) {
+        this(); 
+        lTen.setText(emp.getName());
+        lChucVu.setText(emp.getPosition().getDisplayName());
+    }
+
     public ManagerFrame() {
+        
         initComponents();
         menuLabels_1 = new JLabel[]{btnThongKe, btnNhanVien, btnKhachHang, btnSuatChieu, btnPhimMP, btnPhong, btnHoaDon};
         for(int i=0;i<menuLabels_1.length;i++){
@@ -45,7 +52,7 @@ public class ManagerFrame extends javax.swing.JFrame {
         CardLayout card = new CardLayout();
         pContent.setLayout(card);
         pContent.add(wrap(thongKePanel), "ThongKe");
-        pContent.add(wrap(nhanVienMP), "NhanVien");
+        pContent.add(wrap(nhanVienMP), "NhanVie.n");
         pContent.add(wrap(khachHangMP),"KhachHang");
         pContent.add(wrap(phimMP),"Phim");
         pContent.add(wrap(phongMP),"Phong");
@@ -55,7 +62,7 @@ public class ManagerFrame extends javax.swing.JFrame {
         pContent.revalidate();
         pContent.repaint();
     }
-        private void setHoverChucNang(JLabel JLabel){
+    private void setHoverChucNang(JLabel JLabel){
         MouseAdapter hoverEffect = new MouseAdapter(){
             @Override
             public void mouseEntered(MouseEvent e){
@@ -347,7 +354,7 @@ public class ManagerFrame extends javax.swing.JFrame {
         btnHoaDon.setForeground(new java.awt.Color(255, 255, 255));
         btnHoaDon.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         btnHoaDon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cinema/images/bill.png"))); // NOI18N
-        btnHoaDon.setText("Hóa đơn");
+        btnHoaDon.setText(" Hóa đơn");
         btnHoaDon.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 5, 1, 1));
         btnHoaDon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnHoaDon.setOpaque(true);
@@ -499,11 +506,11 @@ public class ManagerFrame extends javax.swing.JFrame {
     }                                      
 
     public static void main(String args[]) {
-        try {
-            com.formdev.flatlaf.FlatLightLaf.setup(); 
-        } catch( Exception ex ) {
-            System.err.println( "Failed to initialize LaF" );
-        }
+        // try {
+        //     com.formdev.flatlaf.FlatLightLaf.setup(); 
+        // } catch( Exception ex ) {
+        //     System.err.println( "Failed to initialize LaF" );
+        // }
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
