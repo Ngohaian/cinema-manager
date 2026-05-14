@@ -158,9 +158,13 @@ public class PhimPanel extends javax.swing.JPanel {
             java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
             if (m.getActive() != MovieStatus.fromInt(1)) { 
                 javax.swing.JOptionPane.showMessageDialog(
-                parentWindow, "Phim này hiện tại chưa mở bán vé hoặc đã ngừng chiếu!", "Thông báo", javax.swing.JOptionPane.WARNING_MESSAGE
-            );
-            return;
+                parentWindow, "Phim này hiện tại chưa mở bán vé hoặc đã ngừng chiếu!", "Thông báo", javax.swing.JOptionPane.WARNING_MESSAGE );
+                return;
+            }
+            else if(!movieDao.GetAvailableMovies().contains(m)){
+                javax.swing.JOptionPane.showMessageDialog(
+                parentWindow, "Hôm nay hiện không có hoặc không còn suất chiếu cho phim này!", "Thông báo", javax.swing.JOptionPane.WARNING_MESSAGE );
+                return;
             }
             if (onBookTicket != null) {
                 onBookTicket.accept(m);
@@ -213,9 +217,13 @@ public class PhimPanel extends javax.swing.JPanel {
             detailDialog.dispose();
             if (m.getActive() != MovieStatus.fromInt(1)) { 
                 javax.swing.JOptionPane.showMessageDialog(
-                parentWindow, "Phim này hiện tại chưa mở bán vé hoặc đã ngừng chiếu!", "Thông báo", javax.swing.JOptionPane.WARNING_MESSAGE
-            );
-            return;
+                parentWindow, "Phim này hiện tại chưa mở bán vé hoặc đã ngừng chiếu!", "Thông báo", javax.swing.JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            else if(!movieDao.GetAvailableMovies().contains(m)){
+                javax.swing.JOptionPane.showMessageDialog(
+                parentWindow, "Hôm nay hiện không có hoặc không còn suất chiếu cho phim này!", "Thông báo", javax.swing.JOptionPane.WARNING_MESSAGE );
+                return;
             }
             if (onBookTicket != null) {
                 onBookTicket.accept(m);
