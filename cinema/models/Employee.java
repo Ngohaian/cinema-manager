@@ -40,6 +40,7 @@ public class Employee {
     private EmployeeStatus status;
     private String note;
 
+    public Employee(){}
     public Employee(String name, String phone, String email,String username, String password,Position position, double salary) {
         this.id = String.format("EMP%03d", autoId++);
         this.name = name;
