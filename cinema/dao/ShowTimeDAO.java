@@ -39,7 +39,7 @@ public class ShowTimeDAO {
     }
     public List<ShowTime> getByMovieId(String movieId){
         List<ShowTime> list = new ArrayList<>();
-        String sql = "SELECT * FROM Showtime WHERE movieId = ? AND active = 1";
+        String sql = "SELECT * FROM Showtime WHERE movieId = ? AND active = 1 AND startTime >= now()";
         try (java.sql.Connection conn = DBConnection.getConnection();java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, movieId);
             ResultSet rs = ps.executeQuery();
