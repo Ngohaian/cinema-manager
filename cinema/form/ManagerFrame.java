@@ -52,7 +52,7 @@ public class ManagerFrame extends javax.swing.JFrame {
         CardLayout card = new CardLayout();
         pContent.setLayout(card);
         pContent.add(wrap(thongKePanel), "ThongKe");
-        pContent.add(wrap(nhanVienMP), "NhanVie.n");
+        pContent.add(wrap(nhanVienMP), "NhanVien");
         pContent.add(wrap(khachHangMP),"KhachHang");
         pContent.add(wrap(phimMP),"Phim");
         pContent.add(wrap(phongMP),"Phong");
@@ -506,11 +506,11 @@ public class ManagerFrame extends javax.swing.JFrame {
     }                                      
 
     public static void main(String args[]) {
-        // try {
-        //     com.formdev.flatlaf.FlatLightLaf.setup(); 
-        // } catch( Exception ex ) {
-        //     System.err.println( "Failed to initialize LaF" );
-        // }
+        try {
+            com.formdev.flatlaf.FlatLightLaf.setup(); 
+        } catch( Exception ex ) {
+            System.err.println( "Failed to initialize LaF" );
+        }
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {

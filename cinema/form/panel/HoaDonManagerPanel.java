@@ -226,6 +226,8 @@ public class HoaDonManagerPanel extends JPanel {
 
         DefaultTableCellRenderer left = new DefaultTableCellRenderer();
         left.setHorizontalAlignment(SwingConstants.LEFT);
+        DefaultTableCellRenderer center = new DefaultTableCellRenderer();
+         center.setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
 
         table.getColumnModel().getColumn(0).setCellRenderer(center);
         table.getColumnModel().getColumn(2).setCellRenderer(center);
