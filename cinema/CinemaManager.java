@@ -1,12 +1,10 @@
 package cinema;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
 import cinema.dao.*;
 import cinema.form.*;
 import cinema.models.*;
+import java.util.List;
 
 public class CinemaManager {
     private CustomerDAO customerDAO;
@@ -28,7 +26,7 @@ public class CinemaManager {
     public void login(){
         try {
         // 1. Setup giao diện FlatLaf (Giao diện sáng)
-        com.formdev.flatlaf.FlatLightLaf.setup(); 
+        //com.formdev.flatlaf.FlatLightLaf.setup(); 
         
         // Hoặc nếu muốn Dark Mode cho ngầu thì dùng dòng này:
         // com.formdev.flatlaf.FlatDarkLaf.setup();
