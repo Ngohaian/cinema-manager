@@ -67,36 +67,32 @@ public class ThongKePanel extends javax.swing.JPanel {
     private void setupCustomUI() {
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setOpaque(false);
- 
+
         contentPanel.add(Box.createVerticalStrut(20));
         JPanel kpiRow = createKpiRow();
         kpiRow.setMaximumSize(new Dimension(2000, 120));
-        
         contentPanel.add(kpiRow);
+        
         contentPanel.add(Box.createVerticalStrut(20)); 
-        contentPanel.add(Box.createVerticalStrut(20));
         
         JPanel middleRow = new JPanel(new BorderLayout(20, 0));
         middleRow.setOpaque(false);
-        middleRow.setMaximumSize(new Dimension(2000, 380));
-
+        middleRow.setMaximumSize(new Dimension(2000, 400));
         middleRow.add(createLineChartRow(), BorderLayout.CENTER); 
         middleRow.add(createTopFilmsPanel(), BorderLayout.EAST);
-
         contentPanel.add(middleRow);
+        
         contentPanel.add(Box.createVerticalStrut(20));
+        
         JPanel chartsRow = createChartsRow();
-        chartsRow.setMaximumSize(new Dimension(2000, 320)); 
+        chartsRow.setMaximumSize(new Dimension(2000, 360)); 
         contentPanel.add(chartsRow);
+        
         contentPanel.add(Box.createVerticalGlue());
 
-        JScrollPane scroll = new JScrollPane(contentPanel);
-        scroll.setBorder(null);
-        scroll.setOpaque(false);
-        scroll.getViewport().setOpaque(false);
-        
-        this.removeAll();
-        this.add(scroll, BorderLayout.CENTER);
+        contentPanel.setPreferredSize(new Dimension(contentPanel.getPreferredSize().width, 1050));
+        this.setPreferredSize(new Dimension(this.getPreferredSize().width, 1100));
+
         this.revalidate();
         this.repaint();
     }
@@ -242,16 +238,19 @@ public class ThongKePanel extends javax.swing.JPanel {
         listPanel.setOpaque(false);
 
         listPanel.add(createFilmItem("Lật Mặt 7: Một Điều Ước", 123456000, 567, new Color(13, 110, 253)));
-        listPanel.add(Box.createVerticalStrut(15)); // Khoảng cách giữa các dòng
+        listPanel.add(Box.createVerticalStrut(15));
         listPanel.add(createFilmItem("Doraemon: Bản Giao Hưởng", 34567000, 567, new Color(16, 185, 129)));
         listPanel.add(Box.createVerticalStrut(15));
         listPanel.add(createFilmItem("Haikyuu!!: Trận Chiến Bãi Phế Thải", 34567000, 330, new Color(245, 158, 11)));
         listPanel.add(Box.createVerticalStrut(15));
         listPanel.add(createFilmItem("Mai", 9567000, 96, new Color(239, 68, 68)));
+        listPanel.add(Box.createVerticalStrut(15));
+        listPanel.add(createFilmItem("Mắt biếc", 9556000, 94, Color.YELLOW));
+        listPanel.add(Box.createVerticalStrut(15));
 
         card.add(listPanel, BorderLayout.CENTER);
     
-        card.setPreferredSize(new Dimension(380, 0));
+        card.setPreferredSize(new Dimension(400, 400));
         return card;
     }
  
