@@ -1,6 +1,6 @@
-package model;
+package cinema.models;
+import cinema.enums.SeatType;
 
-import enums.SeatType;
 
 /**
  * Seat đại diện cho GHẾ VẬT LÝ trong phòng chiếu.
