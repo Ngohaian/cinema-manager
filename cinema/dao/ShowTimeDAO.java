@@ -1,6 +1,7 @@
 package cinema.dao;
 
 import cinema.DBConnection;
+import cinema.enums.TicketStatus;
 import cinema.models.*;
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -80,4 +81,15 @@ public class ShowTimeDAO {
             ps.setDouble(8, 50); // coupleExtra
             ps.setBoolean(9, true);
     } 
+    public TicketStatus getTicketStatus(String ticketId) throws Exception {
+        String sql = "SELECT status FROM Ticket WHERE ticketId = ?";
+        Connection conn = DBConnection.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, ticketId);
+        ResultSet rs = ps.executeQuery();
+        if(rs.next()) {
+            return TicketStatus.valueOf(rs.getString("status"));
+        }
+        return null;
+    }
 }
