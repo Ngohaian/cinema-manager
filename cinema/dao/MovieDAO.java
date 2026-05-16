@@ -3,10 +3,8 @@ import java.util.List;
 import java.sql.*;
 import java.util.ArrayList;
 import cinema.DBConnection;
-import cinema.enums.GenreType;
 import cinema.models.Movie;
 import cinema.enums.MovieStatus;
-import static cinema.enums.MovieStatus.fromInt;
 public class MovieDAO {
     public List<Movie> getDSPhim(){
         List<Movie> list = new ArrayList<>();
@@ -167,7 +165,6 @@ public class MovieDAO {
     }
     public List<Movie> searchMovies(String title, int statusIdx, int genreIdx, int maxDuration ){
         java.util.List<Movie> dsLoc = new java.util.ArrayList<>();
-        java.util.List<Movie> dsPhim = getDSPhim();
         String sql = "Select * from movie where ";
         sql += "duration <= " + maxDuration;
         if (title != null && !title.trim().isEmpty()) {

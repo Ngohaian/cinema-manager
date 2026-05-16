@@ -1,12 +1,7 @@
 package cinema;
 
-
-import java.util.ArrayList;
-import java.util.List;
-
 import cinema.dao.*;
 import cinema.form.*;
-import cinema.models.*;
 
 public class CinemaManager {
     private CustomerDAO customerDAO;
