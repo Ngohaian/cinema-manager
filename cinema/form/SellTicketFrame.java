@@ -23,8 +23,16 @@ public class SellTicketFrame extends javax.swing.JFrame {
     public SellTicketFrame(cinema.models.Employee emp) {
         this.currentEmployee = emp;
         initComponents();
-        lTen.setText(emp.getName());                          
+        lTen.setText(emp.getName());
         lChucVu.setText(emp.getPosition().getDisplayName());
+        thongTinPanel.loadEmployee(emp);
+        pThongTin.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        pThongTin.addMouseListener(new java.awt.event.MouseAdapter() {
+        @Override
+        public void mouseClicked(java.awt.event.MouseEvent e) {
+            showPanel("ThongTin");
+        }
+    });
         
         menuLabels = new JLabel[]{btnBanVe, btnPhim, btnLichChieu, btnLichSu};
         for(int i=0;i<menuLabels.length;i++){

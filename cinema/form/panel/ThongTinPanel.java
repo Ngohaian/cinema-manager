@@ -260,6 +260,150 @@ public class ThongTinPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    public void loadEmployee(cinema.models.Employee emp) {
+    LEmployeeName.setText(emp.getName());
+    LEmployeePosition.setText(emp.getPosition().getDisplayName());
+    LEmployeeId.setText(emp.getId());
+    LEmployeeHireDate.setText(emp.getHireDate().format(
+        java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+    LEmployeeUsername.setText(emp.getUsername());
+    LEmployeePhone.setText(emp.getPhone());
+    LEmployeeEmail.setText(emp.getEmail());
+    LEmployeeStatus.setText(
+        emp.getStatus() == cinema.models.Employee.EmployeeStatus.ACTIVE 
+        ? "Vẫn còn làm việc" : "Đã nghỉ việc");
+
+    jButton1.addActionListener(null); 
+    for (var l : jButton1.getActionListeners()) jButton1.removeActionListener(l);
+    jButton1.addActionListener(e -> openSuaHoSo(emp));
+
+    for (var l : jButton3.getActionListeners()) jButton3.removeActionListener(l);
+    jButton3.addActionListener(e -> openDoiMatKhau(emp));
+}
+
+private void openSuaHoSo(cinema.models.Employee emp) {
+    javax.swing.JDialog d = new javax.swing.JDialog(
+        (java.awt.Frame) javax.swing.SwingUtilities.getWindowAncestor(this),
+        "Chỉnh sửa hồ sơ", true);
+    d.setSize(430, 390);
+    d.setLocationRelativeTo(null);
+    javax.swing.JPanel p = new javax.swing.JPanel(null);
+    p.setBackground(java.awt.Color.WHITE);
+
+    addField(p, "Họ tên",  30,  20, 370); 
+    javax.swing.JTextField tfTen   = (javax.swing.JTextField) p.getComponent(1);
+    tfTen.setText(emp.getName());
+    addField(p, "Tên đăng nhập", 30,  80, 370);  // ← THÊM MỚI
+    javax.swing.JTextField tfUser  = (javax.swing.JTextField) p.getComponent(3);
+    tfUser.setText(emp.getUsername());
+    addField(p, "Số điện thoại",    30, 140, 170);
+    javax.swing.JTextField tfSDT   = (javax.swing.JTextField) p.getComponent(5);
+    tfSDT.setText(emp.getPhone());
+    addField(p, "Email",   220, 140, 180);
+    javax.swing.JTextField tfEmail = (javax.swing.JTextField) p.getComponent(7);
+    tfEmail.setText(emp.getEmail());
+
+    javax.swing.JButton btn = new javax.swing.JButton("Lưu thay đổi");
+    btn.setBounds(30, 220, 370, 38);
+    btn.setBackground(new java.awt.Color(0, 146, 255));
+    btn.setForeground(java.awt.Color.WHITE);
+    btn.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+    btn.setFocusPainted(false); btn.setBorderPainted(false);
+    btn.addActionListener(e2 -> {
+        emp.setName(tfTen.getText().trim());
+        emp.setUsername(tfUser.getText().trim());
+        emp.setPhone(tfSDT.getText().trim());
+        emp.setEmail(tfEmail.getText().trim());
+        new cinema.dao.EmployeeDAO().updateEmployee(emp);
+        loadEmployee(emp); // refresh panel
+        d.dispose();
+        javax.swing.JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+    });
+    p.add(btn);
+    d.setContentPane(p);
+    d.setVisible(true);
+}
+
+private javax.swing.JTextField addField(javax.swing.JPanel p, String label, int x, int y, int w) {
+    javax.swing.JLabel lb = new javax.swing.JLabel(label);
+    lb.setBounds(x, y, w, 20);
+    lb.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+    javax.swing.JTextField tf = new javax.swing.JTextField();
+    tf.setBounds(x, y + 24, w, 32);
+    tf.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+    tf.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+        javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200,200,200)),
+        javax.swing.BorderFactory.createEmptyBorder(4,8,4,8)));
+    p.add(lb); p.add(tf);
+    return tf;
+}
+
+private void openDoiMatKhau(cinema.models.Employee emp) {
+    javax.swing.JDialog d = new javax.swing.JDialog(
+        (java.awt.Frame) javax.swing.SwingUtilities.getWindowAncestor(this),
+        "Đổi mật khẩu", true);
+    d.setSize(380, 260);
+    d.setLocationRelativeTo(null);
+    javax.swing.JPanel p = new javax.swing.JPanel(null);
+    p.setBackground(java.awt.Color.WHITE);
+
+    javax.swing.JLabel lbCu = new javax.swing.JLabel("Mật khẩu hiện tại");
+    lbCu.setBounds(30, 20, 310, 20);
+    lbCu.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+    javax.swing.JPasswordField tfCu = new javax.swing.JPasswordField();
+    tfCu.setBounds(30, 44, 310, 32);
+    tfCu.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+    tfCu.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+        javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200,200,200)),
+        javax.swing.BorderFactory.createEmptyBorder(4,8,4,8)));
+
+    javax.swing.JLabel lbMoi = new javax.swing.JLabel("Mật khẩu mới");
+    lbMoi.setBounds(30, 90, 310, 20);
+    lbMoi.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+    javax.swing.JPasswordField tfMoi = new javax.swing.JPasswordField();
+    tfMoi.setBounds(30, 114, 310, 32);
+    tfMoi.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+    tfMoi.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+        javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200,200,200)),
+        javax.swing.BorderFactory.createEmptyBorder(4,8,4,8)));
+    javax.swing.JButton btn = new javax.swing.JButton("Xác nhận");
+    btn.setBounds(30, 165, 310, 38);
+    btn.setBackground(new java.awt.Color(0, 146, 255));
+    btn.setForeground(java.awt.Color.WHITE);
+    btn.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+    btn.setFocusPainted(false); btn.setBorderPainted(false);
+    btn.addActionListener(e2 -> {
+        String cu  = new String(tfCu.getPassword()).trim();
+        String moi = new String(tfMoi.getPassword()).trim();
+        boolean matKhauDung = false;
+        try (java.sql.Connection conn = cinema.DBConnection.getConnection();
+            java.sql.PreparedStatement ps = conn.prepareStatement(
+                "SELECT 1 FROM employee WHERE username = ? AND password = ?")) {
+            ps.setString(1, emp.getUsername());
+            ps.setString(2, cu);
+            matKhauDung = ps.executeQuery().next();
+        } catch (java.sql.SQLException ex) { ex.printStackTrace(); }
+        if (!matKhauDung) {
+            javax.swing.JOptionPane.showMessageDialog(d, "Mật khẩu hiện tại không đúng!", "Lỗi",
+                javax.swing.JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (moi.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(d, "Mật khẩu mới không được để trống!", "Lỗi",
+                javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        emp.setPassword(moi);
+        new cinema.dao.EmployeeDAO().updateEmployee(emp);
+        d.dispose();
+        javax.swing.JOptionPane.showMessageDialog(this, "Đổi mật khẩu thành công!");
+    });
+    p.add(lbCu); p.add(tfCu);
+    p.add(lbMoi); p.add(tfMoi);
+    p.add(btn);
+    d.setContentPane(p);
+    d.setVisible(true);
+}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel LEmployeeEmail;
