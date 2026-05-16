@@ -116,7 +116,6 @@ public class LoginFrame extends javax.swing.JFrame {
         String username = txt_username.getText().trim();
         String password = new String(txt_password.getPassword()).trim();
  
-        // Kiểm tra ô trống
         if (username.isEmpty() || password.isEmpty()) {
             lbl_error.setText("Vui lòng nhập đầy đủ thông tin.");
             return;
@@ -129,7 +128,17 @@ public class LoginFrame extends javax.swing.JFrame {
  
         cinema.models.Employee emp = checkLogin(username, password);
         if (emp != null) {
-            new ManagerFrame(emp).setVisible(true);
+            switch (emp.getPosition()) {
+                case MANAGER:
+                    new ManagerFrame(emp).setVisible(true);
+                    break;
+                case TICKET_SELLER:
+                    new SellTicketFrame(emp).setVisible(true);
+                    break;
+                case TICKET_CHECKER:
+                    new CheckerTicket(emp).setVisible(true);
+                    break;
+            }
             this.dispose();
         } else {
             loginAttempts++;

@@ -1,7 +1,10 @@
 package cinema;
 
+
 import cinema.dao.*;
 import cinema.form.*;
+import cinema.models.*;
+import java.util.List;
 
 public class CinemaManager {
     private CustomerDAO customerDAO;

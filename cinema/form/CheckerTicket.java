@@ -3,8 +3,9 @@ package cinema.form;
 import javax.swing.JFrame;
 
 public class CheckerTicket extends javax.swing.JFrame {
-
-    public CheckerTicket() {
+    private cinema.models.Employee currentEmployee;
+    public CheckerTicket(cinema.models.Employee emp) {
+        this.currentEmployee = emp;
         initComponents();
     }
 
@@ -75,7 +76,7 @@ public class CheckerTicket extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new CheckerTicket().setVisible(true);
+                new CheckerTicket(null).setVisible(true);
             }
         });
     }

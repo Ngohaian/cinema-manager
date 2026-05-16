@@ -18,10 +18,13 @@ public class SellTicketFrame extends javax.swing.JFrame {
     private PhimPanel phimPanel = new PhimPanel();
     private LichChieuPanel lichChieuPanel = new LichChieuPanel();
     private ThongTinPanel thongTinPanel = new ThongTinPanel();
+    private cinema.models.Employee currentEmployee;
     
-
-    public SellTicketFrame() {
+    public SellTicketFrame(cinema.models.Employee emp) {
+        this.currentEmployee = emp;
         initComponents();
+        lTen.setText(emp.getName());                          
+        lChucVu.setText(emp.getPosition().getDisplayName());
         
         menuLabels = new JLabel[]{btnBanVe, btnPhim, btnLichChieu, btnLichSu};
         for(int i=0;i<menuLabels.length;i++){
@@ -435,7 +438,7 @@ public class SellTicketFrame extends javax.swing.JFrame {
         // }
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new SellTicketFrame().setVisible(true);
+                new CheckerTicket(null).setVisible(true);
             }
         });
     }
