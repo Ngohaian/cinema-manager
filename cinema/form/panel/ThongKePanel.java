@@ -7,11 +7,14 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
+import cinema.dao.MovieDAO;
+
 public class ThongKePanel extends javax.swing.JPanel {
     private DefaultCategoryDataset dataDoanhThu, dataNhanVien;
     private DefaultCategoryDataset dataNgay, dataThang, dataNam;
     private org.jfree.chart.plot.CategoryPlot globalPlot;
     private DefaultPieDataset dataSuatChieu;
+    MovieDAO moviedao = new MovieDAO();
     public ThongKePanel() {
         initComponents();
         loadData();
@@ -236,18 +239,28 @@ public class ThongKePanel extends javax.swing.JPanel {
         JPanel listPanel = new JPanel();
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
         listPanel.setOpaque(false);
+        Object[][] dsTopPhim = moviedao.getTop5Movie(); 
 
-        listPanel.add(createFilmItem("Lật Mặt 7: Một Điều Ước", 123456000, 567, new Color(13, 110, 253)));
-        listPanel.add(Box.createVerticalStrut(15));
-        listPanel.add(createFilmItem("Doraemon: Bản Giao Hưởng", 34567000, 567, new Color(16, 185, 129)));
-        listPanel.add(Box.createVerticalStrut(15));
-        listPanel.add(createFilmItem("Haikyuu!!: Trận Chiến Bãi Phế Thải", 34567000, 330, new Color(245, 158, 11)));
-        listPanel.add(Box.createVerticalStrut(15));
-        listPanel.add(createFilmItem("Mai", 9567000, 96, new Color(239, 68, 68)));
-        listPanel.add(Box.createVerticalStrut(15));
-        listPanel.add(createFilmItem("Mắt biếc", 9556000, 94, Color.YELLOW));
-        listPanel.add(Box.createVerticalStrut(15));
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#,###đ");
+        for (int i = 0; i < dsTopPhim.length; i++) {
+            String ten   = (String) dsTopPhim[i][0];
+            long tien  = (long) dsTopPhim[i][1];
+            int ve       = (int) dsTopPhim[i][2];
+            if(i==0){
+                listPanel.add(createFilmItem(ten, tien, ve, new Color(13, 110, 253)));
+            }else if(i==1){
+                listPanel.add(createFilmItem(ten, tien, ve, new Color(16, 185, 129)));
+            }else if(i==2){
+                listPanel.add(createFilmItem(ten, tien, ve, new Color(245, 158, 11)));
+            }else if(i==3){
+                listPanel.add(createFilmItem(ten, tien, ve, new Color(239, 68, 68)));
+            }else if(i==4){
+                listPanel.add(createFilmItem(ten, tien, ve, Color.YELLOW));
+            }
 
+            listPanel.add(Box.createVerticalStrut(15));
+            
+        }
         card.add(listPanel, BorderLayout.CENTER);
     
         card.setPreferredSize(new Dimension(400, 400));
@@ -263,7 +276,7 @@ public class ThongKePanel extends javax.swing.JPanel {
         lblName.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblName.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        int progress = (int) (revenue / 1500000); 
+        int progress = (int) (revenue / 50000); 
         JProgressBar bar = new JProgressBar(0, 100);
         bar.setValue(progress);
         bar.setForeground(color);

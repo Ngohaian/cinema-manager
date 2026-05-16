@@ -236,4 +236,23 @@ public class MovieDAO {
         }
         return min; 
     }
+    public Object[][] getTop5Movie(){
+        String sql = "SELECT p.title, SUM(v.price) AS `Doanh Thu`, COUNT(v.ticketId) AS `Tong Ve` " +
+                     "FROM movie p JOIN showtime sc ON p.movieId = sc.movieId JOIN ticket v ON sc.showtimeId = v.showtimeId " +
+                     "GROUP BY p.movieId, p.title ORDER BY SUM(v.price) DESC LIMIT 5";
+        java.util.List<Object[]> list = new java.util.ArrayList<>();
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                String tenPhim = rs.getString("title");
+                long doanhThu = rs.getLong("Doanh Thu");
+                int tongVe = rs.getInt("Tong Ve");
+                list.add(new Object[]{tenPhim, doanhThu, tongVe});
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list.toArray(new Object[0][]);
+    }
 }
