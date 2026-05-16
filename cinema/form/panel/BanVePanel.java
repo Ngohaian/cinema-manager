@@ -237,11 +237,6 @@ public class BanVePanel extends javax.swing.JPanel {
         JScroll.setBorder(null);
         JScroll.getViewport().setBackground(java.awt.Color.WHITE);
     }
-    private JScrollPane wrap(JPanel panel){
-        JScrollPane sp = new JScrollPane(panel);
-        customizeScrollBar(sp);
-        return sp;
-    }
     private void ShowPanel(String name){
         CardLayout cl = (CardLayout )(ContentPanel.getLayout());
         cl.show(ContentPanel, name);

@@ -44,20 +44,7 @@ public class SellTicketFrame extends javax.swing.JFrame {
         pMenu.add(indicator);
         
         
-        // chuyen doi giua cac trang
-        CardLayout card = new CardLayout();
-        pContent.setLayout(card);
-        pContent.add(banVePanel, "BanVe");
-        pContent.add(wrap(phimPanel),"Phim");
-        pContent.add(wrap(lichChieuPanel),"LichChieu");
-        pContent.add(wrap(lichSuPanel),"LichSu");
-        pContent.add(wrap(thongTinPanel),"ThongTin");
-        
-        phimPanel.setOnBookTicket(movie -> {
-            showPanel("BanVe");          
-            setSelectedButton(btnBanVe); 
-            banVePanel.displayShowTime(movie);
-        });
+        pContent.setLayout(new java.awt.BorderLayout());
         pContent.revalidate();
         pContent.repaint();
         
@@ -102,11 +89,44 @@ public class SellTicketFrame extends javax.swing.JFrame {
         
     }
     private void showPanel(String name) {
-        CardLayout cl = (CardLayout) pContent.getLayout();
-        cl.show(pContent, name);
+        showPanel(name, null);
+    }
+    private void showPanel(String name, Object data) {
+        pContent.removeAll();
+        
+        switch (name) {
+            case "BanVe":
+                BanVePanel banVe = new BanVePanel();
+                if (data != null) {
+                    banVe.displayShowTime((cinema.models.Movie) data); 
+                }
+                pContent.add(banVe, java.awt.BorderLayout.CENTER);
+                break;
+                
+            case "Phim":
+                PhimPanel phim = new PhimPanel();
+                phim.setOnBookTicket(movie -> {
+                    showPanel("BanVe", movie);
+                    setSelectedButton(btnBanVe); 
+                });
+                pContent.add(wrap(phim), java.awt.BorderLayout.CENTER);
+                break;
+                
+            case "LichChieu":
+                pContent.add(wrap(new LichChieuPanel()), java.awt.BorderLayout.CENTER);
+                break;
+            case "LichSu":
+                pContent.add(wrap(new LichSuHDPanel()), java.awt.BorderLayout.CENTER);
+                break;
+            case "ThongTin":
+                pContent.add(wrap(new ThongTinPanel()), java.awt.BorderLayout.CENTER);
+                break;
+        }
         pContent.revalidate();
         pContent.repaint();
     }
+
+
     private void customizeScrollBar(JScrollPane JScroll){
         JScroll.getVerticalScrollBar().setUnitIncrement(20);
         JScroll.getVerticalScrollBar().setUI(new BasicScrollBarUI(){
@@ -431,11 +451,6 @@ public class SellTicketFrame extends javax.swing.JFrame {
 
     public static void main(String args[]) {
         
-        // try {
-        //     com.formdev.flatlaf.FlatLightLaf.setup(); 
-        // } catch( Exception ex ) {
-        //     System.err.println( "Failed to initialize LaF" );
-        // }
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new CheckerTicket(null).setVisible(true);

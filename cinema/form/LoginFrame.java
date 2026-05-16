@@ -192,20 +192,6 @@ public class LoginFrame extends javax.swing.JFrame {
         return null;
     }
 
-    public static void main(String args[]) {
-        // try {
-        //     com.formdev.flatlaf.FlatLightLaf.setup(); 
-        // } catch( Exception ex ) {
-        //     System.err.println( "Failed to initialize LaF" );
-        // }
- 
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new LoginFrame().setVisible(true);
-                
-            }
-        });
-    }
 
 
     private javax.swing.JButton btn_login;

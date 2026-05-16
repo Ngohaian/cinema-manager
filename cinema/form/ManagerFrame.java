@@ -1,6 +1,5 @@
 package cinema.form;
 import cinema.form.panel.*;
-import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -13,14 +12,6 @@ public class ManagerFrame extends javax.swing.JFrame {
     private JPanel indicator = new JPanel(); // Tao thanh danh dau cho chuc nang dang duoc chon
     private JLabel selectedButton = null;
     private JLabel[] menuLabels_1;
-    private ThongKePanel thongKePanel = new ThongKePanel();
-    private NhanVienManagerPanel nhanVienMP = new NhanVienManagerPanel();
-    private KhachHangManagerPanel khachHangMP = new KhachHangManagerPanel();
-    private SuatChieuManagerPanel suatChieuMP = new SuatChieuManagerPanel();
-    private PhimManagerPanel phimMP = new PhimManagerPanel();
-    private PhongManagerPanel phongMP = new PhongManagerPanel();
-    private HoaDonManagerPanel hoaDonMP = new HoaDonManagerPanel();
-    private ThongTinPanel thongTinPanel = new ThongTinPanel();
     public ManagerFrame(cinema.models.Employee emp) {
         this();
         lTen.setText(emp.getName());
@@ -46,17 +37,7 @@ public class ManagerFrame extends javax.swing.JFrame {
         indicator.setVisible(false);
         pMenu.add(indicator);
         
-        // chuyen doi giua cac trang
-        CardLayout card = new CardLayout();
-        pContent.setLayout(card);
-        pContent.add(wrap(thongKePanel), "ThongKe");
-        pContent.add(wrap(nhanVienMP), "NhanVien");
-        pContent.add(wrap(khachHangMP),"KhachHang");
-        pContent.add(wrap(phimMP),"Phim");
-        pContent.add(wrap(phongMP),"Phong");
-        pContent.add(wrap(suatChieuMP),"SuatChieu");
-        pContent.add(wrap(hoaDonMP)," HoaDon");
-        pContent.add(wrap(thongTinPanel), "ThongTin");
+        pContent.setLayout(new java.awt.BorderLayout());
         pContent.revalidate();
         pContent.repaint();
     }
@@ -99,9 +80,41 @@ public class ManagerFrame extends javax.swing.JFrame {
         pMenu.repaint();
         
     }
+
     private void showPanel(String name){
-        CardLayout cl = (CardLayout) pContent.getLayout();
-        cl.show(pContent, name);
+        pContent.removeAll(); 
+        JPanel newPanel = null;
+        switch(name) {
+            case "ThongKe": 
+                newPanel = new ThongKePanel(); 
+                break;
+            case "NhanVien": 
+                newPanel = new NhanVienManagerPanel(); 
+                break;
+            case "KhachHang": 
+                newPanel = new KhachHangManagerPanel(); 
+                break;
+            case "Phim": 
+                newPanel = new PhimManagerPanel(); 
+                break;
+            case "Phong": 
+                newPanel = new PhongManagerPanel(); 
+                break;
+            case "SuatChieu": 
+                newPanel = new SuatChieuManagerPanel(); 
+                break;
+            case "HoaDon": 
+                newPanel = new HoaDonManagerPanel(); 
+                break;
+            case "ThongTin": 
+                newPanel = new ThongTinPanel(); 
+                break;
+        }   
+        if(newPanel != null) {
+            pContent.add(wrap(newPanel), java.awt.BorderLayout.CENTER);
+        }
+        pContent.revalidate();
+        pContent.repaint();
     }
     private void customizeScrollBar(JScrollPane JScroll){
         JScroll.getVerticalScrollBar().setUnitIncrement(20);
@@ -503,20 +516,6 @@ public class ManagerFrame extends javax.swing.JFrame {
         showPanel("HoaDon");
     }                                      
 
-    public static void main(String args[]) {
-        // try {
-        //     com.formdev.flatlaf.FlatLightLaf.setup(); 
-        // } catch( Exception ex ) {
-        //     System.err.println( "Failed to initialize LaF" );
-        // }
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ManagerFrame().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify                     
     private javax.swing.JLabel btnDangXuat;
