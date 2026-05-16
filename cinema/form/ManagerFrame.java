@@ -57,7 +57,7 @@ public class ManagerFrame extends javax.swing.JFrame {
         pContent.add(wrap(phimMP),"Phim");
         pContent.add(wrap(phongMP),"Phong");
         pContent.add(wrap(suatChieuMP),"SuatChieu");
-        pContent.add(wrap(hoaDonMP),"HoaDon");
+        pContent.add(wrap(hoaDonMP)," HoaDon");
         pContent.add(wrap(thongTinPanel), "ThongTin");
         pContent.revalidate();
         pContent.repaint();
