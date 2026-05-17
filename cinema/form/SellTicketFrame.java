@@ -20,7 +20,7 @@ public class SellTicketFrame extends javax.swing.JFrame {
         initComponents();
         lTen.setText(emp.getName());
         lChucVu.setText(emp.getPosition().getDisplayName());
-        thongTinPanel.loadEmployee(emp);
+        
         pThongTin.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         pThongTin.addMouseListener(new java.awt.event.MouseAdapter() {
         @Override
@@ -122,7 +122,9 @@ public class SellTicketFrame extends javax.swing.JFrame {
                 pContent.add(wrap(new LichSuHDPanel()), java.awt.BorderLayout.CENTER);
                 break;
             case "ThongTin":
-                pContent.add(wrap(new ThongTinPanel()), java.awt.BorderLayout.CENTER);
+                ThongTinPanel thongTinPanel = new ThongTinPanel();
+                thongTinPanel.loadEmployee(currentEmployee);
+                pContent.add(wrap(thongTinPanel), java.awt.BorderLayout.CENTER);
                 break;
         }
         pContent.revalidate();

@@ -12,11 +12,12 @@ public class ManagerFrame extends javax.swing.JFrame {
     private JPanel indicator = new JPanel(); 
     private JLabel selectedButton = null;
     private JLabel[] menuLabels_1;
+    private cinema.models.Employee currentEmployee;
     public ManagerFrame(cinema.models.Employee emp) {
         this();
         lTen.setText(emp.getName());
         lChucVu.setText(emp.getPosition().getDisplayName());
-        thongTinPanel.loadEmployee(emp);
+        currentEmployee = emp;
         pThongTin.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         pThongTin.addMouseListener(new java.awt.event.MouseAdapter() {
         @Override
@@ -114,8 +115,10 @@ public class ManagerFrame extends javax.swing.JFrame {
             case "HoaDon": 
                 newPanel = new HoaDonManagerPanel(); 
                 break;
-            case "ThongTin": 
-                newPanel = new ThongTinPanel(); 
+            case "ThongTin":
+                ThongTinPanel thongTinPanel = new ThongTinPanel();
+                thongTinPanel.loadEmployee(currentEmployee); 
+                newPanel = thongTinPanel; 
                 break;
         }   
         if(newPanel != null) {
