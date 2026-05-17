@@ -6,6 +6,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.plaf.basic.BasicScrollBarUI;
@@ -430,8 +431,16 @@ public class SellTicketFrame extends javax.swing.JFrame {
     }                                 
 
     private void btnDangXuatMouseClicked(java.awt.event.MouseEvent evt) {                                         
-        this.dispose();
-        new LoginFrame().setVisible(true);
+        int confirm = JOptionPane.showConfirmDialog(
+            this,
+            "Bạn có chắc muốn đăng xuất?",
+            "Đăng xuất",
+            JOptionPane.YES_NO_OPTION
+        );
+        if (confirm == JOptionPane.YES_OPTION) {
+            new LoginFrame().setVisible(true);
+            this.dispose();
+        }
     }                                        
 
     private void btnBanVeMouseClicked(java.awt.event.MouseEvent evt) {                                      
