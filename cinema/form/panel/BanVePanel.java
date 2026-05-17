@@ -41,9 +41,7 @@ public class BanVePanel extends javax.swing.JPanel {
         customizeScrollBar(jScrollPane1);
         ShowPanel("ChonPhim");
         setJLabelChon();
-        seatMap.setOnSeatClickAction(() -> {
-            updateSummaryPanel();
-        });
+        
         SoDoGhePanel.setLayout(new java.awt.BorderLayout());
     }   
     public void loadData() {
@@ -371,17 +369,19 @@ public class BanVePanel extends javax.swing.JPanel {
         currentStep = 2;
         updateNavigation();
         ShowPanel("ChonGhe");
-        setupSummaryPanel(BookingSummaryPanel, m);
+        seatMap.setOnSeatClickAction(() -> updateSummaryInfo(showtimeDao.getShowtimeById(maSuatChieu)));
+        setupSummaryPanel(BookingSummaryPanel, m, showtimeDao.getShowtimeById(maSuatChieu));
     });
         return btn;
     }
 
 
-    private void setupSummaryPanel(javax.swing.JPanel panel, Movie selectedMovie) {
+    private void setupSummaryPanel(javax.swing.JPanel panel, Movie selectedMovie, ShowTime selectedShowTime) {
         panel.removeAll();
         panel.setLayout(new java.awt.BorderLayout(20, 0));
         panel.setBackground(java.awt.Color.WHITE);
-
+        panel.setPreferredSize(new java.awt.Dimension(0, 75));
+        panel.setBorder(new javax.swing.border.EmptyBorder(10, 20, 10, 20));
         javax.swing.JPanel pnlLeft = new javax.swing.JPanel(new java.awt.GridLayout(2, 1, 0, 5));
         pnlLeft.setOpaque(false);
 
@@ -416,7 +416,34 @@ public class BanVePanel extends javax.swing.JPanel {
         panel.revalidate();
         panel.repaint();
     }
-   
+    private void updateSummaryInfo(ShowTime st) {
+        if (lblSummaryInfo == null) return;
+        long total = 0;
+        java.util.StringJoiner joiner = new java.util.StringJoiner(", ");
+        
+        for (cinema.models.Seat s : seatMap.getSelectedSeatsList()) {
+            String tenGhe = (char) ('A' + s.getRowIndex()) + String.valueOf(s.getColIndex() + 1);
+            joiner.add(tenGhe);
+            
+            if (s.getSeatType() != null) {
+                String loaiGheStr = s.getSeatType().name();
+                
+                if ("VIP".equals(loaiGheStr)) {
+                    total += (st.getVipExtra() + st.getBasePrice());
+                } else if ("COUPLE".equals(loaiGheStr)) {
+                    total += (st.getCoupleExtra() + st.getBasePrice());
+                } else {
+                    total += st.getBasePrice();
+                }
+            }
+        }
+
+        String listGhe = seatMap.getSelectedSeatsList().isEmpty() ? "Chưa chọn" : joiner.toString();
+        java.text.NumberFormat formatter = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
+
+        lblSummaryInfo.setText("<html>Ghế: <b style='color:#3b82f6'>" + listGhe + 
+                                "</b> | Tổng tiền: <b style='color:#ef4444'>" + formatter.format(total) + " VNĐ</b></html>");
+    }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {

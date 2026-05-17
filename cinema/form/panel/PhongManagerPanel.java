@@ -931,20 +931,6 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         return list;
     }
 
-    public java.util.List<String> getSelectedSeatNames() {
-        java.util.List<String> names = new java.util.ArrayList<>();
-        if (selectedSeats == null) return names;
-
-        for (int i = 0; i < selectedSeats.length; i++) {
-            for (int j = 0; j < selectedSeats[i].length; j++) {
-                if (selectedSeats[i][j]) {
-                    char rowChar = (char) ('A' + i);
-                    names.add("" + rowChar + (j + 1));
-                }
-            }
-        }
-        return names;
-    }
 
     private Color getSeatColor(String type) {
         if ("VIP".equalsIgnoreCase(type)) {

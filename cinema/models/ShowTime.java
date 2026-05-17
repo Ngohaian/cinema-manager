@@ -31,7 +31,8 @@ public class ShowTime {
     private double coupleExtra;
 
     private boolean active;
-
+    public ShowTime() {
+    }
     public ShowTime(String showtimeId,
                     Movie movie,
                     Room room,
@@ -199,7 +200,12 @@ public class ShowTime {
     public String getShowtimeId() {
         return showtimeId;
     }
-
+    public void setVipExtra(double vipExtra) {
+        this.vipExtra = vipExtra;
+    }
+    public void setCoupleExtra(double coupleExtra) {
+        this.coupleExtra = coupleExtra;
+    }
     public void setActive(boolean active) {
         this.active = active;
     }

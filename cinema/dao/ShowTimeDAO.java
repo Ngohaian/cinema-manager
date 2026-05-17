@@ -154,7 +154,8 @@ public class ShowTimeDAO {
                         start,
                         rs.getDouble("basePrice")
                 );
-
+                s.setVipExtra(rs.getDouble("vipExtra"));
+                s.setCoupleExtra(rs.getDouble("coupleExtra"));
                 s.setActive(rs.getBoolean("active"));
                 list.add(s);
             }
@@ -724,5 +725,42 @@ public class ShowTimeDAO {
             System.out.print("Co loi" + ex.getMessage());
         }
         return list;
+    }
+  public ShowTime getShowtimeById(String showtimeId){
+        String sql = "SELECT * FROM Showtime WHERE showtimeId = ?";
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, showtimeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String movieId = rs.getString("movieId");
+                    String roomId = rs.getString("roomId");
+
+                    Movie movie = movieDAO.getById(movieId);
+                    Room room = roomDAO.getById(roomId);
+
+                    if (movie == null || room == null) {
+                        continue;
+                    }
+
+                    LocalDateTime start = rs.getTimestamp("startTime").toLocalDateTime();
+
+                    ShowTime s = new ShowTime(
+                            rs.getString("showtimeId"),
+                            movie,
+                            room,
+                            start,
+                            rs.getDouble("basePrice")
+                    );
+                    s.setVipExtra(rs.getDouble("vipExtra"));
+                    s.setCoupleExtra(rs.getDouble("coupleExtra"));
+                    s.setActive(rs.getBoolean("active"));
+                    return s;
+                }
+            }
+        } catch(Exception ex){
+            return null;
+        }
+        return null;
     }
 }
