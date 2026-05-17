@@ -1,58 +1,220 @@
 package cinema.form;
 
-import javax.swing.JFrame;
+import cinema.DBConnection;
+import cinema.enums.TicketStatus;
+import cinema.models.Employee;
 
-public class CheckerTicket extends javax.swing.JFrame {
-    private cinema.models.Employee currentEmployee;
-    public CheckerTicket(cinema.models.Employee emp) {
-        this.currentEmployee = emp;
+import javax.swing.*;
+import java.awt.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+public class CheckerTicket extends JFrame {
+
+    private JLabel lblTitle;
+    private JTextField txtMaVe;
+    private JButton btnCheck;
+    private JLabel lblKetQua;
+
+    public CheckerTicket(Employee employee) {
         initComponents();
+        setLocationRelativeTo(null);
     }
 
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
+        lblTitle = new JLabel();
+        txtMaVe = new JTextField();
+        btnCheck = new JButton();
+        lblKetQua = new JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setResizable(false);
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowOpened(java.awt.event.WindowEvent evt) {
-                formWindowOpened(evt);
-            }
-        });
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Kiểm tra vé");
+        setSize(500, 350);
 
-        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        lblTitle.setText("KIỂM TRA VÉ");
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 769, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 495, Short.MAX_VALUE)
-        );
+        txtMaVe.setFont(new Font("Segoe UI", Font.PLAIN, 20));
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        btnCheck.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        btnCheck.setText("Kiểm tra");
+
+        lblKetQua.setFont(new Font("Segoe UI", Font.BOLD, 20));
+
+        btnCheck.addActionListener(evt -> checkTicket());
+
+        GroupLayout layout =
+                new GroupLayout(getContentPane());
+
         getContentPane().setLayout(layout);
+
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGap(80)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+
+                                        .addComponent(lblTitle)
+
+                                        .addComponent(txtMaVe,
+                                                GroupLayout.PREFERRED_SIZE,
+                                                300,
+                                                GroupLayout.PREFERRED_SIZE)
+
+                                        .addComponent(btnCheck,
+                                                GroupLayout.PREFERRED_SIZE,
+                                                150,
+                                                GroupLayout.PREFERRED_SIZE)
+
+                                        .addComponent(lblKetQua))
+                                .addGap(80))
         );
+
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                layout.createSequentialGroup()
+                        .addGap(60)
+
+                        .addComponent(lblTitle)
+
+                        .addGap(40)
+
+                        .addComponent(txtMaVe,
+                                GroupLayout.PREFERRED_SIZE,
+                                45,
+                                GroupLayout.PREFERRED_SIZE)
+
+                        .addGap(30)
+
+                        .addComponent(btnCheck,
+                                GroupLayout.PREFERRED_SIZE,
+                                45,
+                                GroupLayout.PREFERRED_SIZE)
+
+                        .addGap(40)
+
+                        .addComponent(lblKetQua)
         );
+    }
 
-        pack();
-        setLocationRelativeTo(null);
-    }// </editor-fold>//GEN-END:initComponents
+    private TicketStatus getTicketStatus(String ticketId)
+            throws Exception {
 
-    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
-        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
-    }//GEN-LAST:event_formWindowOpened
+        String sql =
+                "SELECT status FROM Ticket WHERE ticketId=?";
 
-    private javax.swing.JPanel jPanel1;
+        Connection conn = DBConnection.getConnection();
+
+        PreparedStatement ps =
+                conn.prepareStatement(sql);
+
+        ps.setString(1, ticketId);
+
+        ResultSet rs = ps.executeQuery();
+
+        if(rs.next()) {
+
+            return TicketStatus.valueOf(
+                    rs.getString("status")
+            );
+        }
+
+        return null;
+    }
+
+    private void updateUsed(String ticketId)
+            throws Exception {
+
+        String sql =
+                "UPDATE Ticket SET status='Used' WHERE ticketId=?";
+
+        Connection conn = DBConnection.getConnection();
+
+        PreparedStatement ps =
+                conn.prepareStatement(sql);
+
+        ps.setString(1, ticketId);
+
+        ps.executeUpdate();
+    }
+
+    private void checkTicket() {
+
+        String maVe = txtMaVe.getText().trim();
+
+        if(maVe.isEmpty()) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Vui lòng nhập mã vé"
+            );
+
+            return;
+        }
+
+        try {
+
+            TicketStatus status =
+                    getTicketStatus(maVe);
+
+            if(status == null) {
+
+                lblKetQua.setForeground(Color.RED);
+
+                lblKetQua.setText(
+                        "❌ Vé không tồn tại"
+                );
+            }
+
+            else if(status == TicketStatus.Available) {
+
+                lblKetQua.setForeground(Color.RED);
+
+                lblKetQua.setText(
+                        "❌ Vé chưa thanh toán"
+                );
+            }
+
+            else if(status == TicketStatus.Used) {
+
+                lblKetQua.setForeground(Color.RED);
+
+                lblKetQua.setText(
+                        "❌ Vé đã sử dụng"
+                );
+            }
+
+            else if(status == TicketStatus.Canceled) {
+
+                lblKetQua.setForeground(Color.RED);
+
+                lblKetQua.setText(
+                        "❌ Vé đã bị hủy"
+                );
+            }
+
+            else if(status == TicketStatus.Sold) {
+
+                updateUsed(maVe);
+
+                lblKetQua.setForeground(
+                        new Color(0,150,0)
+                );
+
+                lblKetQua.setText(
+                        "✅ Vé hợp lệ"
+                );
+            }
+
+        } catch (Exception e) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage()
+            );
+        }
+    }
+
 
 }
