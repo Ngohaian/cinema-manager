@@ -3,12 +3,9 @@ package cinema.form.panel;
 
 import java.awt.CardLayout;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import cinema.dao.MovieDAO;
 import cinema.dao.ShowTimeDAO;
@@ -28,21 +25,6 @@ public class BanVePanel extends javax.swing.JPanel {
     private javax.swing.Timer searchTimer;
     private int currentStep = 0;
     private JLabel[] stepLabels;
-    private final Color BACKGROUND = new Color(248, 250, 252);
-    private final Color BLUE = new Color(0, 146, 255);
-    private final Color ORANGE = new Color(245, 157, 35);
-    private final Color BORDER = new Color(204, 204, 204);
-    private final Color HEADER = new Color(235, 235, 235);
-
-    private final Color SEAT_REGULAR = new Color(46, 132, 235);
-    private final Color SEAT_VIP = new Color(245, 181, 32);
-    private final Color SEAT_COUPLE = new Color(235, 93, 160);
-    private final Color SEAT_EMPTY = Color.WHITE;
-    private JPanel seatMapPanel;
-    private JButton btnEmptySeat;
-    private JButton btnRegularSeat;
-    private JButton btnVipSeat;
-    private JButton btnCoupleSeat;
 
     public BanVePanel() {
         try{
@@ -59,9 +41,9 @@ public class BanVePanel extends javax.swing.JPanel {
         customizeScrollBar(jScrollPane1);
         ShowPanel("ChonPhim");
         setJLabelChon();
-        JPanel seatBox = seatMapHelper.createSeatMapBox();
-        SoDoGhePanel.add(seatBox, BorderLayout.CENTER);
-        seatMapHelper.loadSeatMap(roomId);
+        JPanel seatBox = seatMap.createSeatMapBox("SELECT");
+        SoDoGhePanel.setLayout(new java.awt.BorderLayout());
+        SoDoGhePanel.add(seatBox, java.awt.BorderLayout.CENTER);
     }   
     public void loadData() {
         this.movies = movieDao.GetAvailableMovies();
@@ -180,12 +162,16 @@ public class BanVePanel extends javax.swing.JPanel {
     }
     public void displayShowTime(Movie m){
         List<ShowTime> ST = showtimeDao.getByMovieId(m.getId());
+        List<String> maPhongList = new java.util.ArrayList<>();
         String[] times = new String[ST.size()];
         for(int i=0; i<ST.size();i++){
             java.time.LocalDateTime start = ST.get(i).getStartTime();
             times[i] = String.format("%02d:%02d", start.getHour(), start.getMinute());
         }
-        renderSuatChieu(m, times);
+        for(int i=0;i<ST.size();i++){
+            maPhongList.add(ST.get(i).getRoom().getRoomId());
+        }
+        renderSuatChieu(m, times, maPhongList);
         ShowPanel("ChonSuatChieu"); 
         currentStep=1;
         updateNavigation();
@@ -266,7 +252,7 @@ public class BanVePanel extends javax.swing.JPanel {
         cl.show(ContentPanel, name);
         jScrollPane1.getVerticalScrollBar().setValue(0);
     }
-    public void renderSuatChieu(Movie m, String[] times) {
+    public void renderSuatChieu(Movie m, String[] times, List<String> maPhong){ {
         ChonSuatChieuPanel.removeAll();
         ChonSuatChieuPanel.setLayout(new java.awt.GridBagLayout()); 
 
@@ -330,9 +316,8 @@ public class BanVePanel extends javax.swing.JPanel {
         lblSelectTime.setBorder(new javax.swing.border.EmptyBorder(10,10,10,10));
         javax.swing.JPanel pnlGridTime = new javax.swing.JPanel(new java.awt.GridLayout(0, 4, 15, 15));
         pnlGridTime.setOpaque(false);
-
-        for (String time : times) {
-            pnlGridTime.add(createTimeButton(time));
+        for(int i=0;i<times.length;i++){
+            pnlGridTime.add(createTimeButton(times[i], maPhong.get(i)));
         }
 
         mainCard.add(pnlHeader);
@@ -347,6 +332,7 @@ public class BanVePanel extends javax.swing.JPanel {
         ChonSuatChieuPanel.revalidate();
         ChonSuatChieuPanel.repaint();
     }
+}
     private javax.swing.JLabel createTag(String text, java.awt.Color bg, java.awt.Color fg) {
         javax.swing.JLabel lbl = new javax.swing.JLabel(text);
         lbl.setFont(new java.awt.Font("Segoe UI", 1, 10));
@@ -357,7 +343,7 @@ public class BanVePanel extends javax.swing.JPanel {
         lbl.putClientProperty("Component.arc", 10);
         return lbl;
     }
-    private javax.swing.JButton createTimeButton(String time) {
+    private javax.swing.JButton createTimeButton(String time, String maPhong) {
         javax.swing.JButton btn = new javax.swing.JButton(time);
         btn.setFont(new java.awt.Font("Segoe UI", 1, 13));
         btn.setBackground(new java.awt.Color(248, 250, 252));
@@ -368,7 +354,10 @@ public class BanVePanel extends javax.swing.JPanel {
         btn.putClientProperty("Component.arc", 15);
 
         btn.addActionListener(e -> {
-            ShowPanel("ChonGhe"); 
+            seatMap.loadSeatMap(maPhong);
+            currentStep = 2;
+            updateNavigation();
+            ShowPanel("ChonGhe");
         });
         return btn;
     }
@@ -399,15 +388,15 @@ public class BanVePanel extends javax.swing.JPanel {
         btnConfirm.setPreferredSize(new java.awt.Dimension(150, 45));
         btnConfirm.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 
-//        btnConfirm.addActionListener(e -> {
-//            if (selectedSeatsList.isEmpty()) {
-//                javax.swing.JOptionPane.showMessageDialog(this, "Vui lòng chọn ít nhất 1 ghế!");
-//            } else {
-//                currentStep = 3;
-//                updateNavigation();
-//                ShowPanel("HoaDon");
-//            }
-//        });
+        // btnConfirm.addActionListener(e -> {
+        //     if (selectedSeatsList.isEmpty()) {
+        //         javax.swing.JOptionPane.showMessageDialog(this, "Vui lòng chọn ít nhất 1 ghế!");
+        //     } else {
+        //         currentStep = 3;
+        //         updateNavigation();
+        //         ShowPanel("HoaDon");
+        //     }
+        // });
 
         panel.add(pnlLeft, java.awt.BorderLayout.CENTER);
         panel.add(btnConfirm, java.awt.BorderLayout.EAST);

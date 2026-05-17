@@ -23,6 +23,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
     private final Color SEAT_VIP = new Color(245, 181, 32);
     private final Color SEAT_COUPLE = new Color(235, 93, 160);
     private final Color SEAT_EMPTY = Color.WHITE;
+    private final Color SEAT_BOOKED = new Color(220, 220, 220);
 
     private RoomDAO roomDAO = new RoomDAO();
     private SeatDao seatDao = new SeatDao();
@@ -52,6 +53,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
     private JButton btnRegularSeat;
     private JButton btnVipSeat;
     private JButton btnCoupleSeat;
+    private JButton btnBookedSeat;
 
     private boolean addMode = false;
     private boolean editMode = false;
@@ -264,7 +266,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         panel.setPreferredSize(new Dimension(1000, 430));
 
         panel.add(createInfoPanel());
-        panel.add(createSeatMapBox());
+        panel.add(createSeatMapBox("EDIT"));
 
         return panel;
     }
@@ -353,7 +355,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         return panel;
     }
 
-    public JPanel createSeatMapBox() {
+    public JPanel createSeatMapBox(String editMode) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
         panel.setBorder(new LineBorder(BORDER, 1));
@@ -377,7 +379,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
 
         content.add(screen, BorderLayout.NORTH);
         content.add(seatMapPanel, BorderLayout.CENTER);
-        content.add(createSeatToolPanel(), BorderLayout.SOUTH);
+        content.add(createSeatToolPanel(editMode), BorderLayout.SOUTH);
 
         panel.add(title, BorderLayout.NORTH);
         panel.add(content, BorderLayout.CENTER);
@@ -385,15 +387,13 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         return panel;
     }
 
-    public JPanel createSeatToolPanel() {
+    public JPanel createSeatToolPanel(String editMode) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 16, 8));
         panel.setBackground(Color.WHITE);
-
-        btnEmptySeat = createSeatTypeButton("Ghế trống/hỏng", SEAT_EMPTY, "EMPTY");
-        btnRegularSeat = createSeatTypeButton("Ghế thường", SEAT_REGULAR, "REGULAR");
-        btnVipSeat = createSeatTypeButton("Ghế VIP", SEAT_VIP, "VIP");
-        btnCoupleSeat = createSeatTypeButton("Ghế đôi", SEAT_COUPLE, "COUPLE");
-
+        if(editMode == "SELECT"){
+            btnBookedSeat = createSeatTypeButton("Ghế đã đặt", SEAT_BOOKED, "BOOKED");
+            panel.add(btnBookedSeat);
+        } 
         panel.add(btnEmptySeat);
         panel.add(btnRegularSeat);
         panel.add(btnVipSeat);
@@ -662,7 +662,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         loadSeatMap(roomId);
     }
 
-    private void loadSeatMap(String roomId) {
+    public void loadSeatMap(String roomId) {
         clearSeatMap();
 
         try {
