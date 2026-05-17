@@ -65,6 +65,8 @@ public class PhongManagerPanel extends javax.swing.JPanel {
 
     private String selectedSeatType = "REGULAR";
     private String[][] draftSeatTypes;
+    private Runnable onSeatClickAction;
+
 
     public PhongManagerPanel() {
         initComponents();
@@ -872,7 +874,9 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         seatMapPanel.revalidate();
         seatMapPanel.repaint();
     }
-
+    public void setOnSeatClickAction(Runnable action) {
+        this.onSeatClickAction = action;
+    }
     private JLabel createDraftSeatCell(int row, int col) {
         JLabel label = new JLabel();
 
@@ -896,6 +900,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
                     String type = draftSeatTypes[row][col];
                     if ("EMPTY".equals(type) || "BOOKED".equals(type)) return;
                     selectedSeats[row][col] = !selectedSeats[row][col];
+                    onSeatClickAction.run();
                     renderDraftSeatMap();
                 } else {
                     if (!addMode && !editMode) return;
@@ -907,7 +912,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
 
         return label;
     }
-    // Lấy danh sách các đối tượng Seat đang được tích chọn (để lưu DB)
+
     public java.util.List<cinema.models.Seat> getSelectedSeatsList() {
         java.util.List<cinema.models.Seat> list = new java.util.ArrayList<>();
         if (selectedSeats == null) return list;

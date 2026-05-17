@@ -41,6 +41,9 @@ public class BanVePanel extends javax.swing.JPanel {
         customizeScrollBar(jScrollPane1);
         ShowPanel("ChonPhim");
         setJLabelChon();
+        seatMap.setOnSeatClickAction(() -> {
+            updateSummaryPanel();
+        });
         SoDoGhePanel.setLayout(new java.awt.BorderLayout());
     }   
     public void loadData() {
