@@ -353,7 +353,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         return panel;
     }
 
-    private JPanel createSeatMapBox() {
+    public JPanel createSeatMapBox() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
         panel.setBorder(new LineBorder(BORDER, 1));
@@ -385,7 +385,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         return panel;
     }
 
-    private JPanel createSeatToolPanel() {
+    public JPanel createSeatToolPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 16, 8));
         panel.setBackground(Color.WHITE);
 
@@ -404,7 +404,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         return panel;
     }
 
-    private JButton createSeatTypeButton(String text, Color color, String type) {
+    public JButton createSeatTypeButton(String text, Color color, String type) {
         JButton btn = new JButton(text);
         btn.setPreferredSize(new Dimension(120, 32));
         btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -422,7 +422,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         return btn;
     }
 
-    private void highlightSelectedSeatType() {
+    public void highlightSelectedSeatType() {
         resetSeatButtonBorder();
 
         if ("EMPTY".equals(selectedSeatType)) {
@@ -436,7 +436,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         }
     }
 
-    private void resetSeatButtonBorder() {
+    public void resetSeatButtonBorder() {
         if (btnEmptySeat != null) {
             btnEmptySeat.setBorder(new LineBorder(BORDER, 1));
         }

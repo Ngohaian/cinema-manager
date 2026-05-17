@@ -2,9 +2,13 @@
 package cinema.form.panel;
 
 import java.awt.CardLayout;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import cinema.dao.MovieDAO;
 import cinema.dao.ShowTimeDAO;
@@ -18,10 +22,28 @@ public class BanVePanel extends javax.swing.JPanel {
     ShowTimeDAO showtimeDao;
     List<Movie> movies ;
     List<ShowTime> showtimes ;
+    private PhongManagerPanel seatMap = new PhongManagerPanel();
+
     private java.util.Map<Movie, JPanel> movieCardCache = new java.util.HashMap<>();
     private javax.swing.Timer searchTimer;
     private int currentStep = 0;
     private JLabel[] stepLabels;
+    private final Color BACKGROUND = new Color(248, 250, 252);
+    private final Color BLUE = new Color(0, 146, 255);
+    private final Color ORANGE = new Color(245, 157, 35);
+    private final Color BORDER = new Color(204, 204, 204);
+    private final Color HEADER = new Color(235, 235, 235);
+
+    private final Color SEAT_REGULAR = new Color(46, 132, 235);
+    private final Color SEAT_VIP = new Color(245, 181, 32);
+    private final Color SEAT_COUPLE = new Color(235, 93, 160);
+    private final Color SEAT_EMPTY = Color.WHITE;
+    private JPanel seatMapPanel;
+    private JButton btnEmptySeat;
+    private JButton btnRegularSeat;
+    private JButton btnVipSeat;
+    private JButton btnCoupleSeat;
+
     public BanVePanel() {
         try{
             movieDao= new MovieDAO();
@@ -37,7 +59,9 @@ public class BanVePanel extends javax.swing.JPanel {
         customizeScrollBar(jScrollPane1);
         ShowPanel("ChonPhim");
         setJLabelChon();
-    
+        JPanel seatBox = seatMapHelper.createSeatMapBox();
+        SoDoGhePanel.add(seatBox, BorderLayout.CENTER);
+        seatMapHelper.loadSeatMap(roomId);
     }   
     public void loadData() {
         this.movies = movieDao.GetAvailableMovies();
@@ -311,7 +335,6 @@ public class BanVePanel extends javax.swing.JPanel {
             pnlGridTime.add(createTimeButton(time));
         }
 
-        // Add tất cả vào Main Card
         mainCard.add(pnlHeader);
         mainCard.add(javax.swing.Box.createVerticalStrut(25));
         mainCard.add(sep);
@@ -349,6 +372,8 @@ public class BanVePanel extends javax.swing.JPanel {
         });
         return btn;
     }
+
+
     private void setupSummaryPanel(javax.swing.JPanel panel, Movie selectedMovie) {
         panel.removeAll();
         panel.setLayout(new java.awt.BorderLayout(20, 0));
