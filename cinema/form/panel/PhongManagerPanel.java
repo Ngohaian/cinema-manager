@@ -375,7 +375,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
     }
 
     private JPanel createSeatToolPanel() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 16, 8));
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 8));
         panel.setBackground(Color.WHITE);
 
         btnEmptySeat = createSeatTypeButton("Ghế trống/hỏng", SEAT_EMPTY, "EMPTY");
@@ -395,7 +395,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
 
     private JButton createSeatTypeButton(String text, Color color, String type) {
         JButton btn = new JButton(text);
-        btn.setPreferredSize(new Dimension(120, 32));
+        btn.setPreferredSize(new Dimension(100, 32));
         btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btn.setFocusPainted(false);
         btn.setBackground(color);

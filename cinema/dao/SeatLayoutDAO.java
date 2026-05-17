@@ -71,6 +71,13 @@ public class SeatLayoutDAO {
             throw ex;
         }
     }
+    public void insertOrUpdate(String roomId, SeatLayout layout) throws Exception {
+        if (getByRoomId(roomId) == null) {
+            insert(roomId, layout);
+        } else {
+            update(roomId, layout);
+        }
+    }
 
     public void delete(String roomId) throws Exception {
         String sql = "DELETE FROM SeatLayout WHERE roomId = ?";
