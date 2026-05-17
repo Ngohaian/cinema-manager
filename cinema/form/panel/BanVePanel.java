@@ -19,8 +19,8 @@ public class BanVePanel extends javax.swing.JPanel {
     ShowTimeDAO showtimeDao;
     List<Movie> movies ;
     List<ShowTime> showtimes ;
+    private JPanel currentSeatBox = null;
     private PhongManagerPanel seatMap = new PhongManagerPanel();
-
     private java.util.Map<Movie, JPanel> movieCardCache = new java.util.HashMap<>();
     private javax.swing.Timer searchTimer;
     private int currentStep = 0;
@@ -41,9 +41,7 @@ public class BanVePanel extends javax.swing.JPanel {
         customizeScrollBar(jScrollPane1);
         ShowPanel("ChonPhim");
         setJLabelChon();
-        JPanel seatBox = seatMap.createSeatMapBox("SELECT");
         SoDoGhePanel.setLayout(new java.awt.BorderLayout());
-        SoDoGhePanel.add(seatBox, java.awt.BorderLayout.CENTER);
     }   
     public void loadData() {
         this.movies = movieDao.GetAvailableMovies();
@@ -162,6 +160,7 @@ public class BanVePanel extends javax.swing.JPanel {
     }
     public void displayShowTime(Movie m){
         List<ShowTime> ST = showtimeDao.getByMovieId(m.getId());
+        List<String> maSuatChieuList = new java.util.ArrayList<>();
         List<String> maPhongList = new java.util.ArrayList<>();
         String[] times = new String[ST.size()];
         for(int i=0; i<ST.size();i++){
@@ -170,8 +169,9 @@ public class BanVePanel extends javax.swing.JPanel {
         }
         for(int i=0;i<ST.size();i++){
             maPhongList.add(ST.get(i).getRoom().getRoomId());
+            maSuatChieuList.add(ST.get(i).getShowtimeId());
         }
-        renderSuatChieu(m, times, maPhongList);
+        renderSuatChieu(m, times, maPhongList, maSuatChieuList);
         ShowPanel("ChonSuatChieu"); 
         currentStep=1;
         updateNavigation();
@@ -252,7 +252,7 @@ public class BanVePanel extends javax.swing.JPanel {
         cl.show(ContentPanel, name);
         jScrollPane1.getVerticalScrollBar().setValue(0);
     }
-    public void renderSuatChieu(Movie m, String[] times, List<String> maPhong){ {
+    public void renderSuatChieu(Movie m, String[] times, List<String> maPhong, List<String> maSuatChieu){ {
         ChonSuatChieuPanel.removeAll();
         ChonSuatChieuPanel.setLayout(new java.awt.GridBagLayout()); 
 
@@ -317,9 +317,8 @@ public class BanVePanel extends javax.swing.JPanel {
         javax.swing.JPanel pnlGridTime = new javax.swing.JPanel(new java.awt.GridLayout(0, 4, 15, 15));
         pnlGridTime.setOpaque(false);
         for(int i=0;i<times.length;i++){
-            pnlGridTime.add(createTimeButton(times[i], maPhong.get(i)));
+            pnlGridTime.add(createTimeButton(times[i], maPhong.get(i), maSuatChieu.get(i),m));
         }
-
         mainCard.add(pnlHeader);
         mainCard.add(javax.swing.Box.createVerticalStrut(25));
         mainCard.add(sep);
@@ -332,7 +331,7 @@ public class BanVePanel extends javax.swing.JPanel {
         ChonSuatChieuPanel.revalidate();
         ChonSuatChieuPanel.repaint();
     }
-}
+    }
     private javax.swing.JLabel createTag(String text, java.awt.Color bg, java.awt.Color fg) {
         javax.swing.JLabel lbl = new javax.swing.JLabel(text);
         lbl.setFont(new java.awt.Font("Segoe UI", 1, 10));
@@ -343,7 +342,7 @@ public class BanVePanel extends javax.swing.JPanel {
         lbl.putClientProperty("Component.arc", 10);
         return lbl;
     }
-    private javax.swing.JButton createTimeButton(String time, String maPhong) {
+    private javax.swing.JButton createTimeButton(String time, String maPhong, String maSuatChieu, Movie m) {
         javax.swing.JButton btn = new javax.swing.JButton(time);
         btn.setFont(new java.awt.Font("Segoe UI", 1, 13));
         btn.setBackground(new java.awt.Color(248, 250, 252));
@@ -354,11 +353,23 @@ public class BanVePanel extends javax.swing.JPanel {
         btn.putClientProperty("Component.arc", 15);
 
         btn.addActionListener(e -> {
-            seatMap.loadSeatMap(maPhong);
-            currentStep = 2;
-            updateNavigation();
-            ShowPanel("ChonGhe");
-        });
+        SoDoGhePanel.removeAll();
+        SoDoGhePanel.setLayout(new java.awt.BorderLayout());
+        
+        seatMap.setSelectMode(true);
+        JPanel seatBox = seatMap.createSeatMapBox();
+        SoDoGhePanel.add(seatBox, java.awt.BorderLayout.CENTER);
+        SoDoGhePanel.revalidate();
+        SoDoGhePanel.repaint();
+
+        List<cinema.models.Seat> bookedSeats = showtimeDao.getSeatStatusByShowtimeId(maSuatChieu);
+        seatMap.loadSeatMapForSelling(maPhong, bookedSeats);
+
+        currentStep = 2;
+        updateNavigation();
+        ShowPanel("ChonGhe");
+        setupSummaryPanel(BookingSummaryPanel, m);
+    });
         return btn;
     }
 
@@ -387,39 +398,38 @@ public class BanVePanel extends javax.swing.JPanel {
         btnConfirm.setFont(new java.awt.Font("Segoe UI", 1, 16));
         btnConfirm.setPreferredSize(new java.awt.Dimension(150, 45));
         btnConfirm.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-
-        // btnConfirm.addActionListener(e -> {
-        //     if (selectedSeatsList.isEmpty()) {
-        //         javax.swing.JOptionPane.showMessageDialog(this, "Vui lòng chọn ít nhất 1 ghế!");
-        //     } else {
-        //         currentStep = 3;
-        //         updateNavigation();
-        //         ShowPanel("HoaDon");
-        //     }
-        // });
+        btnConfirm.addActionListener(e -> {
+            if (seatMap.getSelectedSeatsList().isEmpty()) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Vui lòng chọn ít nhất 1 ghế!");
+            } else {
+                currentStep = 3;
+                updateNavigation();
+                ShowPanel("HoaDon");
+            }
+        });
 
         panel.add(pnlLeft, java.awt.BorderLayout.CENTER);
         panel.add(btnConfirm, java.awt.BorderLayout.EAST);
         panel.revalidate();
         panel.repaint();
     }
-//    private void updateSummaryInfo() {
-//        if (lblSummaryInfo == null) return;
-//        long total = 0;
-//        java.util.StringJoiner joiner = new java.util.StringJoiner(", ");
-//        for (cinema.models.Seat s : selectedSeatsList) {
-//            joiner.add(s.getSeatLabel());
-//            if ("VIP".equals(s.getSeatType())) total += 30000;
-//            else if ("COUPLE".equals(s.getSeatType())) total += 50000;
-//            else total += 65000;
-//        }
-//
-//        String listGhe = selectedSeatsList.isEmpty() ? "Chưa chọn" : joiner.toString();
-//        java.text.NumberFormat formatter = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
-//
-//        lblSummaryInfo.setText("<html>Ghế: <b style='color:#3b82f6'>" + listGhe + 
-//                              "</b> | Tổng tiền: <b style='color:#ef4444'>" + formatter.format(total) + " VNĐ</b></html>");
-//    }
+   private void updateSummaryInfo() {
+       if (lblSummaryInfo == null) return;
+       long total = 0;
+       java.util.StringJoiner joiner = new java.util.StringJoiner(", ");
+       for (cinema.models.Seat s : seatMap.getSelectedSeatsList()) {
+           joiner.add(s.getSeatLabel());
+           if ("VIP".equals(s.getSeatType())) total += 30000;
+           else if ("COUPLE".equals(s.getSeatType())) total += 50000;
+           else total += 65000;
+       }
+
+       String listGhe = seatMap.getSelectedSeatNames().isEmpty() ? "Chưa chọn" : joiner.toString();
+       java.text.NumberFormat formatter = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
+
+       lblSummaryInfo.setText("<html>Ghế: <b style='color:#3b82f6'>" + listGhe + 
+                             "</b> | Tổng tiền: <b style='color:#ef4444'>" + formatter.format(total) + " VNĐ</b></html>");
+   }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {

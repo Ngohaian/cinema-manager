@@ -2,8 +2,10 @@ package cinema.dao;
 
 import cinema.DBConnection;
 import cinema.enums.MovieStatus;
+import cinema.enums.SeatType;
 import cinema.models.Movie;
 import cinema.models.Room;
+import cinema.models.Seat;
 import cinema.models.ShowTime;
 
 import java.sql.*;
@@ -699,5 +701,28 @@ public class ShowTimeDAO {
         public double getCoupleExtra() { return coupleExtra; }
         public boolean isActive() { return active; }
         public boolean isGoldenHour() { return goldenHour; }
+    }
+    public List<Seat> getSeatStatusByShowtimeId(String id){
+        String sql = "Select * from ticket t join seat s on t.seatId = s.seatId where t.showtimeId = ?";
+        List<Seat> list = new ArrayList<>();
+        try(Connection conn = DBConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);){
+                ps.setString(1, id);
+                ResultSet rs = ps.executeQuery();
+                while(rs.next()){
+                    Seat s = new Seat();
+                    s.setRowIndex(rs.getInt("rowIndex"));
+                    s.setColIndex(rs.getInt("colIndex"));
+                    s.setSeatLabel(rs.getString("seatLabel"));
+                    s.setSeatType(SeatType.valueOf(rs.getString("seatType")));
+                    s.setActive(rs.getBoolean("active"));
+                    list.add(s);
+                }
+                
+            }
+        catch(SQLException ex){
+            System.out.print("Co loi" + ex.getMessage());
+        }
+        return list;
     }
 }

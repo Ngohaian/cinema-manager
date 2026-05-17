@@ -2,6 +2,7 @@ package cinema.form.panel;
 
 import cinema.dao.RoomDAO;
 import cinema.dao.SeatDao;
+import cinema.enums.SeatType;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -24,6 +25,8 @@ public class PhongManagerPanel extends javax.swing.JPanel {
     private final Color SEAT_COUPLE = new Color(235, 93, 160);
     private final Color SEAT_EMPTY = Color.WHITE;
     private final Color SEAT_BOOKED = new Color(220, 220, 220);
+    private final Color SEAT_SELECTED = new Color(34, 197, 94);
+    private boolean[][] selectedSeats;
 
     private RoomDAO roomDAO = new RoomDAO();
     private SeatDao seatDao = new SeatDao();
@@ -54,6 +57,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
     private JButton btnVipSeat;
     private JButton btnCoupleSeat;
     private JButton btnBookedSeat;
+    private JButton btnSelectedSeat;
 
     private boolean addMode = false;
     private boolean editMode = false;
@@ -266,7 +270,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         panel.setPreferredSize(new Dimension(1000, 430));
 
         panel.add(createInfoPanel());
-        panel.add(createSeatMapBox("EDIT"));
+        panel.add(createSeatMapBox());
 
         return panel;
     }
@@ -355,7 +359,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         return panel;
     }
 
-    public JPanel createSeatMapBox(String editMode) {
+    public JPanel createSeatMapBox() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
         panel.setBorder(new LineBorder(BORDER, 1));
@@ -379,7 +383,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
 
         content.add(screen, BorderLayout.NORTH);
         content.add(seatMapPanel, BorderLayout.CENTER);
-        content.add(createSeatToolPanel(editMode), BorderLayout.SOUTH);
+        content.add(createSeatToolPanel(), BorderLayout.SOUTH);
 
         panel.add(title, BorderLayout.NORTH);
         panel.add(content, BorderLayout.CENTER);
@@ -387,19 +391,24 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         return panel;
     }
 
-    public JPanel createSeatToolPanel(String editMode) {
+    public JPanel createSeatToolPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 16, 8));
         panel.setBackground(Color.WHITE);
         
-        if(editMode == "SELECT"){
-            btnBookedSeat = createSeatTypeButton("Ghế đã đặt", SEAT_BOOKED, "BOOKED");
-            panel.add(btnBookedSeat);
-        } 
+        btnEmptySeat = createSeatTypeButton("Ghế trống/hỏng", SEAT_EMPTY, "EMPTY");
+        btnRegularSeat = createSeatTypeButton("Ghế thường", SEAT_REGULAR, "REGULAR");
+        btnVipSeat = createSeatTypeButton("Ghế VIP", SEAT_VIP, "VIP");
+        btnCoupleSeat = createSeatTypeButton("Ghế đôi", SEAT_COUPLE, "COUPLE");
         panel.add(btnEmptySeat);
         panel.add(btnRegularSeat);
         panel.add(btnVipSeat);
         panel.add(btnCoupleSeat);
-
+        if(selectedSeats != null ){
+            btnBookedSeat = createSeatTypeButton("Ghế đã đặt", SEAT_BOOKED, "BOOKED");
+            panel.add(btnBookedSeat);
+            btnSelectedSeat = createSeatTypeButton("Ghế đang chọn", SEAT_SELECTED, "SELECTED");
+            panel.add(btnSelectedSeat);
+        }
         highlightSelectedSeatType();
 
         return panel;
@@ -407,33 +416,38 @@ public class PhongManagerPanel extends javax.swing.JPanel {
 
     public JButton createSeatTypeButton(String text, Color color, String type) {
         JButton btn = new JButton(text);
-        btn.setPreferredSize(new Dimension(120, 32));
+        btn.setPreferredSize(new Dimension(100, 32));
         btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btn.setFocusPainted(false);
         btn.setBackground(color);
         btn.setForeground(type.equals("EMPTY") ? Color.BLACK : Color.WHITE);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        if (selectedSeats != null) {
+            btn.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            btn.setFocusable(false);
+        } else {
+            btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            btn.addActionListener(e -> {
+                selectedSeatType = type;
+                highlightSelectedSeatType();
+            });
+            
+        }
         btn.setBorder(new LineBorder(BORDER, 1));
-
-        btn.addActionListener(e -> {
-            selectedSeatType = type;
-            highlightSelectedSeatType();
-        });
-
         return btn;
     }
 
     public void highlightSelectedSeatType() {
         resetSeatButtonBorder();
-
-        if ("EMPTY".equals(selectedSeatType)) {
-            btnEmptySeat.setBorder(new LineBorder(Color.BLACK, 3));
-        } else if ("REGULAR".equals(selectedSeatType)) {
-            btnRegularSeat.setBorder(new LineBorder(Color.BLACK, 3));
-        } else if ("VIP".equals(selectedSeatType)) {
-            btnVipSeat.setBorder(new LineBorder(Color.BLACK, 3));
-        } else if ("COUPLE".equals(selectedSeatType)) {
-            btnCoupleSeat.setBorder(new LineBorder(Color.BLACK, 3));
+        if (selectedSeats == null) {
+            if ("EMPTY".equals(selectedSeatType)) {
+                btnEmptySeat.setBorder(new LineBorder(Color.BLACK, 3));
+            } else if ("REGULAR".equals(selectedSeatType)) {
+                btnRegularSeat.setBorder(new LineBorder(Color.BLACK, 3));
+            } else if ("VIP".equals(selectedSeatType)) {
+                btnVipSeat.setBorder(new LineBorder(Color.BLACK, 3));
+            } else if ("COUPLE".equals(selectedSeatType)) {
+                btnCoupleSeat.setBorder(new LineBorder(Color.BLACK, 3));
+            }
         }
     }
 
@@ -665,7 +679,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
 
     public void loadSeatMap(String roomId) {
         clearSeatMap();
-
+        selectedSeats = null;
         try {
             List<SeatDao.SeatView> seats = seatDao.getSeatViewsByRoom(roomId);
 
@@ -708,7 +722,52 @@ public class PhongManagerPanel extends javax.swing.JPanel {
             seatMapPanel.repaint();
         }
     }
+    public void loadSeatMapForSelling(String roomId, List<cinema.models.Seat> bookedSeats) {
+        clearSeatMap();
+        try {
+            List<SeatDao.SeatView> seats = seatDao.getSeatViewsByRoom(roomId);
+            int maxRow = -1, maxCol = -1;
+            for (SeatDao.SeatView s : seats) {
+                maxRow = Math.max(maxRow, s.getRowIndex());
+                maxCol = Math.max(maxCol, s.getColIndex());
+            }
+            if (seats.isEmpty()) return;
 
+            draftSeatTypes = new String[maxRow + 1][maxCol + 1];
+            selectedSeats = new boolean[maxRow + 1][maxCol + 1];
+
+            for (int i = 0; i <= maxRow; i++)
+                for (int j = 0; j <= maxCol; j++)
+                    draftSeatTypes[i][j] = "EMPTY";
+
+            for (SeatDao.SeatView s : seats) {
+                if (s.getActive() == 0) {
+                    draftSeatTypes[s.getRowIndex()][s.getColIndex()] = "EMPTY";
+                } else {
+                    draftSeatTypes[s.getRowIndex()][s.getColIndex()] = s.getSeatType();
+                }
+            }
+            if (bookedSeats != null) {
+                for (cinema.models.Seat s : bookedSeats) {
+                    draftSeatTypes[s.getRowIndex()][s.getColIndex()] = "BOOKED";
+                }
+            }
+            renderDraftSeatMap();
+        } catch (Exception e) {
+            JLabel error = new JLabel("Lỗi tải sơ đồ ghế: " + e.getMessage(), SwingConstants.CENTER);
+            error.setForeground(Color.RED);
+            seatMapPanel.add(error, BorderLayout.CENTER);
+            seatMapPanel.revalidate();
+            seatMapPanel.repaint();
+        }
+    }
+    public void setSelectMode(boolean isSelect) {
+    if (isSelect) {
+        selectedSeats = new boolean[1][1];
+    } else {
+        selectedSeats = null;
+    }
+}
     private void rebuildWhiteSeatMapIfEditing() {
         if (loadingForm) {
             return;
@@ -825,22 +884,62 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         label.setBackground(getSeatColor(draftSeatTypes[row][col]));
         label.setToolTipText((char) ('A' + row) + String.valueOf(col + 1) + " - " + draftSeatTypes[row][col]);
         label.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
+        if (selectedSeats != null && selectedSeats[row][col]) {
+            label.setBackground(SEAT_SELECTED);
+        } else {
+            label.setBackground(getSeatColor(draftSeatTypes[row][col]));
+        }
         label.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (!addMode && !editMode) {
-                    return;
+                if (selectedSeats != null) {
+                    String type = draftSeatTypes[row][col];
+                    if ("EMPTY".equals(type) || "BOOKED".equals(type)) return;
+                    selectedSeats[row][col] = !selectedSeats[row][col];
+                    renderDraftSeatMap();
+                } else {
+                    if (!addMode && !editMode) return;
+                    draftSeatTypes[row][col] = selectedSeatType;
+                    renderDraftSeatMap();
                 }
-
-                draftSeatTypes[row][col] = selectedSeatType;
-                renderDraftSeatMap();
             }
         });
 
         return label;
     }
+    // Lấy danh sách các đối tượng Seat đang được tích chọn (để lưu DB)
+    public java.util.List<cinema.models.Seat> getSelectedSeatsList() {
+        java.util.List<cinema.models.Seat> list = new java.util.ArrayList<>();
+        if (selectedSeats == null) return list;
 
+        for (int i = 0; i < selectedSeats.length; i++) {
+            for (int j = 0; j < selectedSeats[i].length; j++) {
+                if (selectedSeats[i][j]) {
+                    cinema.models.Seat seat = new cinema.models.Seat();
+                    seat.setRowIndex(i);
+                    seat.setColIndex(j);
+                    seat.setSeatType(SeatType.valueOf(draftSeatTypes[i][j])); 
+                    list.add(seat);
+                }
+            }
+        }
+        return list;
+    }
+
+    public java.util.List<String> getSelectedSeatNames() {
+        java.util.List<String> names = new java.util.ArrayList<>();
+        if (selectedSeats == null) return names;
+
+        for (int i = 0; i < selectedSeats.length; i++) {
+            for (int j = 0; j < selectedSeats[i].length; j++) {
+                if (selectedSeats[i][j]) {
+                    char rowChar = (char) ('A' + i);
+                    names.add("" + rowChar + (j + 1));
+                }
+            }
+        }
+        return names;
+    }
     private Color getSeatColor(String type) {
         if ("VIP".equalsIgnoreCase(type)) {
             return SEAT_VIP;
@@ -853,7 +952,12 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         if ("REGULAR".equalsIgnoreCase(type)) {
             return SEAT_REGULAR;
         }
-
+        if ("BOOKED".equalsIgnoreCase(type)) {
+            return SEAT_BOOKED;
+        }
+        if ("SELECTED".equalsIgnoreCase(type)) {
+            return SEAT_SELECTED;
+        }
         return SEAT_EMPTY;
     }
 

@@ -13,11 +13,6 @@ public class SellTicketFrame extends javax.swing.JFrame {
     private JPanel indicator = new JPanel();
     private JLabel selectedButton = null;
     private JLabel[] menuLabels;
-    private BanVePanel banVePanel = new BanVePanel();
-    private LichSuHDPanel lichSuPanel = new LichSuHDPanel();
-    private PhimPanel phimPanel = new PhimPanel();
-    private LichChieuPanel lichChieuPanel = new LichChieuPanel();
-    private ThongTinPanel thongTinPanel = new ThongTinPanel();
     private cinema.models.Employee currentEmployee;
     
     public SellTicketFrame(cinema.models.Employee emp) {
