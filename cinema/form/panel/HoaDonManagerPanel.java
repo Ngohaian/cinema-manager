@@ -12,6 +12,7 @@ import java.util.List;
 public class HoaDonManagerPanel extends JPanel {
 
     private InvoiceDAO invoiceDAO = new InvoiceDAO();
+    private TableRowSorter<TableModel> sorter;
 
     private JTable DSTable;
 
@@ -32,6 +33,10 @@ public class HoaDonManagerPanel extends JPanel {
         initSearch();
 
         initFilterStatus();
+
+        initAction();
+
+        initFilterDate();
     }
 
     // ================= LOAD DATA =================
@@ -420,83 +425,265 @@ public class HoaDonManagerPanel extends JPanel {
 
     private void initSearch() {
 
-        txtSearch.getDocument().addDocumentListener(
-                new javax.swing.event.DocumentListener() {
+    sorter = new TableRowSorter<>(DSTable.getModel());
 
-                    public void insertUpdate(
-                            javax.swing.event.DocumentEvent e
-                    ) {
-                        filter();
-                    }
+    DSTable.setRowSorter(sorter);
 
-                    public void removeUpdate(
-                            javax.swing.event.DocumentEvent e
-                    ) {
-                        filter();
-                    }
+    txtSearch.getDocument().addDocumentListener(
+            new javax.swing.event.DocumentListener() {
 
-                    public void changedUpdate(
-                            javax.swing.event.DocumentEvent e
-                    ) {
-                        filter();
-                    }
-
-                    private void filter() {
-
-                        String keyword =
-                                txtSearch.getText();
-
-                        if(keyword.equals("Nhập từ khóa...")){
-                            keyword = "";
-                        }
-
-                        TableRowSorter<TableModel> sorter =
-                                new TableRowSorter<>(
-                                        DSTable.getModel()
-                                );
-
-                        DSTable.setRowSorter(sorter);
-
-                        sorter.setRowFilter(
-                                RowFilter.regexFilter(
-                                        "(?i)" + keyword
-                                )
-                        );
-                    }
+                public void insertUpdate(
+                        javax.swing.event.DocumentEvent e
+                ) {
+                    filter();
                 }
-        );
-    }
+
+                public void removeUpdate(
+                        javax.swing.event.DocumentEvent e
+                ) {
+                    filter();
+                }
+
+                public void changedUpdate(
+                        javax.swing.event.DocumentEvent e
+                ) {
+                    filter();
+                }
+
+                private void filter() {
+
+                    String keyword =
+                            txtSearch.getText();
+
+                    if(keyword.equals("Nhập từ khóa...")){
+                        keyword = "";
+                    }
+
+                    sorter.setRowFilter(
+                            RowFilter.regexFilter(
+                                    "(?i)" + keyword
+                            )
+                    );
+                }
+            }
+    );
+}
 
     // ================= FILTER STATUS =================
 
-    private void initFilterStatus() {
+   private void initFilterStatus() {
 
-        cbStatus.addActionListener(e -> {
+    cbStatus.addActionListener(e -> {
 
-            String selected =
-                    cbStatus.getSelectedItem().toString();
+        String selected =
+                cbStatus.getSelectedItem().toString();
 
-            TableRowSorter<TableModel> sorter =
-                    new TableRowSorter<>(
-                            DSTable.getModel()
-                    );
+        if(selected.equals("Tất cả")){
 
-            DSTable.setRowSorter(sorter);
+            sorter.setRowFilter(null);
+        }
+        else{
 
-            if(selected.equals("Tất cả")){
-                sorter.setRowFilter(null);
-            }
-            else{
+            sorter.setRowFilter(
+                    RowFilter.regexFilter(
+                            selected,
+                            6
+                    )
+            );
+        }
+    });
+}
+private void initFilterDate() {
+
+    javax.swing.event.DocumentListener listener =
+            new javax.swing.event.DocumentListener() {
+
+        public void insertUpdate(
+                javax.swing.event.DocumentEvent e
+        ) {
+            filterDate();
+        }
+
+        public void removeUpdate(
+                javax.swing.event.DocumentEvent e
+        ) {
+            filterDate();
+        }
+
+        public void changedUpdate(
+                javax.swing.event.DocumentEvent e
+        ) {
+            filterDate();
+        }
+
+        private void filterDate() {
+
+            try {
+
+                String fromText =
+                        txtFrom.getText().trim();
+
+                String toText =
+                        txtTo.getText().trim();
+
+                java.text.SimpleDateFormat sdf =
+                        new java.text.SimpleDateFormat(
+                                "dd/MM/yyyy"
+                        );
+
+                java.util.Date fromDate =
+                        sdf.parse(fromText);
+
+                java.util.Date toDate =
+                        sdf.parse(toText);
+
+                TableRowSorter<TableModel> sorter =
+                        new TableRowSorter<>(
+                                DSTable.getModel()
+                        );
+
+                DSTable.setRowSorter(sorter);
+
                 sorter.setRowFilter(
-                        RowFilter.regexFilter(
-                                selected,
-                                6
+                        new RowFilter<TableModel,Integer>() {
+
+                    @Override
+                    public boolean include(
+                            Entry<? extends TableModel,
+                            ? extends Integer> entry
+                    ) {
+
+                        try {
+
+                            String dateStr =
+                                    entry.getStringValue(3);
+
+                            java.util.Date rowDate =
+                                    sdf.parse(dateStr);
+
+                            return !rowDate.before(fromDate)
+                                    &&
+                                   !rowDate.after(toDate);
+
+                        }
+                        catch(Exception ex){
+                            return true;
+                        }
+                    }
+                });
+
+            }
+            catch(Exception ex){
+
+                DSTable.setRowSorter(null);
+            }
+        }
+    };
+
+    txtFrom.getDocument()
+            .addDocumentListener(listener);
+
+    txtTo.getDocument()
+            .addDocumentListener(listener);
+}
+
+private void initAction() {
+
+    DSTable.addMouseListener(new java.awt.event.MouseAdapter() {
+
+        @Override
+        public void mouseClicked(java.awt.event.MouseEvent evt) {
+
+            int row = DSTable.rowAtPoint(evt.getPoint());
+
+            int col = DSTable.columnAtPoint(evt.getPoint());
+
+            // click cột thao tác
+            if(col == 7){
+
+                String maHD =
+                        DSTable.getValueAt(row,0).toString();
+
+                String kh =
+                        DSTable.getValueAt(row,1).toString();
+
+                String sdt =
+                        DSTable.getValueAt(row,2).toString();
+
+                String ngay =
+                        DSTable.getValueAt(row,3).toString();
+
+                String tongTien =
+                        DSTable.getValueAt(row,5).toString();
+
+                String trangThai =
+                        DSTable.getValueAt(row,6).toString();
+
+                // PANEL CHI TIẾT
+                JPanel panel = new JPanel();
+
+                panel.setLayout(
+                        new BoxLayout(
+                                panel,
+                                BoxLayout.Y_AXIS
                         )
                 );
-            }
-        });
-    }
 
+                panel.add(new JLabel("Mã HD: " + maHD));
+                panel.add(Box.createVerticalStrut(10));
+
+                panel.add(new JLabel("Khách hàng: " + kh));
+                panel.add(Box.createVerticalStrut(10));
+
+                panel.add(new JLabel("SĐT: " + sdt));
+                panel.add(Box.createVerticalStrut(10));
+
+                panel.add(new JLabel("Ngày lập: " + ngay));
+                panel.add(Box.createVerticalStrut(10));
+
+                panel.add(new JLabel("Tổng tiền: " + tongTien));
+                panel.add(Box.createVerticalStrut(10));
+
+                panel.add(new JLabel("Trạng thái: " + trangThai));
+                panel.add(Box.createVerticalStrut(20));
+
+                JButton btnRefund =
+                        new JButton("Trả vé");
+
+                btnRefund.setBackground(
+                        new Color(220,50,50)
+                );
+
+                btnRefund.setForeground(Color.WHITE);
+
+                btnRefund.setFocusPainted(false);
+
+                panel.add(btnRefund);
+
+                JDialog dialog =
+                        new JDialog();
+
+                dialog.setTitle("Chi tiết hóa đơn");
+
+                dialog.setSize(400,350);
+
+                dialog.setLocationRelativeTo(null);
+
+                dialog.add(panel);
+
+                btnRefund.addActionListener(e -> {
+
+                    JOptionPane.showMessageDialog(
+                            dialog,
+                            "Đã gửi yêu cầu trả vé"
+                    );
+                });
+
+                dialog.setVisible(true);
+            }
+        }
+    });
+}
     // ================= INPUT STYLE =================
 
     private void styleInput(

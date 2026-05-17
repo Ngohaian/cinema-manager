@@ -21,6 +21,12 @@ public class LichSuHDPanel extends JPanel {
         setTable(DSTable);
 
         loadData();
+
+        initSearch();
+
+        initFilterStatus();
+
+        initFilterDate();
     }
 
     // ================= LOAD DATA =================
@@ -64,6 +70,176 @@ public class LichSuHDPanel extends JPanel {
                 "Hoàn tiền"
         });
     }
+    private void initSearch() {
+
+    txtSearch.getDocument().addDocumentListener(
+            new javax.swing.event.DocumentListener() {
+
+        public void insertUpdate(
+                javax.swing.event.DocumentEvent e
+        ) {
+            filter();
+        }
+
+        public void removeUpdate(
+                javax.swing.event.DocumentEvent e
+        ) {
+            filter();
+        }
+
+        public void changedUpdate(
+                javax.swing.event.DocumentEvent e
+        ) {
+            filter();
+        }
+
+        private void filter() {
+
+            String keyword =
+                    txtSearch.getText().trim();
+
+            if(keyword.equals("Nhập mã hóa đơn...")){
+                keyword = "";
+            }
+
+            TableRowSorter<TableModel> sorter =
+                    new TableRowSorter<>(
+                            DSTable.getModel()
+                    );
+
+            DSTable.setRowSorter(sorter);
+
+            sorter.setRowFilter(
+                    RowFilter.regexFilter(
+                            "(?i)" + keyword,
+                            0
+                    )
+            );
+        }
+    });
+}
+private void initFilterStatus() {
+
+    cbStatus.addActionListener(e -> {
+
+        String selected =
+                cbStatus.getSelectedItem().toString();
+
+        TableRowSorter<TableModel> sorter =
+                new TableRowSorter<>(
+                        DSTable.getModel()
+                );
+
+        DSTable.setRowSorter(sorter);
+
+        if(selected.equals("Tất cả")){
+
+            sorter.setRowFilter(null);
+        }
+        else{
+
+            sorter.setRowFilter(
+                    RowFilter.regexFilter(
+                            selected,
+                            4
+                    )
+            );
+        }
+    });
+}
+private void initFilterDate() {
+
+    javax.swing.event.DocumentListener listener =
+            new javax.swing.event.DocumentListener() {
+
+        public void insertUpdate(
+                javax.swing.event.DocumentEvent e
+        ) {
+            filterDate();
+        }
+
+        public void removeUpdate(
+                javax.swing.event.DocumentEvent e
+        ) {
+            filterDate();
+        }
+
+        public void changedUpdate(
+                javax.swing.event.DocumentEvent e
+        ) {
+            filterDate();
+        }
+
+        private void filterDate() {
+
+            try {
+
+                String fromText =
+                        txtFrom.getText().trim();
+
+                String toText =
+                        txtTo.getText().trim();
+
+                java.text.SimpleDateFormat sdf =
+                        new java.text.SimpleDateFormat(
+                                "dd/MM/yyyy"
+                        );
+
+                java.util.Date fromDate =
+                        sdf.parse(fromText);
+
+                java.util.Date toDate =
+                        sdf.parse(toText);
+
+                TableRowSorter<TableModel> sorter =
+                        new TableRowSorter<>(
+                                DSTable.getModel()
+                        );
+
+                DSTable.setRowSorter(sorter);
+
+                sorter.setRowFilter(
+                        new RowFilter<TableModel,Integer>() {
+
+                    @Override
+                    public boolean include(
+                            Entry<? extends TableModel,
+                            ? extends Integer> entry
+                    ) {
+
+                        try {
+
+                            String dateStr =
+                                    entry.getStringValue(2);
+
+                            java.util.Date rowDate =
+                                    sdf.parse(dateStr);
+
+                            return !rowDate.before(fromDate)
+                                    &&
+                                   !rowDate.after(toDate);
+
+                        }
+                        catch(Exception ex){
+                            return true;
+                        }
+                    }
+                });
+
+            }
+            catch(Exception ex){
+
+                DSTable.setRowSorter(null);
+            }
+        }
+    };
+
+    txtFrom.getDocument()
+            .addDocumentListener(listener);
+
+    txtTo.getDocument()
+            .addDocumentListener(listener);
+}
 
     // ================= UI =================
 

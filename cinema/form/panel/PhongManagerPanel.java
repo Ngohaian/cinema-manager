@@ -940,6 +940,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         }
         return names;
     }
+
     private Color getSeatColor(String type) {
         if ("VIP".equalsIgnoreCase(type)) {
             return SEAT_VIP;

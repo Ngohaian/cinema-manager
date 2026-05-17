@@ -413,23 +413,7 @@ public class BanVePanel extends javax.swing.JPanel {
         panel.revalidate();
         panel.repaint();
     }
-   private void updateSummaryInfo() {
-       if (lblSummaryInfo == null) return;
-       long total = 0;
-       java.util.StringJoiner joiner = new java.util.StringJoiner(", ");
-       for (cinema.models.Seat s : seatMap.getSelectedSeatsList()) {
-           joiner.add(s.getSeatLabel());
-           if ("VIP".equals(s.getSeatType())) total += 30000;
-           else if ("COUPLE".equals(s.getSeatType())) total += 50000;
-           else total += 65000;
-       }
-
-       String listGhe = seatMap.getSelectedSeatNames().isEmpty() ? "Chưa chọn" : joiner.toString();
-       java.text.NumberFormat formatter = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
-
-       lblSummaryInfo.setText("<html>Ghế: <b style='color:#3b82f6'>" + listGhe + 
-                             "</b> | Tổng tiền: <b style='color:#ef4444'>" + formatter.format(total) + " VNĐ</b></html>");
-   }
+   
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
