@@ -473,12 +473,12 @@ public class NhanVienManagerPanel extends javax.swing.JPanel {
                     .addComponent(jLabel5)
                     .addComponent(jComboBox2, 0, 180, Short.MAX_VALUE))
                 .addGap(30)
-                .addGroup(jPanel1Layout.createParallelGroup()
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addGap(10)
-                        .addComponent(jLabel1, 80, 80, 80))
-                    .addComponent(jSlider1, 0, 200, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addComponent(jLabel4)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel1))
+                .addComponent(jSlider1, 0, 200, Short.MAX_VALUE))
                 .addGap(20))
         );
         jPanel1Layout.setVerticalGroup(
