@@ -326,7 +326,7 @@ public class SellTicketFrame extends javax.swing.JFrame {
             pThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pThongTinLayout.createSequentialGroup()
                 .addGap(18, 18, 18)
-                .addGroup(pThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(pThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lChucVu)
                     .addComponent(lTen))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
