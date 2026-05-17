@@ -37,7 +37,7 @@ public class Employee {
     private String note;
 
     public Employee(String name, String phone, String email,String username, String password,Position position, double salary) {
-        this.id = String.format("EMP%03d", autoId++);
+        this.id = "EMP000";
         this.name = name;
         this.phone = phone;
         this.email = email;

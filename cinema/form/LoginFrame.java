@@ -183,6 +183,8 @@ public class LoginFrame extends javax.swing.JFrame {
                     pos,
                     rs.getDouble("salary")
                 );
+                emp.setId(rs.getString("EmployeeId"));
+                emp.setHireDate(rs.getDate("hireDate").toLocalDate());
                 return emp;
             }
         } catch (java.sql.SQLException e) {

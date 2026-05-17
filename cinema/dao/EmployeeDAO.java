@@ -9,13 +9,36 @@ public class EmployeeDAO {
         employeeList = getAllEmployeesFromDB();
     }
 
-    public boolean addEmployee(Employee employee){
-        if(findById(employee.getId()) != null){
-            return false;
+   public boolean addEmployee(Employee employee) {
+    if (findById(employee.getId()) != null) return false;
+
+    String sql = "INSERT INTO employee (EmployeeId, EmployeeName, EmployeePhone, EmployeeEmail, " +
+                 "Position, salary, hireDate, username, password, status, note) " +
+                 "VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+    try (java.sql.Connection conn = cinema.DBConnection.getConnection();
+         java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, employee.getId());
+        ps.setString(2, employee.getName());
+        ps.setString(3, employee.getPhone());
+        ps.setString(4, employee.getEmail());
+        ps.setString(5, employee.getPosition().getDisplayName());
+        ps.setDouble(6, employee.getSalary());
+        ps.setDate(7, java.sql.Date.valueOf(employee.getHireDate()));
+        ps.setString(8, employee.getUsername());
+        ps.setString(9, employee.getPassword());
+        ps.setString(10, employee.getStatus().name());
+        ps.setString(11, "");
+        int rows = ps.executeUpdate();
+        if (rows > 0) {
+            employeeList.add(employee);
+            return true;
         }
-        employeeList.add(employee);
-        return true;
+    } catch (java.sql.SQLException e) {
+        System.err.println("LỖI ADD EMPLOYEE: " + e.getMessage());
+        e.printStackTrace();
     }
+    return false;
+}
     public Employee findById(String id){
         for(Employee e : employeeList){
             if(e.getId().equals(id)){
@@ -37,16 +60,6 @@ public class EmployeeDAO {
             e.displayInfo();
             System.out.println("----------------");
         }
-    }
-    public boolean updateEmployee(String id,String name,String phone,String email){
-        Employee e = findById(id);
-        if(e != null){
-            e.setName(name);
-            e.setPhone(phone);
-            e.setEmail(email);
-            return true;
-        }
-        return false;
     }
 public List<Employee> getAllEmployeesFromDB() {
     List<Employee> list = new ArrayList<>();
@@ -113,20 +126,53 @@ public List<Employee> getAllEmployeesFromDB() {
             .filter(e ->position.equals("ALL")|| e.getPosition().name().equalsIgnoreCase(position)).filter(e -> e.getSalary() <= maxSalary).toList();
     }
 
-    public String getNextEmployeeId() { return "EMP" + String.format("%03d", employeeList.size() + 1);}
-
-    public boolean updateEmployee(Employee emp) {
-        Employee old = findById(emp.getId());
-        if (old != null) {
-            old.setName(emp.getName());
-            old.setPhone(emp.getPhone());
-            old.setEmail(emp.getEmail());
-            old.setPosition(emp.getPosition());
-            old.setStatus(emp.getStatus());
-            return true;
+    public String getNextEmployeeId() {
+    String sql = "SELECT MAX(CAST(SUBSTRING(EmployeeId, 4) AS UNSIGNED)) FROM employee";
+    try (java.sql.Connection conn = cinema.DBConnection.getConnection();
+         java.sql.PreparedStatement ps = conn.prepareStatement(sql);
+         java.sql.ResultSet rs = ps.executeQuery()) {
+        if (rs.next()) {
+            int maxId = rs.getInt(1);
+            return String.format("EMP%03d", maxId + 1);
         }
+    } catch (java.sql.SQLException e) {
+        e.printStackTrace();
+    }
+    return "EMP001";
+}
+   public boolean updateEmployee(Employee emp) {
+    Employee old = findById(emp.getId());
+    if (old != null) {
+        old.setName(emp.getName());
+        old.setPhone(emp.getPhone());
+        old.setEmail(emp.getEmail());
+        old.setPosition(emp.getPosition());
+        old.setStatus(emp.getStatus());
+        old.setUsername(emp.getUsername());
+        old.setPassword(emp.getPassword());
+        old.setSalary(emp.getSalary());
+    }
+
+    String sql = "UPDATE employee SET EmployeeName=?, EmployeePhone=?, EmployeeEmail=?, " +
+                 "Position=?, salary=?, status=?, username=?, password=? WHERE EmployeeId=?";
+    try (java.sql.Connection conn = cinema.DBConnection.getConnection();
+         java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, emp.getName());
+        ps.setString(2, emp.getPhone());
+        ps.setString(3, emp.getEmail());
+        ps.setString(4, emp.getPosition().getDisplayName());
+        ps.setDouble(5, emp.getSalary());
+        ps.setString(6, emp.getStatus().name());
+        ps.setString(7, emp.getUsername());
+        ps.setString(8, emp.getPassword());
+        ps.setString(9, emp.getId());
+        return ps.executeUpdate() > 0;
+    } catch (java.sql.SQLException e) {
+        System.err.println("LỖI UPDATE EMPLOYEE: " + e.getMessage());
+        e.printStackTrace();
         return false;
     }
+}
         //login
     public Employee getPosition(String username, String password){
         for(Employee emp : employeeList){

@@ -11,6 +11,7 @@ public class NhanVienManagerPanel extends javax.swing.JPanel {
 
     private EmployeeDAO dao = new EmployeeDAO();
     private List<Employee> danhSach;
+    private List<Employee> danhSachHienThi;
 
     public NhanVienManagerPanel() {
         initComponents();
@@ -127,7 +128,7 @@ public class NhanVienManagerPanel extends javax.swing.JPanel {
                 int row = table.rowAtPoint(e.getPoint());
                 if (row >= 0) {
                     String id = table.getValueAt(row, 0).toString();
-                    Employee emp = danhSach.stream()
+                    Employee emp = danhSachHienThi.stream()
                         .filter(x -> x.getId().equals(id))
                         .findFirst().orElse(null);
                     if (emp != null) openSuaDialog(emp);
@@ -137,6 +138,7 @@ public class NhanVienManagerPanel extends javax.swing.JPanel {
     }
 
     private void loadTable(List<Employee> list) {
+        this.danhSachHienThi = list;
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         model.setRowCount(0);
         for (Employee emp : list) {
@@ -229,6 +231,7 @@ public class NhanVienManagerPanel extends javax.swing.JPanel {
                 double luong = Double.parseDouble(luongStr.replace(",", ""));
                 Employee.Position pos = Employee.Position.values()[cbCV.getSelectedIndex()];
                 Employee emp = new Employee(ten, sdt, email, user, pass, pos, luong);
+                emp.setId(dao.getNextEmployeeId());
                 if (dao.addEmployee(emp)) {
                     JOptionPane.showMessageDialog(dialog, "Thêm nhân viên thành công!");
                     dialog.dispose();
@@ -322,6 +325,7 @@ public class NhanVienManagerPanel extends javax.swing.JPanel {
                 emp.setPosition(Employee.Position.values()[cbCV.getSelectedIndex()]);
                 emp.setStatus(Employee.EmployeeStatus.valueOf(cbTT.getSelectedItem().toString()));
                 double luong = Double.parseDouble(txtLuong.getText().trim().replace(",", ""));
+                emp.setSalary(luong);
                 if (dao.updateEmployee(emp)) {
                     JOptionPane.showMessageDialog(dialog, "Cập nhật thành công!");
                     dialog.dispose();
@@ -469,12 +473,12 @@ public class NhanVienManagerPanel extends javax.swing.JPanel {
                     .addComponent(jLabel5)
                     .addComponent(jComboBox2, 0, 180, Short.MAX_VALUE))
                 .addGap(30)
-                .addGroup(jPanel1Layout.createParallelGroup()
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addGap(10)
-                        .addComponent(jLabel1, 80, 80, 80))
-                    .addComponent(jSlider1, 0, 200, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addComponent(jLabel4)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel1))
+                .addComponent(jSlider1, 0, 200, Short.MAX_VALUE))
                 .addGap(20))
         );
         jPanel1Layout.setVerticalGroup(
@@ -508,10 +512,10 @@ public class NhanVienManagerPanel extends javax.swing.JPanel {
                 .addGap(30)
                 .addGroup(layout.createParallelGroup()
                     .addComponent(jPanel2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jLabel9)
-                        .addGap(20)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                    .addComponent(jLabel9)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(30))
         );

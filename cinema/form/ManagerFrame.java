@@ -9,14 +9,22 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 public class ManagerFrame extends javax.swing.JFrame {
-    private JPanel indicator = new JPanel(); // Tao thanh danh dau cho chuc nang dang duoc chon
+    private JPanel indicator = new JPanel(); 
     private JLabel selectedButton = null;
     private JLabel[] menuLabels_1;
     public ManagerFrame(cinema.models.Employee emp) {
         this();
         lTen.setText(emp.getName());
         lChucVu.setText(emp.getPosition().getDisplayName());
-    }
+        thongTinPanel.loadEmployee(emp);
+        pThongTin.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        pThongTin.addMouseListener(new java.awt.event.MouseAdapter() {
+        @Override
+        public void mouseClicked(java.awt.event.MouseEvent e) {
+            showPanel("ThongTin");
+        }
+    });
+}
 
     public ManagerFrame() {
         initComponents();
