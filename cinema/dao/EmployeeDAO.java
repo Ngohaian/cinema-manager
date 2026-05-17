@@ -1,5 +1,8 @@
 package cinema.dao;
 import cinema.models.Employee;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -172,6 +175,38 @@ public List<Employee> getAllEmployeesFromDB() {
         e.printStackTrace();
         return false;
     }
+}
+// TKE:
+   public List<Object[]> getTop5NhanVienBanVeThang() {
+    List<Object[]> list = new ArrayList<>();
+
+    String sql = "SELECT e.EmployeeId, e.EmployeeName, COUNT(i.invoiceId) as soLuongVe " +
+                 "FROM invoice i " +
+                 "JOIN employee e ON e.EmployeeId = i.employeeId " +
+                 "WHERE MONTH(i.invoiceDate) = MONTH(CURDATE()) " +
+                 "  AND YEAR(i.invoiceDate) = YEAR(CURDATE()) " +
+                 "  AND e.Position = 'Nhan vien ban ve' " +
+                 "GROUP BY i.employeeId " +
+                 "ORDER BY soLuongVe DESC " +
+                 "LIMIT 5";
+
+    try (Connection conn = cinema.DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+
+        while (rs.next()) {
+            list.add(new Object[]{
+                rs.getString("EmployeeId"),
+                rs.getString("EmployeeName"),
+                rs.getInt("soLuongVe")
+            });
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return list;
 }
         //login
     public Employee getPosition(String username, String password){
