@@ -380,7 +380,7 @@ public class BanVePanel extends javax.swing.JPanel {
         panel.removeAll();
         panel.setLayout(new java.awt.BorderLayout(20, 0));
         panel.setBackground(java.awt.Color.WHITE);
-        panel.setPreferredSize(new java.awt.Dimension(0, 75));
+        panel.setPreferredSize(new java.awt.Dimension(0, 100));
         panel.setBorder(new javax.swing.border.EmptyBorder(10, 20, 10, 20));
         javax.swing.JPanel pnlLeft = new javax.swing.JPanel(new java.awt.GridLayout(2, 1, 0, 5));
         pnlLeft.setOpaque(false);
