@@ -449,14 +449,6 @@ public class SellTicketFrame extends javax.swing.JFrame {
         showPanel("ThongTin");
     }                                      
 
-    public static void main(String args[]) {
-        
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new CheckerTicket(null).setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify                     
     private javax.swing.JLabel btnBanVe;

@@ -390,6 +390,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
     public JPanel createSeatToolPanel(String editMode) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 16, 8));
         panel.setBackground(Color.WHITE);
+        
         if(editMode == "SELECT"){
             btnBookedSeat = createSeatTypeButton("Ghế đã đặt", SEAT_BOOKED, "BOOKED");
             panel.add(btnBookedSeat);
