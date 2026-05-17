@@ -3,6 +3,7 @@ package cinema.form.panel;
 import cinema.dao.MovieDAO;
 import cinema.dao.RoomDAO;
 import cinema.dao.ShowTimeDAO;
+import cinema.enums.MovieStatus;
 import cinema.models.Movie;
 import cinema.models.Room;
 
@@ -874,9 +875,12 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
             movieListPanel.removeAll();
 
             try {
-                List<Movie> movies = movieDAO.getAll();
+                List<Movie> movies = movieDAO.getDSPhim();
 
                 for (Movie movie : movies) {
+                    if(movie.getActive() == MovieStatus.INACTIVE) {
+                        continue;
+                    }
                     MovieCheckBoxItem item = new MovieCheckBoxItem(movie);
                     movieCheckBoxItems.add(item);
                     movieListPanel.add(item);
@@ -1518,9 +1522,12 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
             cboMovie.removeAllItems();
 
             try {
-                List<Movie> movies = movieDAO.getAll();
+                List<Movie> movies = movieDAO.getDSPhim();
 
                 for (Movie m : movies) {
+                    if(m.getActive() == MovieStatus.INACTIVE) {
+                        continue;
+                    }
                     cboMovie.addItem(new ComboItem(m.getId(), m.getTitle()));
                 }
 

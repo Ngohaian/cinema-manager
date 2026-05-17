@@ -160,7 +160,32 @@ public class ShowTimeDAO {
 
         return list;
     }
+    public List<ShowTime> getByMovieId(String movieId){
+        List<ShowTime> list = new ArrayList<>();
+        String sql = "SELECT * FROM Showtime WHERE movieId = ? AND active = 1 AND startTime >= now()";
+        try (java.sql.Connection conn = DBConnection.getConnection();java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, movieId);
+            ResultSet rs = ps.executeQuery();
 
+            while(rs.next()) {
+                Movie movie = movieDAO.getById(movieId);
+                Room room = roomDAO.getById(rs.getString("roomId"));
+
+                ShowTime s = new ShowTime(
+                    rs.getString("showtimeId"),
+                    movie,
+                    room,
+                    rs.getTimestamp("startTime").toLocalDateTime(),
+                    rs.getDouble("basePrice")
+                );
+                list.add(s);
+            }
+        }
+        catch(Exception ex){
+            System.out.print("Loi: "+ex);
+        }
+        return list;
+    }
     public void insert(String showtimeId,
                        String movieId,
                        String roomId,

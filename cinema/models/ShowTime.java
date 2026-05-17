@@ -199,17 +199,7 @@ public class ShowTime {
     public String getShowtimeId() {
         return showtimeId;
     }
-    public double getBasePrice() {
-    return basePrice;
-    }
 
-    public double getVipExtra() {
-        return vipExtra;
-    }
-
-    public double getCoupleExtra() {
-        return coupleExtra;
-    }
     public void setActive(boolean active) {
         this.active = active;
     }
