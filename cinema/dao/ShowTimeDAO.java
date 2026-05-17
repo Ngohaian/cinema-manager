@@ -1,6 +1,7 @@
 package cinema.dao;
 
 import cinema.DBConnection;
+import cinema.enums.MovieStatus;
 import cinema.models.Movie;
 import cinema.models.Room;
 import cinema.models.ShowTime;
@@ -334,7 +335,7 @@ public class ShowTimeDAO {
         for (String movieId : movieIds) {
             Movie m = movieDAO.getById(movieId);
 
-            if (m != null && m.isActive()) {
+            if (m != null && m.getActive() == MovieStatus.ACTIVE ) {
                 selectedMovies.add(m);
             }
         }

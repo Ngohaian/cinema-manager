@@ -140,13 +140,4 @@ public class CustomerDAO {
         }
         return 10000000; 
     }
-<<<<<<< HEAD
-    public void displayAllCustomers(){
-        for(Customer c : customerList){
-            c.displayInfo();
-            System.out.println("----------------");
-        }
-    }
-=======
->>>>>>> 10cf6b0391a04993a7417a685dae47372b49e90b
 }
