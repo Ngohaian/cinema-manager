@@ -2,12 +2,13 @@ package cinema.models;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
 public class Invoice {
 
     private String invoiceId;
     private String customerId;
-    private String invoiceDate;
+    private Date invoiceDate;
     private double totalAmount;
 
     private List<Ticket> tickets;
@@ -16,31 +17,21 @@ public class Invoice {
         tickets = new ArrayList<>();
     }
 
-    public Invoice(String invoiceId, String customerId, String invoiceDate) {
+    public Invoice(String invoiceId, String customerId, Date invoiceDate, double totalAmount) {
         this.invoiceId = invoiceId;
         this.customerId = customerId;
         this.invoiceDate = invoiceDate;
+        this.totalAmount = totalAmount;
         this.tickets = new ArrayList<>();
     }
 
-    public void addTicket(Ticket ticket) {
-        tickets.add(ticket);
-    }
-
-    public void removeTicket(String ticketId) {
-        tickets.removeIf(t -> t.getTicketId().equals(ticketId));
-    }
-
     public double calculateTotalAmount() {
-        totalAmount = 0;
-        for (Ticket t : tickets) {
-            totalAmount += t.getPrice();
+        double total = 0;
+        for (Ticket ticket : tickets) {
+            total += ticket.getPrice();
         }
-        return totalAmount;
-    }
-
-    public void completeInvoice() {
-        calculateTotalAmount();
+        this.totalAmount = total;
+        return total;
     }
 
     public String getInvoiceId() {
@@ -59,16 +50,20 @@ public class Invoice {
         this.customerId = customerId;
     }
 
-    public String getInvoiceDate() {
+    public Date getInvoiceDate() {
         return invoiceDate;
     }
 
-    public void setInvoiceDate(String invoiceDate) {
+    public void setInvoiceDate(Date invoiceDate) {
         this.invoiceDate = invoiceDate;
     }
 
     public double getTotalAmount() {
-        return calculateTotalAmount();
+        return totalAmount;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
     }
 
     public List<Ticket> getTickets() {

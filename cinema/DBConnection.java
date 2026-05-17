@@ -4,7 +4,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBConnection {
+<<<<<<< HEAD
    private static final String URL = "jdbc:mysql://10.239.40.212:3306/cinemaManager?useSSL=false&serverTimezone=UTC";
+=======
+    private static final String URL = "jdbc:mysql://10.239.40.212:3306/cinemamanager";
+>>>>>>> 10cf6b0391a04993a7417a685dae47372b49e90b
     private static final String USER = "test";
     private static final String PASSWORD = "123456";
 

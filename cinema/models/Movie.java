@@ -1,18 +1,23 @@
 package cinema.models;
 import cinema.enums.GenreType;
+import cinema.enums.MovieStatus;
 public class Movie {
     private String id;
     private String title;
-    private String genreId;
+    private int genreId;
     private int duration;
-    private boolean active;
-
-    public Movie(String id, String title, String genreId, int duration) {
+    private MovieStatus active;
+    private String poster;
+    private int count = 0;
+    public Movie() {
+    }
+    public Movie(String id,String title, int genreId, int duration, MovieStatus active, String poster) {
         this.id = id;
         this.title = title;
         this.genreId = genreId;
         this.duration = (duration > 0) ? duration : 0;
-        this.active = true;
+        this.active = active;
+        this.poster = poster;
     }
     public GenreType getGenreFromId(int genreId){
         switch (genreId) {
@@ -29,13 +34,17 @@ public class Movie {
     
     public String getId() { return id; }
     public String getTitle() { return title; }
-    public String getGenre() { return genreId; }
+    public int getGenreId() { return genreId; }
+    public GenreType getGenre() { return getGenreFromId(genreId); }
     public int getDuration() { return duration; }
-    public boolean isActive() { return active; }
-
+    public MovieStatus getActive() { return active; }
+    public String getPoster() { return poster; }
+    public int getCountId(){return count;}
+    public void setId(String id){this.id = id;}
     public void setTitle(String title){this.title = title;}
-    public void setGenreId(String genreId){this.genreId = genreId;}
+    public void setGenreId(int genreId){this.genreId = genreId;}
     public void setDuration(int durartion){this.duration = durartion;}
-    public void setActive(boolean active) { this.active = active; }
+    public void setActive(MovieStatus active) { this.active = active; }
+    public void setPoster(String poster) { this.poster = poster; }
 
 }

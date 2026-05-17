@@ -3,8 +3,9 @@ package cinema.form;
 import javax.swing.JFrame;
 
 public class CheckerTicket extends javax.swing.JFrame {
-
-    public CheckerTicket() {
+    private cinema.models.Employee currentEmployee;
+    public CheckerTicket(cinema.models.Employee emp) {
+        this.currentEmployee = emp;
         initComponents();
     }
 
@@ -51,35 +52,6 @@ public class CheckerTicket extends javax.swing.JFrame {
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
     }//GEN-LAST:event_formWindowOpened
-
-    public static void main(String args[]) {
-
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(CheckerTicket.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CheckerTicket.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CheckerTicket.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(CheckerTicket.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new CheckerTicket().setVisible(true);
-            }
-        });
-    }
-
 
     private javax.swing.JPanel jPanel1;
 

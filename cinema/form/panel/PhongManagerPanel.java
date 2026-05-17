@@ -1,706 +1,1098 @@
 package cinema.form.panel;
 
-import cinema.DBConnection;
+import cinema.dao.RoomDAO;
+import cinema.dao.SeatDao;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.sql.*;
-import java.util.ArrayList;
+import java.awt.event.*;
 import java.util.List;
 
-public class PhongManagerPanel extends JPanel {
-    private static final Color BG = new Color(248, 250, 252);
-    private static final Color BLUE = new Color(0, 146, 255);
-    private static final Color BORDER = new Color(204, 204, 204);
-    private static final Color TEXT = new Color(30, 41, 59);
-    private static final Font LABEL_FONT = new Font("Arial", Font.PLAIN, 15);
-    private static final Font INPUT_FONT = new Font("Arial", Font.PLAIN, 14);
-    private static final Font TITLE_FONT = new Font("Arial", Font.BOLD, 24);
+public class PhongManagerPanel extends javax.swing.JPanel {
 
-    private PlaceholderTextField txtSearch;
-    private JComboBox<String> cboType;
+    private final Color BACKGROUND = new Color(248, 250, 252);
+    private final Color BLUE = new Color(0, 146, 255);
+    private final Color ORANGE = new Color(245, 157, 35);
+    private final Color BORDER = new Color(204, 204, 204);
+    private final Color HEADER = new Color(235, 235, 235);
+
+    private final Color SEAT_REGULAR = new Color(46, 132, 235);
+    private final Color SEAT_VIP = new Color(245, 181, 32);
+    private final Color SEAT_COUPLE = new Color(235, 93, 160);
+    private final Color SEAT_EMPTY = Color.WHITE;
+
+    private RoomDAO roomDAO = new RoomDAO();
+    private SeatDao seatDao = new SeatDao();
+
+    private JPanel pMain;
+    private JTable tblRoom;
+    private DefaultTableModel roomModel;
+
+    private JTextField txtSearch;
+    private JComboBox<String> cboSearchStatus;
+
+    private JButton btnAdd;
+    private JButton btnEdit;
+    private JButton btnSave;
+    private JButton btnCancel;
+
+    private JTextField txtRoomId;
+    private JTextField txtRoomName;
+    private JTextField txtCapacity;
+    private JTextField txtRows;
+    private JTextField txtCols;
     private JComboBox<String> cboStatus;
-    private JPanel cardContainer;
+    private JTextArea txtNote;
 
-    private final RoomRepository roomRepository = new RoomRepository();
+    private JPanel seatMapPanel;
+    private JButton btnEmptySeat;
+    private JButton btnRegularSeat;
+    private JButton btnVipSeat;
+    private JButton btnCoupleSeat;
+
+    private boolean addMode = false;
+    private boolean editMode = false;
+    private boolean loadingForm = false;
+
+    private String selectedSeatType = "REGULAR";
+    private String[][] draftSeatTypes;
 
     public PhongManagerPanel() {
-        setBackground(BG);
+        initComponents();
+        buildCustomUI();
+        loadRoomData();
+    }
+
+    private void buildCustomUI() {
+        removeAll();
+
         setLayout(new BorderLayout());
-        setBorder(BorderFactory.createEmptyBorder(40, 30, 40, 30));
-        initUI();
-        loadRooms();
+        setBackground(BACKGROUND);
+        setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
+
+        pMain = new JPanel();
+        pMain.setLayout(new BoxLayout(pMain, BoxLayout.Y_AXIS));
+        pMain.setBackground(Color.WHITE);
+        pMain.setBorder(new LineBorder(BORDER, 1));
+
+        pMain.add(createTopPanel());
+        pMain.add(createTablePanel());
+        pMain.add(Box.createVerticalStrut(12));
+        pMain.add(createBottomPanel());
+
+        add(pMain, BorderLayout.CENTER);
+
+        revalidate();
+        repaint();
     }
 
-    private void initUI() {
-        JPanel main = new JPanel();
-        main.setOpaque(false);
-        main.setLayout(new BorderLayout(0, 50));
-        add(main, BorderLayout.CENTER);
+    private JPanel createTopPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createEmptyBorder(18, 18, 12, 18));
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 130));
+        panel.setPreferredSize(new Dimension(1000, 130));
 
-        main.add(createFilterPanel(), BorderLayout.NORTH);
-        main.add(createContentPanel(), BorderLayout.CENTER);
+        JLabel title = new JLabel("DANH SÁCH PHÒNG CHIẾU");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 17));
+        title.setForeground(Color.BLACK);
+
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
+        actionPanel.setBackground(Color.WHITE);
+
+        btnAdd = createButton("+  Thêm phòng", BLUE, 150);
+        btnEdit = createButton("Sửa phòng", ORANGE, 150);
+
+        btnAdd.addActionListener(e -> prepareAdd());
+        btnEdit.addActionListener(e -> prepareEdit());
+
+        actionPanel.add(btnAdd);
+        actionPanel.add(btnEdit);
+
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        searchPanel.setBackground(Color.WHITE);
+
+        cboSearchStatus = new JComboBox<>(new String[]{
+                "Tất cả trạng thái",
+                "Đang hoạt động",
+                "Ngừng hoạt động"
+        });
+        cboSearchStatus.setPreferredSize(new Dimension(170, 38));
+        cboSearchStatus.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        cboSearchStatus.setBackground(Color.WHITE);
+        cboSearchStatus.addActionListener(e -> searchRoom());
+
+        txtSearch = new JTextField("Tìm kiếm phòng...");
+        txtSearch.setPreferredSize(new Dimension(260, 38));
+        txtSearch.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtSearch.setForeground(Color.GRAY);
+        txtSearch.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(new Color(220, 220, 220), 1),
+                BorderFactory.createEmptyBorder(0, 10, 0, 10)
+        ));
+        addPlaceholder(txtSearch, "Tìm kiếm phòng...");
+
+        JButton btnSearch = new JButton("⌕");
+        btnSearch.setPreferredSize(new Dimension(46, 38));
+        btnSearch.setBackground(Color.WHITE);
+        btnSearch.setFocusPainted(false);
+        btnSearch.setBorder(new LineBorder(new Color(220, 220, 220), 1));
+        btnSearch.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        btnSearch.addActionListener(e -> searchRoom());
+        txtSearch.addActionListener(e -> searchRoom());
+
+        searchPanel.add(cboSearchStatus);
+        searchPanel.add(txtSearch);
+        searchPanel.add(btnSearch);
+
+        JPanel row2 = new JPanel(new BorderLayout());
+        row2.setBackground(Color.WHITE);
+        row2.setBorder(BorderFactory.createEmptyBorder(24, 0, 0, 0));
+        row2.add(actionPanel, BorderLayout.WEST);
+        row2.add(searchPanel, BorderLayout.EAST);
+
+        panel.add(title, BorderLayout.NORTH);
+        panel.add(row2, BorderLayout.CENTER);
+
+        return panel;
     }
 
-    private JPanel createFilterPanel() {
-        JPanel filterPanel = new JPanel(new GridBagLayout());
-        filterPanel.setBackground(Color.WHITE);
-        filterPanel.setBorder(new LineBorder(BORDER, 1));
-        filterPanel.setPreferredSize(new Dimension(10, 100));
+    private JPanel createTablePanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 18, 0, 18));
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 250));
+        panel.setPreferredSize(new Dimension(1000, 250));
+
+        String[] columns = {
+                "Mã phòng",
+                "Tên phòng",
+                "Sức chứa",
+                "Số hàng",
+                "Số cột",
+                "Trạng thái",
+                "Ghi chú"
+        };
+
+        roomModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        tblRoom = new JTable(roomModel);
+        tblRoom.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tblRoom.setRowHeight(42);
+        tblRoom.setSelectionBackground(new Color(220, 237, 255));
+        tblRoom.setSelectionForeground(Color.BLACK);
+        tblRoom.setShowVerticalLines(false);
+        tblRoom.setShowHorizontalLines(true);
+        tblRoom.setGridColor(HEADER);
+        tblRoom.setBackground(Color.WHITE);
+        tblRoom.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+
+        tblRoom.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 15));
+        tblRoom.getTableHeader().setBackground(HEADER);
+        tblRoom.getTableHeader().setForeground(Color.BLACK);
+        tblRoom.getTableHeader().setPreferredSize(new Dimension(100, 42));
+
+        DefaultTableCellRenderer headerRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(
+                    JTable table,
+                    Object value,
+                    boolean isSelected,
+                    boolean hasFocus,
+                    int row,
+                    int column
+            ) {
+                JLabel label = (JLabel) super.getTableCellRendererComponent(
+                        table, value, isSelected, hasFocus, row, column
+                );
+
+                label.setHorizontalAlignment(SwingConstants.CENTER);
+                label.setFont(new Font("Segoe UI", Font.BOLD, 15));
+                label.setBackground(HEADER);
+                label.setForeground(Color.BLACK);
+                label.setOpaque(true);
+                label.setBorder(new LineBorder(HEADER, 1));
+
+                return label;
+            }
+        };
+
+        for (int i = 0; i < tblRoom.getColumnModel().getColumnCount(); i++) {
+            tblRoom.getColumnModel().getColumn(i).setHeaderRenderer(headerRenderer);
+        }
+
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        centerRenderer.setBackground(Color.WHITE);
+
+        for (int i = 0; i < tblRoom.getColumnCount(); i++) {
+            tblRoom.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+
+        tblRoom.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                fillFormFromSelectedRow();
+            }
+        });
+
+        JScrollPane scrollPane = new JScrollPane(tblRoom);
+        scrollPane.setBorder(new LineBorder(BORDER, 1));
+        scrollPane.getViewport().setBackground(Color.WHITE);
+        scrollPane.setPreferredSize(new Dimension(1000, 240));
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private JPanel createBottomPanel() {
+        JPanel panel = new JPanel(new GridLayout(1, 2, 0, 0));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 18, 18, 18));
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 430));
+        panel.setPreferredSize(new Dimension(1000, 430));
+
+        panel.add(createInfoPanel());
+        panel.add(createSeatMapBox());
+
+        return panel;
+    }
+
+    private JPanel createInfoPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(new LineBorder(BORDER, 1));
+
+        JLabel title = new JLabel("THÔNG TIN PHÒNG");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        title.setBorder(BorderFactory.createEmptyBorder(15, 18, 10, 18));
+
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setBackground(Color.WHITE);
+        form.setBorder(BorderFactory.createEmptyBorder(0, 18, 10, 18));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(12, 16, 12, 16);
+        gbc.insets = new Insets(6, 0, 6, 12);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
 
-        txtSearch = new PlaceholderTextField("Nhập mã phòng hoặc tên phòng...");
-        txtSearch.setFont(INPUT_FONT);
-        txtSearch.setPreferredSize(new Dimension(300, 36));
-        txtSearch.addActionListener(e -> loadRooms());
+        txtRoomId = createTextField();
+        txtRoomName = createTextField();
+        txtCapacity = createTextField();
+        txtRows = createTextField();
+        txtCols = createTextField();
+        
+        txtRoomId.setEditable(false);
+        txtCapacity.setEditable(false);
+        txtCapacity.setBackground(new Color(245, 245, 245));
 
-        cboType = new JComboBox<>(new String[]{"Tất cả loại phòng", "2D", "3D", "VIP", "IMAX", "COUPLE"});
-        cboType.setFont(INPUT_FONT);
-        cboType.setPreferredSize(new Dimension(180, 36));
-        cboType.addActionListener(e -> loadRooms());
+        addLayoutListener(txtRows);
+        addLayoutListener(txtCols);
 
-        cboStatus = new JComboBox<>(new String[]{"Đang hoạt động", "Tất cả trạng thái", "Ngừng hoạt động"});
-        cboStatus.setFont(INPUT_FONT);
-        cboStatus.setPreferredSize(new Dimension(180, 36));
-        cboStatus.addActionListener(e -> loadRooms());
+        cboStatus = new JComboBox<>(new String[]{"Đang hoạt động", "Ngừng hoạt động"});
+        cboStatus.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        cboStatus.setPreferredSize(new Dimension(260, 34));
 
-        JButton btnSearch = createBlueButton("Tìm kiếm", null);
-        btnSearch.setPreferredSize(new Dimension(150, 40));
-        btnSearch.addActionListener(e -> loadRooms());
+        txtNote = new JTextArea();
+        txtNote.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtNote.setLineWrap(true);
+        txtNote.setWrapStyleWord(true);
+        txtNote.setBorder(new LineBorder(new Color(220, 220, 220), 1));
+        txtNote.setPreferredSize(new Dimension(260, 70));
 
-        addFilterItem(filterPanel, gbc, 0, "Tìm kiếm", txtSearch);
-        addFilterItem(filterPanel, gbc, 1, "Loại phòng", cboType);
-        addFilterItem(filterPanel, gbc, 2, "Trạng thái", cboStatus);
+        addFormRow(form, gbc, 0, "Mã phòng:", txtRoomId);
+        addFormRow(form, gbc, 1, "Tên phòng:", txtRoomName);
+        addFormRow(form, gbc, 2, "Sức chứa:", txtCapacity);
+        addFormRow(form, gbc, 3, "Số hàng:", txtRows);
+        addFormRow(form, gbc, 4, "Số cột:", txtCols);
+        addFormRow(form, gbc, 5, "Trạng thái:", cboStatus);
 
-        gbc.gridx = 3;
-        gbc.gridy = 0;
-        gbc.gridheight = 2;
-        gbc.weightx = 0;
-        gbc.anchor = GridBagConstraints.SOUTH;
-        filterPanel.add(btnSearch, gbc);
+        JLabel lblNote = new JLabel("Ghi chú:");
+        lblNote.setFont(new Font("Segoe UI", Font.PLAIN, 15));
 
-        return filterPanel;
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        gbc.weightx = 0.25;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        form.add(lblNote, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 6;
+        gbc.weightx = 0.75;
+        form.add(txtNote, gbc);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 5));
+        buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 18, 12, 18));
+
+        btnSave = createButton("Lưu thông tin", BLUE, 150);
+        btnCancel = createGrayButton("Hủy", 110);
+
+        btnSave.addActionListener(e -> saveRoom());
+        btnCancel.addActionListener(e -> cancelEdit());
+
+        buttonPanel.add(btnSave);
+        buttonPanel.add(btnCancel);
+
+        panel.add(title, BorderLayout.NORTH);
+        panel.add(form, BorderLayout.CENTER);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+
+        setFormEnabled(false);
+
+        return panel;
     }
 
-    private void addFilterItem(JPanel panel, GridBagConstraints gbc, int x, String label, JComponent input) {
-        gbc.gridx = x;
-        gbc.gridy = 0;
-        gbc.gridheight = 1;
-        gbc.weightx = 1;
+    private JPanel createSeatMapBox() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(new LineBorder(BORDER, 1));
+
+        JLabel title = new JLabel("SƠ ĐỒ PHÒNG");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        title.setBorder(BorderFactory.createEmptyBorder(15, 20, 10, 20));
+
+        JPanel content = new JPanel(new BorderLayout());
+        content.setBackground(Color.WHITE);
+        content.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+        JLabel screen = new JLabel("MÀN HÌNH", SwingConstants.CENTER);
+        screen.setOpaque(true);
+        screen.setBackground(new Color(225, 225, 225));
+        screen.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        screen.setPreferredSize(new Dimension(100, 32));
+
+        seatMapPanel = new JPanel(new BorderLayout());
+        seatMapPanel.setBackground(Color.WHITE);
+
+        content.add(screen, BorderLayout.NORTH);
+        content.add(seatMapPanel, BorderLayout.CENTER);
+        content.add(createSeatToolPanel(), BorderLayout.SOUTH);
+
+        panel.add(title, BorderLayout.NORTH);
+        panel.add(content, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private JPanel createSeatToolPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 16, 8));
+        panel.setBackground(Color.WHITE);
+
+        btnEmptySeat = createSeatTypeButton("Ghế trống/hỏng", SEAT_EMPTY, "EMPTY");
+        btnRegularSeat = createSeatTypeButton("Ghế thường", SEAT_REGULAR, "REGULAR");
+        btnVipSeat = createSeatTypeButton("Ghế VIP", SEAT_VIP, "VIP");
+        btnCoupleSeat = createSeatTypeButton("Ghế đôi", SEAT_COUPLE, "COUPLE");
+
+        panel.add(btnEmptySeat);
+        panel.add(btnRegularSeat);
+        panel.add(btnVipSeat);
+        panel.add(btnCoupleSeat);
+
+        highlightSelectedSeatType();
+
+        return panel;
+    }
+
+    private JButton createSeatTypeButton(String text, Color color, String type) {
+        JButton btn = new JButton(text);
+        btn.setPreferredSize(new Dimension(120, 32));
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btn.setFocusPainted(false);
+        btn.setBackground(color);
+        btn.setForeground(type.equals("EMPTY") ? Color.BLACK : Color.WHITE);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setBorder(new LineBorder(BORDER, 1));
+
+        btn.addActionListener(e -> {
+            selectedSeatType = type;
+            highlightSelectedSeatType();
+        });
+
+        return btn;
+    }
+
+    private void highlightSelectedSeatType() {
+        resetSeatButtonBorder();
+
+        if ("EMPTY".equals(selectedSeatType)) {
+            btnEmptySeat.setBorder(new LineBorder(Color.BLACK, 3));
+        } else if ("REGULAR".equals(selectedSeatType)) {
+            btnRegularSeat.setBorder(new LineBorder(Color.BLACK, 3));
+        } else if ("VIP".equals(selectedSeatType)) {
+            btnVipSeat.setBorder(new LineBorder(Color.BLACK, 3));
+        } else if ("COUPLE".equals(selectedSeatType)) {
+            btnCoupleSeat.setBorder(new LineBorder(Color.BLACK, 3));
+        }
+    }
+
+    private void resetSeatButtonBorder() {
+        if (btnEmptySeat != null) {
+            btnEmptySeat.setBorder(new LineBorder(BORDER, 1));
+        }
+
+        if (btnRegularSeat != null) {
+            btnRegularSeat.setBorder(new LineBorder(BORDER, 1));
+        }
+
+        if (btnVipSeat != null) {
+            btnVipSeat.setBorder(new LineBorder(BORDER, 1));
+        }
+
+        if (btnCoupleSeat != null) {
+            btnCoupleSeat.setBorder(new LineBorder(BORDER, 1));
+        }
+    }
+
+    private JTextField createTextField() {
+        JTextField txt = new JTextField();
+        txt.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txt.setPreferredSize(new Dimension(260, 34));
+        txt.setBorder(new LineBorder(new Color(220, 220, 220), 1));
+        return txt;
+    }
+
+    private void addFormRow(JPanel panel, GridBagConstraints gbc, int row, String label, JComponent input) {
         JLabel lbl = new JLabel(label);
-        lbl.setFont(LABEL_FONT);
+        lbl.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0.25;
+        gbc.anchor = GridBagConstraints.WEST;
         panel.add(lbl, gbc);
 
-        gbc.gridy = 1;
+        gbc.gridx = 1;
+        gbc.gridy = row;
+        gbc.weightx = 0.75;
         panel.add(input, gbc);
     }
 
-    private JPanel createContentPanel() {
-        JPanel content = new JPanel(new BorderLayout(0, 20));
-        content.setOpaque(false);
-
-        JPanel titleBar = new JPanel(new BorderLayout());
-        titleBar.setOpaque(false);
-
-        JLabel title = new JLabel("Danh sách phòng chiếu");
-        title.setFont(TITLE_FONT);
-        title.setForeground(TEXT);
-        titleBar.add(title, BorderLayout.WEST);
-
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 0));
-        buttonPanel.setOpaque(false);
-
-        JButton btnAdd = createBlueButton("Thêm phòng", "/cinema/images/add.png");
-        btnAdd.addActionListener(e -> openRoomDialog(null));
-        buttonPanel.add(btnAdd);
-
-        titleBar.add(buttonPanel, BorderLayout.EAST);
-        content.add(titleBar, BorderLayout.NORTH);
-
-        cardContainer = new JPanel(new GridBagLayout());
-        cardContainer.setOpaque(false);
-
-        JScrollPane scrollPane = new JScrollPane(cardContainer);
-        scrollPane.setBorder(null);
-        scrollPane.getViewport().setBackground(BG);
-        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        content.add(scrollPane, BorderLayout.CENTER);
-
-        return content;
-    }
-
-    private JButton createBlueButton(String text, String iconPath) {
+    private JButton createButton(String text, Color color, int width) {
         JButton button = new JButton(text);
-        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setPreferredSize(new Dimension(width, 38));
+        button.setBackground(color);
         button.setForeground(Color.WHITE);
-        button.setBackground(BLUE);
-        button.setFocusPainted(false);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
         button.setBorderPainted(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        button.setPreferredSize(new Dimension(210, 40));
-
-        if (iconPath != null) {
-            java.net.URL url = getClass().getResource(iconPath);
-            if (url != null) button.setIcon(new ImageIcon(url));
-        }
-        return button;
-    }
-
-    private JButton createWhiteButton(String text) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("Arial", Font.BOLD, 14));
-        button.setForeground(BLUE);
-        button.setBackground(Color.WHITE);
         button.setFocusPainted(false);
-        button.setBorder(new LineBorder(BLUE, 1));
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return button;
     }
 
-    private void loadRooms() {
-        cardContainer.removeAll();
+    private JButton createGrayButton(String text, int width) {
+        JButton button = new JButton(text);
+        button.setPreferredSize(new Dimension(width, 38));
+        button.setBackground(new Color(220, 220, 220));
+        button.setForeground(Color.BLACK);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return button;
+    }
+
+    private void addPlaceholder(JTextField textField, String placeholder) {
+        textField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (textField.getText().equals(placeholder)) {
+                    textField.setText("");
+                    textField.setForeground(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (textField.getText().trim().isEmpty()) {
+                    textField.setText(placeholder);
+                    textField.setForeground(Color.GRAY);
+                }
+            }
+        });
+    }
+
+    private void addLayoutListener(JTextField txt) {
+        txt.addActionListener(e -> updateCapacityAndRebuildSeatMap());
+
+        txt.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                updateCapacityAndRebuildSeatMap();
+            }
+        });
+    }
+    private void updateCapacityAndRebuildSeatMap() {
+        if (loadingForm) {
+            return;
+        }
+
+        if (!addMode && !editMode) {
+            return;
+        }
 
         try {
-            String keyword = txtSearch == null ? "" : txtSearch.getRealText().trim();
-            String type = cboType == null ? "Tất cả loại phòng" : cboType.getSelectedItem().toString();
-            String status = cboStatus == null ? "Đang hoạt động" : cboStatus.getSelectedItem().toString();
+            int rows = Integer.parseInt(txtRows.getText().trim());
+            int cols = Integer.parseInt(txtCols.getText().trim());
 
-            List<RoomView> rooms = roomRepository.findRooms(keyword, type, status);
-
-            if (rooms.isEmpty()) {
-                JLabel empty = new JLabel("Không có phòng chiếu phù hợp");
-                empty.setFont(new Font("Arial", Font.PLAIN, 16));
-                empty.setForeground(new Color(100, 116, 139));
-                cardContainer.add(empty);
-            } else {
-                GridBagConstraints gbc = new GridBagConstraints();
-                gbc.insets = new Insets(0, 0, 30, 30);
-                gbc.fill = GridBagConstraints.HORIZONTAL;
-                gbc.weightx = 1;
-
-                int colCount = 3;
-                for (int i = 0; i < rooms.size(); i++) {
-                    gbc.gridx = i % colCount;
-                    gbc.gridy = i / colCount;
-                    cardContainer.add(createRoomCard(rooms.get(i)), gbc);
-                }
-
-                gbc.gridx = 0;
-                gbc.gridy = (rooms.size() + colCount - 1) / colCount;
-                gbc.weighty = 1;
-                cardContainer.add(Box.createVerticalGlue(), gbc);
+            if (rows <= 0 || cols <= 0) {
+                return;
             }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi tải danh sách phòng: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
 
-        cardContainer.revalidate();
-        cardContainer.repaint();
+            txtCapacity.setText(String.valueOf(rows * cols));
+
+            createRegularDraftFromForm();
+
+        } catch (NumberFormatException e) {
+            txtCapacity.setText("");
+        }
     }
 
-    private JPanel createRoomCard(RoomView room) {
-        JPanel card = new JPanel(new BorderLayout(0, 14));
-        card.setBackground(Color.WHITE);
-        card.setBorder(new LineBorder(BORDER, 1));
-        card.setPreferredSize(new Dimension(330, 255));
+    private void loadRoomData() {
+        roomModel.setRowCount(0);
 
-        JPanel body = new JPanel(new GridBagLayout());
-        body.setBackground(Color.WHITE);
-        body.setBorder(BorderFactory.createEmptyBorder(18, 18, 8, 18));
+        try {
+            List<RoomDAO.RoomTableRow> rooms = roomDAO.getAllForTable();
+
+            for (RoomDAO.RoomTableRow room : rooms) {
+                roomModel.addRow(new Object[]{
+                        room.getRoomId(),
+                        room.getName(),
+                        room.getCapacity(),
+                        room.getNumberOfRows() == 0 ? "" : room.getNumberOfRows(),
+                        room.getSeatsPerRow() == 0 ? "" : room.getSeatsPerRow(),
+                        room.getStatusText(),
+                        room.getNoteText()
+                });
+            }
+
+            if (roomModel.getRowCount() > 0) {
+                tblRoom.setRowSelectionInterval(0, 0);
+                fillFormFromSelectedRow();
+            } else {
+                clearForm();
+                clearSeatMap();
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Lỗi tải danh sách phòng: " + e.getMessage(),
+                    "Lỗi",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void searchRoom() {
+        String keyword = txtSearch.getText().trim();
+
+        if (keyword.equals("Tìm kiếm phòng...")) {
+            keyword = "";
+        }
+
+        String selectedStatus = cboSearchStatus.getSelectedItem().toString();
+
+        roomModel.setRowCount(0);
+
+        try {
+            List<RoomDAO.RoomTableRow> rooms = roomDAO.searchForTable(keyword, selectedStatus);
+
+            for (RoomDAO.RoomTableRow room : rooms) {
+                roomModel.addRow(new Object[]{
+                        room.getRoomId(),
+                        room.getName(),
+                        room.getCapacity(),
+                        room.getNumberOfRows() == 0 ? "" : room.getNumberOfRows(),
+                        room.getSeatsPerRow() == 0 ? "" : room.getSeatsPerRow(),
+                        room.getStatusText(),
+                        room.getNoteText()
+                });
+            }
+
+            if (roomModel.getRowCount() > 0) {
+                tblRoom.setRowSelectionInterval(0, 0);
+                fillFormFromSelectedRow();
+            } else {
+                clearForm();
+                clearSeatMap();
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Lỗi tìm kiếm phòng: " + e.getMessage(),
+                    "Lỗi",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void fillFormFromSelectedRow() {
+        int row = tblRoom.getSelectedRow();
+
+        if (row < 0) {
+            return;
+        }
+
+        loadingForm = true;
+
+        String roomId = tblRoom.getValueAt(row, 0).toString();
+
+        txtRoomId.setText(tblRoom.getValueAt(row, 0).toString());
+        txtRoomName.setText(tblRoom.getValueAt(row, 1).toString());
+        txtCapacity.setText(tblRoom.getValueAt(row, 2).toString());
+        txtRows.setText(tblRoom.getValueAt(row, 3).toString());
+        txtCols.setText(tblRoom.getValueAt(row, 4).toString());
+        cboStatus.setSelectedItem(tblRoom.getValueAt(row, 5).toString());
+        txtNote.setText(tblRoom.getValueAt(row, 6).toString());
+
+        setFormEnabled(false);
+        addMode = false;
+        editMode = false;
+
+        loadingForm = false;
+
+        loadSeatMap(roomId);
+    }
+
+    private void loadSeatMap(String roomId) {
+        clearSeatMap();
+
+        try {
+            List<SeatDao.SeatView> seats = seatDao.getSeatViewsByRoom(roomId);
+
+            int maxRow = -1;
+            int maxCol = -1;
+
+            for (SeatDao.SeatView s : seats) {
+                maxRow = Math.max(maxRow, s.getRowIndex());
+                maxCol = Math.max(maxCol, s.getColIndex());
+            }
+
+            if (seats.isEmpty()) {
+                createWhiteDraftFromForm();
+                return;
+            }
+
+            draftSeatTypes = new String[maxRow + 1][maxCol + 1];
+
+            for (int i = 0; i <= maxRow; i++) {
+                for (int j = 0; j <= maxCol; j++) {
+                    draftSeatTypes[i][j] = "EMPTY";
+                }
+            }
+
+            for (SeatDao.SeatView s : seats) {
+                if (s.getActive() == 0) {
+                    draftSeatTypes[s.getRowIndex()][s.getColIndex()] = "EMPTY";
+                } else {
+                    draftSeatTypes[s.getRowIndex()][s.getColIndex()] = s.getSeatType();
+                }
+            }
+
+            renderDraftSeatMap();
+
+        } catch (Exception e) {
+            JLabel error = new JLabel("Lỗi tải sơ đồ ghế: " + e.getMessage(), SwingConstants.CENTER);
+            error.setForeground(Color.RED);
+            seatMapPanel.add(error, BorderLayout.CENTER);
+            seatMapPanel.revalidate();
+            seatMapPanel.repaint();
+        }
+    }
+
+    private void rebuildWhiteSeatMapIfEditing() {
+        if (loadingForm) {
+            return;
+        }
+
+        if (!addMode && !editMode) {
+            return;
+        }
+
+        createWhiteDraftFromForm();
+    }
+
+    private void createWhiteDraftFromForm() {
+        createRegularDraftFromForm();
+    }
+
+    private void createRegularDraftFromForm() {
+        try {
+            int rows = Integer.parseInt(txtRows.getText().trim());
+            int cols = Integer.parseInt(txtCols.getText().trim());
+
+            if (rows <= 0 || cols <= 0) {
+                return;
+            }
+
+            draftSeatTypes = new String[rows][cols];
+
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    draftSeatTypes[i][j] = "REGULAR";
+                }
+            }
+
+            renderDraftSeatMap();
+
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void renderDraftSeatMap() {
+        clearSeatMap();
+
+        if (draftSeatTypes == null || draftSeatTypes.length == 0) {
+            JLabel empty = new JLabel("Nhập số hàng và số cột để tạo sơ đồ ghế", SwingConstants.CENTER);
+            empty.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            empty.setForeground(Color.GRAY);
+            seatMapPanel.add(empty, BorderLayout.CENTER);
+            seatMapPanel.revalidate();
+            seatMapPanel.repaint();
+            return;
+        }
+
+        JPanel grid = new JPanel(new GridBagLayout());
+        grid.setBackground(Color.WHITE);
+        grid.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(0, 0, 10, 0);
+        gbc.insets = new Insets(3, 3, 3, 3);
+
+        int rows = draftSeatTypes.length;
+        int cols = draftSeatTypes[0].length;
+
+        JLabel corner = new JLabel("");
+        corner.setPreferredSize(new Dimension(24, 22));
         gbc.gridx = 0;
-        gbc.weightx = 1;
+        gbc.gridy = 0;
+        grid.add(corner, gbc);
 
-        JLabel name = new JLabel(room.name + "  -  " + room.roomId);
-        name.setFont(new Font("Arial", Font.BOLD, 20));
-        name.setForeground(TEXT);
-        body.add(name, gbc);
+        for (int col = 0; col < cols; col++) {
+            JLabel colLabel = new JLabel(String.valueOf(col + 1), SwingConstants.CENTER);
+            colLabel.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            colLabel.setPreferredSize(new Dimension(24, 18));
 
-        gbc.gridy = 1;
-        body.add(createInfoLine("Loại phòng", room.type), gbc);
-        gbc.gridy = 2;
-        body.add(createInfoLine("Sức chứa", room.capacity + " ghế"), gbc);
-        gbc.gridy = 3;
-        body.add(createInfoLine("Sơ đồ", room.numberOfRows + " hàng x " + room.seatsPerRow + " ghế"), gbc);
-        gbc.gridy = 4;
-        body.add(createInfoLine("Hàng VIP", formatVip(room)), gbc);
-        gbc.gridy = 5;
-        body.add(createInfoLine("Hàng couple", room.coupleRow >= 0 ? String.valueOf((char) ('A' + room.coupleRow)) : "Không có"), gbc);
-        gbc.gridy = 6;
-        JLabel status = new JLabel(room.active ? "Đang hoạt động" : "Ngừng hoạt động");
-        status.setFont(new Font("Arial", Font.BOLD, 14));
-        status.setForeground(room.active ? new Color(22, 163, 74) : new Color(220, 38, 38));
-        body.add(status, gbc);
+            gbc.gridx = col + 1;
+            gbc.gridy = 0;
+            grid.add(colLabel, gbc);
+        }
 
-        card.add(body, BorderLayout.CENTER);
+        for (int row = 0; row < rows; row++) {
+            JLabel rowLabel = new JLabel(String.valueOf((char) ('A' + row)), SwingConstants.CENTER);
+            rowLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            rowLabel.setPreferredSize(new Dimension(24, 24));
 
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 12));
-        actions.setBackground(Color.WHITE);
-        JButton btnEdit = createWhiteButton("Sửa");
-        btnEdit.setPreferredSize(new Dimension(90, 34));
-        btnEdit.addActionListener(e -> openRoomDialog(room));
+            gbc.gridx = 0;
+            gbc.gridy = row + 1;
+            grid.add(rowLabel, gbc);
 
-        JButton btnDelete = createWhiteButton("Xóa");
-        btnDelete.setPreferredSize(new Dimension(90, 34));
-        btnDelete.setForeground(new Color(220, 38, 38));
-        btnDelete.setBorder(new LineBorder(new Color(220, 38, 38), 1));
-        btnDelete.addActionListener(e -> deleteRoom(room));
+            for (int col = 0; col < cols; col++) {
+                gbc.gridx = col + 1;
+                gbc.gridy = row + 1;
+                grid.add(createDraftSeatCell(row, col), gbc);
+            }
+        }
 
-        actions.add(btnEdit);
-        actions.add(btnDelete);
-        card.add(actions, BorderLayout.SOUTH);
+        JScrollPane mapScroll = new JScrollPane(grid);
+        mapScroll.setBorder(null);
+        mapScroll.getViewport().setBackground(Color.WHITE);
+        mapScroll.getVerticalScrollBar().setUnitIncrement(16);
+        mapScroll.getHorizontalScrollBar().setUnitIncrement(16);
 
-        return card;
+        seatMapPanel.add(mapScroll, BorderLayout.CENTER);
+        seatMapPanel.revalidate();
+        seatMapPanel.repaint();
     }
 
-    private JPanel createInfoLine(String label, String value) {
-        JPanel row = new JPanel(new BorderLayout());
-        row.setBackground(Color.WHITE);
+    private JLabel createDraftSeatCell(int row, int col) {
+        JLabel label = new JLabel();
 
-        JLabel lbl = new JLabel(label + ":");
-        lbl.setFont(new Font("Arial", Font.PLAIN, 14));
-        lbl.setForeground(new Color(100, 116, 139));
+        label.setPreferredSize(new Dimension(24, 24));
+        label.setOpaque(true);
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setVerticalAlignment(SwingConstants.CENTER);
+        label.setBorder(new LineBorder(new Color(120, 120, 120), 1));
+        label.setBackground(getSeatColor(draftSeatTypes[row][col]));
+        label.setToolTipText((char) ('A' + row) + String.valueOf(col + 1) + " - " + draftSeatTypes[row][col]);
+        label.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        JLabel val = new JLabel(value);
-        val.setFont(new Font("Arial", Font.BOLD, 14));
-        val.setForeground(TEXT);
+        label.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (!addMode && !editMode) {
+                    return;
+                }
 
-        row.add(lbl, BorderLayout.WEST);
-        row.add(val, BorderLayout.EAST);
-        return row;
+                draftSeatTypes[row][col] = selectedSeatType;
+                renderDraftSeatMap();
+            }
+        });
+
+        return label;
     }
 
-    private String formatVip(RoomView room) {
-        if (room.vipStartRow < 0 || room.vipEndRow < 0) return "Không có";
-        char start = (char) ('A' + room.vipStartRow);
-        char end = (char) ('A' + room.vipEndRow);
-        return start == end ? String.valueOf(start) : start + " - " + end;
+    private Color getSeatColor(String type) {
+        if ("VIP".equalsIgnoreCase(type)) {
+            return SEAT_VIP;
+        }
+
+        if ("COUPLE".equalsIgnoreCase(type)) {
+            return SEAT_COUPLE;
+        }
+
+        if ("REGULAR".equalsIgnoreCase(type)) {
+            return SEAT_REGULAR;
+        }
+
+        return SEAT_EMPTY;
     }
 
-    private void openRoomDialog(RoomView room) {
-        RoomDialog dialog = new RoomDialog(SwingUtilities.getWindowAncestor(this), room);
-        dialog.setVisible(true);
-        if (dialog.isSaved()) loadRooms();
+    private void prepareAdd() {
+        addMode = true;
+        editMode = false;
+
+        clearForm();
+        setFormEnabled(true);
+
+        try {
+            txtRoomId.setText(roomDAO.getNextRoomId());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Lỗi tự sinh mã phòng: " + e.getMessage(),
+                    "Lỗi",
+                    JOptionPane.ERROR_MESSAGE);
+            txtRoomId.setText("");
+        }
+
+        txtRoomId.setEditable(false);
+        txtCapacity.setEditable(false);
+        txtCapacity.setBackground(new Color(245, 245, 245));
+
+        txtRoomName.requestFocus();
+
+        selectedSeatType = "REGULAR";
+        highlightSelectedSeatType();
+
+        clearSeatMap();
+
+        JLabel empty = new JLabel("Nhập số hàng và số cột để tạo sơ đồ ghế", SwingConstants.CENTER);
+        empty.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        empty.setForeground(Color.GRAY);
+
+        seatMapPanel.add(empty, BorderLayout.CENTER);
+        seatMapPanel.revalidate();
+        seatMapPanel.repaint();
     }
 
-    private void deleteRoom(RoomView room) {
-        int confirm = JOptionPane.showConfirmDialog(
-                this,
-                "Bạn có chắc muốn xóa phòng " + room.name + " không?\nPhòng sẽ chuyển sang trạng thái ngừng hoạt động để không lỗi khóa ngoại.",
-                "Xác nhận xóa",
-                JOptionPane.YES_NO_OPTION
+    private void prepareEdit() {
+        int row = tblRoom.getSelectedRow();
+
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Bạn cần chọn phòng muốn sửa!");
+            return;
+        }
+
+        addMode = false;
+        editMode = true;
+
+        setFormEnabled(true);
+
+        txtRoomId.setEditable(false);
+        txtCapacity.setEditable(false);
+        txtCapacity.setBackground(new Color(245, 245, 245));
+
+        txtRoomName.requestFocus();
+    }
+
+    private void clearForm() {
+        txtRoomId.setText("");
+        txtRoomName.setText("");
+        txtCapacity.setText("");
+        txtRows.setText("");
+        txtCols.setText("");
+        cboStatus.setSelectedIndex(0);
+        txtNote.setText("");
+        draftSeatTypes = null;
+    }
+
+    private void clearSeatMap() {
+        seatMapPanel.removeAll();
+        seatMapPanel.revalidate();
+        seatMapPanel.repaint();
+    }
+
+    private void setFormEnabled(boolean enabled) {
+        txtRoomId.setEnabled(enabled);
+        txtRoomName.setEnabled(enabled);
+        txtCapacity.setEnabled(enabled);
+        txtRows.setEnabled(enabled);
+        txtCols.setEnabled(enabled);
+        cboStatus.setEnabled(enabled);
+        txtNote.setEnabled(enabled);
+
+        txtRoomId.setEditable(false);
+        txtCapacity.setEditable(false);
+
+        txtCapacity.setBackground(new Color(245, 245, 245));
+
+        btnSave.setEnabled(enabled);
+        btnCancel.setEnabled(enabled);
+    }
+
+    private void cancelEdit() {
+        addMode = false;
+        editMode = false;
+        setFormEnabled(false);
+        fillFormFromSelectedRow();
+    }
+
+    private boolean validateForm() {
+        if (txtRoomId.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Mã phòng không được để trống!");
+            return false;
+        }
+
+        if (txtRoomName.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Tên phòng không được để trống!");
+            return false;
+        }
+
+        try {
+            int rows = Integer.parseInt(txtRows.getText().trim());
+            int cols = Integer.parseInt(txtCols.getText().trim());
+
+            if (rows <= 0 || cols <= 0) {
+                JOptionPane.showMessageDialog(this, "Số hàng, số cột phải lớn hơn 0!");
+                return false;
+            }
+
+            int realCapacity = rows * cols;
+            txtCapacity.setText(String.valueOf(realCapacity));
+
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Số hàng, số cột phải là số!");
+            return false;
+        }
+
+        if (draftSeatTypes == null) {
+            JOptionPane.showMessageDialog(this, "Bạn chưa tạo sơ đồ ghế!");
+            return false;
+        }
+
+        return true;
+    }
+
+    private void saveRoom() {
+        if (!validateForm()) {
+            return;
+        }
+
+        if (!addMode && !editMode) {
+            JOptionPane.showMessageDialog(this, "Bạn cần bấm Thêm phòng hoặc Sửa phòng trước!");
+            return;
+        }
+
+        String roomId = txtRoomId.getText().trim();
+        String name = txtRoomName.getText().trim();
+        int rows = Integer.parseInt(txtRows.getText().trim());
+        int cols = Integer.parseInt(txtCols.getText().trim());
+        int capacity = rows * cols;
+        txtCapacity.setText(String.valueOf(capacity));
+        int active = cboStatus.getSelectedIndex() == 0 ? 1 : 0;
+        String type = getTypeFromNote(txtNote.getText().trim());
+
+        try {
+            if (addMode) {
+                roomDAO.insertRoomWithSeats(roomId, name, capacity, type, active, rows, cols, draftSeatTypes);
+                JOptionPane.showMessageDialog(this, "Thêm phòng thành công!");
+            } else {
+                roomDAO.updateRoomWithSeats(roomId, name, capacity, type, active, rows, cols, draftSeatTypes);
+                JOptionPane.showMessageDialog(this, "Sửa phòng thành công!");
+            }
+
+            addMode = false;
+            editMode = false;
+            setFormEnabled(false);
+            loadRoomData();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Lỗi lưu phòng: " + e.getMessage(),
+                    "Lỗi",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private String getTypeFromNote(String note) {
+        String noteUpper = note.toUpperCase();
+
+        if (noteUpper.contains("IMAX")) {
+            return "IMAX";
+        }
+
+        if (noteUpper.contains("VIP")) {
+            return "VIP";
+        }
+
+        if (noteUpper.contains("ĐÔI") || noteUpper.contains("COUPLE")) {
+            return "COUPLE";
+        }
+
+        if (noteUpper.contains("3D")) {
+            return "3D";
+        }
+
+        return "2D";
+    }
+
+    public void openAddRoomMode() {
+        prepareAdd();
+    }
+
+    public void refreshRoomData() {
+        loadRoomData();
+    }
+
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">
+    private void initComponents() {
+
+        jLabel1 = new javax.swing.JLabel();
+
+        setBackground(new java.awt.Color(255, 255, 255));
+        setPreferredSize(new java.awt.Dimension(759, 779));
+
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 36));
+        jLabel1.setText("Quản lý phòng");
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGap(95, 95, 95)
+                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 347, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(317, Short.MAX_VALUE))
         );
 
-        if (confirm == JOptionPane.YES_OPTION) {
-            try {
-                roomRepository.softDelete(room.roomId);
-                JOptionPane.showMessageDialog(this, "Xóa phòng thành công!");
-                loadRooms();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi xóa phòng: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
+        layout.setVerticalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGap(112, 112, 112)
+                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(311, Short.MAX_VALUE))
+        );
+    }// </editor-fold>
 
-    private class RoomDialog extends JDialog {
-        private JTextField txtRoomId;
-        private JTextField txtName;
-        private JTextField txtCapacity;
-        private JComboBox<String> cboRoomType;
-        private JComboBox<String> cboActive;
-        private JTextField txtRows;
-        private JTextField txtSeatsPerRow;
-        private JTextField txtVipStart;
-        private JTextField txtVipEnd;
-        private JTextField txtCoupleRow;
-        private boolean saved = false;
-        private final RoomView editingRoom;
-
-        RoomDialog(Window owner, RoomView room) {
-            super(owner, room == null ? "Thêm phòng" : "Sửa phòng", ModalityType.APPLICATION_MODAL);
-            this.editingRoom = room;
-            setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-            setResizable(false);
-            setSize(620, 600);
-            setLocationRelativeTo(owner);
-            initDialogUI();
-            if (room != null) fillData(room);
-        }
-
-        boolean isSaved() {
-            return saved;
-        }
-
-        private void initDialogUI() {
-            JPanel root = new JPanel(new BorderLayout(0, 24));
-            root.setBackground(Color.WHITE);
-            root.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
-            setContentPane(root);
-
-            JLabel title = new JLabel(editingRoom == null ? "Thêm phòng chiếu" : "Sửa phòng chiếu");
-            title.setFont(TITLE_FONT);
-            title.setForeground(TEXT);
-            root.add(title, BorderLayout.NORTH);
-
-            JPanel form = new JPanel(new GridBagLayout());
-            form.setBackground(Color.WHITE);
-            root.add(form, BorderLayout.CENTER);
-
-            txtRoomId = new JTextField();
-            txtName = new JTextField();
-            txtCapacity = new JTextField();
-            cboRoomType = new JComboBox<>(new String[]{"2D", "3D", "VIP", "IMAX", "COUPLE"});
-            cboActive = new JComboBox<>(new String[]{"Đang hoạt động", "Ngừng hoạt động"});
-            txtRows = new JTextField();
-            txtSeatsPerRow = new JTextField();
-            txtVipStart = new JTextField();
-            txtVipEnd = new JTextField();
-            txtCoupleRow = new JTextField();
-
-            addField(form, 0, "Mã phòng", txtRoomId);
-            addField(form, 1, "Tên phòng", txtName);
-            addField(form, 2, "Loại phòng", cboRoomType);
-            addField(form, 3, "Sức chứa", txtCapacity);
-            addField(form, 4, "Trạng thái", cboActive);
-            addField(form, 5, "Số hàng ghế", txtRows);
-            addField(form, 6, "Số ghế mỗi hàng", txtSeatsPerRow);
-            addField(form, 7, "Hàng VIP bắt đầu", txtVipStart);
-            addField(form, 8, "Hàng VIP kết thúc", txtVipEnd);
-            addField(form, 9, "Hàng couple", txtCoupleRow);
-
-            JLabel hint = new JLabel("Gợi ý: hàng ghế nhập số 0,1,2... tương ứng A,B,C... Nếu không có thì nhập -1.");
-            hint.setFont(new Font("Arial", Font.ITALIC, 13));
-            hint.setForeground(new Color(100, 116, 139));
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = 10;
-            gbc.gridwidth = 2;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.insets = new Insets(4, 0, 0, 0);
-            form.add(hint, gbc);
-
-            JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 0));
-            buttons.setBackground(Color.WHITE);
-            JButton btnCancel = createWhiteButton("Hủy");
-            btnCancel.setPreferredSize(new Dimension(120, 40));
-            btnCancel.addActionListener(e -> dispose());
-
-            JButton btnSave = createBlueButton("Lưu thông tin", null);
-            btnSave.setPreferredSize(new Dimension(160, 40));
-            btnSave.addActionListener(e -> saveRoom());
-
-            buttons.add(btnCancel);
-            buttons.add(btnSave);
-            root.add(buttons, BorderLayout.SOUTH);
-        }
-
-        private void addField(JPanel form, int row, String label, JComponent input) {
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.insets = new Insets(0, 0, 12, 16);
-            gbc.anchor = GridBagConstraints.WEST;
-            gbc.gridx = 0;
-            gbc.gridy = row;
-            JLabel lbl = new JLabel(label);
-            lbl.setFont(LABEL_FONT);
-            lbl.setForeground(TEXT);
-            form.add(lbl, gbc);
-
-            gbc.gridx = 1;
-            gbc.weightx = 1;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.insets = new Insets(0, 0, 12, 0);
-            input.setFont(INPUT_FONT);
-            input.setPreferredSize(new Dimension(360, 36));
-            form.add(input, gbc);
-        }
-
-        private void fillData(RoomView room) {
-            txtRoomId.setText(room.roomId);
-            txtRoomId.setEditable(false);
-            txtName.setText(room.name);
-            txtCapacity.setText(String.valueOf(room.capacity));
-            cboRoomType.setSelectedItem(room.type);
-            cboActive.setSelectedIndex(room.active ? 0 : 1);
-            txtRows.setText(String.valueOf(room.numberOfRows));
-            txtSeatsPerRow.setText(String.valueOf(room.seatsPerRow));
-            txtVipStart.setText(String.valueOf(room.vipStartRow));
-            txtVipEnd.setText(String.valueOf(room.vipEndRow));
-            txtCoupleRow.setText(String.valueOf(room.coupleRow));
-        }
-
-        private void saveRoom() {
-            try {
-                RoomView room = getFormData();
-                validateRoom(room);
-
-                if (editingRoom == null) {
-                    roomRepository.insert(room);
-                    JOptionPane.showMessageDialog(this, "Thêm phòng thành công!");
-                } else {
-                    roomRepository.update(room);
-                    JOptionPane.showMessageDialog(this, "Sửa phòng thành công!");
-                }
-
-                saved = true;
-                dispose();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-
-        private RoomView getFormData() {
-            RoomView room = new RoomView();
-            room.roomId = txtRoomId.getText().trim();
-            room.name = txtName.getText().trim();
-            room.type = cboRoomType.getSelectedItem().toString();
-            room.capacity = parseInt(txtCapacity.getText().trim(), "Sức chứa");
-            room.active = cboActive.getSelectedIndex() == 0;
-            room.numberOfRows = parseInt(txtRows.getText().trim(), "Số hàng ghế");
-            room.seatsPerRow = parseInt(txtSeatsPerRow.getText().trim(), "Số ghế mỗi hàng");
-            room.vipStartRow = parseInt(txtVipStart.getText().trim(), "Hàng VIP bắt đầu");
-            room.vipEndRow = parseInt(txtVipEnd.getText().trim(), "Hàng VIP kết thúc");
-            room.coupleRow = parseInt(txtCoupleRow.getText().trim(), "Hàng couple");
-            return room;
-        }
-
-        private int parseInt(String value, String fieldName) {
-            try {
-                return Integer.parseInt(value);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(fieldName + " phải là số nguyên.");
-            }
-        }
-
-        private void validateRoom(RoomView room) throws SQLException {
-            if (room.roomId.isEmpty()) throw new IllegalArgumentException("Mã phòng không được để trống.");
-            if (room.name.isEmpty()) throw new IllegalArgumentException("Tên phòng không được để trống.");
-            if (room.capacity <= 0) throw new IllegalArgumentException("Sức chứa phải lớn hơn 0.");
-            if (room.numberOfRows <= 0) throw new IllegalArgumentException("Số hàng ghế phải lớn hơn 0.");
-            if (room.seatsPerRow <= 0) throw new IllegalArgumentException("Số ghế mỗi hàng phải lớn hơn 0.");
-            if (room.capacity != room.numberOfRows * room.seatsPerRow) {
-                throw new IllegalArgumentException("Sức chứa phải bằng Số hàng ghế x Số ghế mỗi hàng.");
-            }
-            if (room.vipStartRow >= 0 || room.vipEndRow >= 0) {
-                if (room.vipStartRow < 0 || room.vipEndRow < 0 || room.vipStartRow > room.vipEndRow || room.vipEndRow >= room.numberOfRows) {
-                    throw new IllegalArgumentException("Hàng VIP không hợp lệ.");
-                }
-            }
-            if (room.coupleRow >= room.numberOfRows) {
-                throw new IllegalArgumentException("Hàng couple không được lớn hơn số hàng ghế.");
-            }
-            if (editingRoom == null && roomRepository.exists(room.roomId)) {
-                throw new IllegalArgumentException("Mã phòng đã tồn tại.");
-            }
-        }
-    }
-
-    private static class RoomView {
-        String roomId;
-        String name;
-        int capacity;
-        String type;
-        boolean active;
-        int layoutId;
-        int numberOfRows;
-        int seatsPerRow;
-        int vipStartRow;
-        int vipEndRow;
-        int coupleRow;
-    }
-
-    private static class RoomRepository {
-        private Connection getConnection() throws SQLException {
-            return DBConnection.getConnection();
-        }
-
-        List<RoomView> findRooms(String keyword, String typeFilter, String statusFilter) throws SQLException {
-            List<RoomView> rooms = new ArrayList<>();
-            StringBuilder sql = new StringBuilder();
-            sql.append("SELECT r.roomId, r.name, r.capacity, r.type, r.active, ");
-            sql.append("COALESCE(sl.layoutId, 0) AS layoutId, ");
-            sql.append("COALESCE(sl.numberOfRows, 0) AS numberOfRows, ");
-            sql.append("COALESCE(sl.seatsPerRow, 0) AS seatsPerRow, ");
-            sql.append("COALESCE(sl.vipStartRow, -1) AS vipStartRow, ");
-            sql.append("COALESCE(sl.vipEndRow, -1) AS vipEndRow, ");
-            sql.append("COALESCE(sl.coupleRow, -1) AS coupleRow ");
-            sql.append("FROM Room r LEFT JOIN SeatLayout sl ON r.roomId = sl.roomId WHERE 1 = 1 ");
-
-            List<Object> params = new ArrayList<>();
-
-            if (keyword != null && !keyword.isEmpty()) {
-                sql.append("AND (r.roomId LIKE ? OR r.name LIKE ?) ");
-                params.add("%" + keyword + "%");
-                params.add("%" + keyword + "%");
-            }
-            if (typeFilter != null && !typeFilter.equals("Tất cả loại phòng")) {
-                sql.append("AND r.type = ? ");
-                params.add(typeFilter);
-            }
-            if (statusFilter != null && statusFilter.equals("Đang hoạt động")) {
-                sql.append("AND r.active = 1 ");
-            } else if (statusFilter != null && statusFilter.equals("Ngừng hoạt động")) {
-                sql.append("AND r.active = 0 ");
-            }
-            sql.append("ORDER BY r.roomId");
-
-            try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-                for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) rooms.add(mapRoom(rs));
-                }
-            }
-            return rooms;
-        }
-
-        boolean exists(String roomId) throws SQLException {
-            String sql = "SELECT roomId FROM Room WHERE roomId = ?";
-            try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, roomId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    return rs.next();
-                }
-            }
-        }
-
-        void insert(RoomView room) throws SQLException {
-            String insertRoom = "INSERT INTO Room(roomId, name, capacity, type, active) VALUES (?, ?, ?, ?, ?)";
-            String insertLayout = "INSERT INTO SeatLayout(roomId, numberOfRows, seatsPerRow, vipStartRow, vipEndRow, coupleRow) VALUES (?, ?, ?, ?, ?, ?)";
-
-            try (Connection conn = getConnection()) {
-                conn.setAutoCommit(false);
-                try (PreparedStatement psRoom = conn.prepareStatement(insertRoom);
-                     PreparedStatement psLayout = conn.prepareStatement(insertLayout)) {
-
-                    psRoom.setString(1, room.roomId);
-                    psRoom.setString(2, room.name);
-                    psRoom.setInt(3, room.capacity);
-                    psRoom.setString(4, room.type);
-                    psRoom.setBoolean(5, room.active);
-                    psRoom.executeUpdate();
-
-                    psLayout.setString(1, room.roomId);
-                    psLayout.setInt(2, room.numberOfRows);
-                    psLayout.setInt(3, room.seatsPerRow);
-                    psLayout.setInt(4, room.vipStartRow);
-                    psLayout.setInt(5, room.vipEndRow);
-                    psLayout.setInt(6, room.coupleRow);
-                    psLayout.executeUpdate();
-
-                    conn.commit();
-                } catch (SQLException e) {
-                    conn.rollback();
-                    throw e;
-                } finally {
-                    conn.setAutoCommit(true);
-                }
-            }
-        }
-
-        void update(RoomView room) throws SQLException {
-            String updateRoom = "UPDATE Room SET name = ?, capacity = ?, type = ?, active = ? WHERE roomId = ?";
-            String upsertLayout = "INSERT INTO SeatLayout(roomId, numberOfRows, seatsPerRow, vipStartRow, vipEndRow, coupleRow) " +
-                    "VALUES (?, ?, ?, ?, ?, ?) " +
-                    "ON DUPLICATE KEY UPDATE numberOfRows = VALUES(numberOfRows), seatsPerRow = VALUES(seatsPerRow), " +
-                    "vipStartRow = VALUES(vipStartRow), vipEndRow = VALUES(vipEndRow), coupleRow = VALUES(coupleRow)";
-
-            try (Connection conn = getConnection()) {
-                conn.setAutoCommit(false);
-                try (PreparedStatement psRoom = conn.prepareStatement(updateRoom);
-                     PreparedStatement psLayout = conn.prepareStatement(upsertLayout)) {
-
-                    psRoom.setString(1, room.name);
-                    psRoom.setInt(2, room.capacity);
-                    psRoom.setString(3, room.type);
-                    psRoom.setBoolean(4, room.active);
-                    psRoom.setString(5, room.roomId);
-                    psRoom.executeUpdate();
-
-                    psLayout.setString(1, room.roomId);
-                    psLayout.setInt(2, room.numberOfRows);
-                    psLayout.setInt(3, room.seatsPerRow);
-                    psLayout.setInt(4, room.vipStartRow);
-                    psLayout.setInt(5, room.vipEndRow);
-                    psLayout.setInt(6, room.coupleRow);
-                    psLayout.executeUpdate();
-
-                    conn.commit();
-                } catch (SQLException e) {
-                    conn.rollback();
-                    throw e;
-                } finally {
-                    conn.setAutoCommit(true);
-                }
-            }
-        }
-
-        void softDelete(String roomId) throws SQLException {
-            String sql = "UPDATE Room SET active = 0 WHERE roomId = ?";
-            try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, roomId);
-                ps.executeUpdate();
-            }
-        }
-
-        private RoomView mapRoom(ResultSet rs) throws SQLException {
-            RoomView room = new RoomView();
-            room.roomId = rs.getString("roomId");
-            room.name = rs.getString("name");
-            room.capacity = rs.getInt("capacity");
-            room.type = rs.getString("type");
-            room.active = rs.getBoolean("active");
-            room.layoutId = rs.getInt("layoutId");
-            room.numberOfRows = rs.getInt("numberOfRows");
-            room.seatsPerRow = rs.getInt("seatsPerRow");
-            room.vipStartRow = rs.getInt("vipStartRow");
-            room.vipEndRow = rs.getInt("vipEndRow");
-            room.coupleRow = rs.getInt("coupleRow");
-            return room;
-        }
-    }
-
-    private static class PlaceholderTextField extends JTextField {
-        private final String placeholder;
-        private boolean showingPlaceholder = true;
-
-        PlaceholderTextField(String placeholder) {
-            this.placeholder = placeholder;
-            setText(placeholder);
-            setForeground(Color.GRAY);
-            setBorder(new LineBorder(BORDER, 1));
-            addFocusListener(new FocusAdapter() {
-                @Override
-                public void focusGained(FocusEvent e) {
-                    if (showingPlaceholder) {
-                        setText("");
-                        setForeground(TEXT);
-                        showingPlaceholder = false;
-                    }
-                }
-
-                @Override
-                public void focusLost(FocusEvent e) {
-                    if (getText().trim().isEmpty()) {
-                        setText(placeholder);
-                        setForeground(Color.GRAY);
-                        showingPlaceholder = true;
-                    }
-                }
-            });
-        }
-
-        String getRealText() {
-            return showingPlaceholder ? "" : getText();
-        }
-    }
+    private javax.swing.JLabel jLabel1;
 }

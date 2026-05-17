@@ -2,7 +2,6 @@ package cinema.dao;
 
 import cinema.DBConnection;
 import cinema.models.Room;
-import cinema.models.Seat;
 import cinema.models.SeatLayout;
 
 import java.sql.*;
@@ -11,213 +10,329 @@ import java.util.List;
 
 public class RoomDAO {
 
+    private SeatLayoutDAO seatLayoutDAO = new SeatLayoutDAO();
+    private SeatDao seatDao = new SeatDao();
+
+    public static class RoomTableRow {
+        private String roomId;
+        private String name;
+        private int capacity;
+        private String type;
+        private int active;
+        private int numberOfRows;
+        private int seatsPerRow;
+
+        public RoomTableRow(String roomId, String name, int capacity, String type,
+                            int active, int numberOfRows, int seatsPerRow) {
+            this.roomId = roomId;
+            this.name = name;
+            this.capacity = capacity;
+            this.type = type;
+            this.active = active;
+            this.numberOfRows = numberOfRows;
+            this.seatsPerRow = seatsPerRow;
+        }
+
+        public String getRoomId() {
+            return roomId;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int getCapacity() {
+            return capacity;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public int getActive() {
+            return active;
+        }
+
+        public int getNumberOfRows() {
+            return numberOfRows;
+        }
+
+        public int getSeatsPerRow() {
+            return seatsPerRow;
+        }
+
+        public String getStatusText() {
+            return active == 1 ? "Đang hoạt động" : "Ngừng hoạt động";
+        }
+
+        public String getNoteText() {
+            if (active == 0) {
+                return "Bảo trì";
+            }
+
+            if (type == null) {
+                return "Phòng tiêu chuẩn";
+            }
+
+            switch (type.toUpperCase()) {
+                case "VIP":
+                    return "Phòng VIP";
+                case "IMAX":
+                    return "Phòng IMAX";
+                case "COUPLE":
+                    return "Phòng ghế đôi";
+                case "3D":
+                    return "Phòng tiêu chuẩn 3D";
+                case "2D":
+                default:
+                    return "Phòng tiêu chuẩn";
+            }
+        }
+    }
+
+    private Connection getConn() throws Exception {
+        Connection conn = DBConnection.getConnection();
+
+        if (conn == null) {
+            throw new Exception("Không kết nối được MySQL. Kiểm tra DBConnection, user, password, IP và MySQL Connector.");
+        }
+
+        return conn;
+    }
+
     public List<Room> getAll() throws Exception {
         List<Room> list = new ArrayList<>();
 
-        String sql = "SELECT r.roomId, r.name, r.capacity, r.type, r.active, "
-                + "sl.numberOfRows, sl.seatsPerRow, sl.vipStartRow, sl.vipEndRow, sl.coupleRow "
-                + "FROM Room r "
-                + "LEFT JOIN SeatLayout sl ON r.roomId = sl.roomId "
-                + "WHERE r.active = 1 "
-                + "ORDER BY r.roomId";
+        String sql = "SELECT * FROM Room WHERE active = 1 ORDER BY roomId";
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = getConn();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
-                list.add(mapRoom(rs));
+                String roomId = rs.getString("roomId");
+                SeatLayout layout = seatLayoutDAO.getByRoomId(roomId);
+
+                Room r = new Room(
+                        roomId,
+                        rs.getString("name"),
+                        rs.getInt("capacity"),
+                        rs.getString("type"),
+                        layout
+                );
+
+                r.setActive(rs.getBoolean("active"));
+                list.add(r);
             }
         }
+
         return list;
     }
 
-    public List<Room> search(String keyword, String type) throws Exception {
+    public List<Room> search(String keyword) throws Exception {
         List<Room> list = new ArrayList<>();
+
+        String sql = "SELECT * FROM Room " +
+                "WHERE active = 1 AND (roomId LIKE ? OR name LIKE ? OR type LIKE ?) " +
+                "ORDER BY roomId";
+
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            String key = "%" + keyword + "%";
+
+            ps.setString(1, key);
+            ps.setString(2, key);
+            ps.setString(3, key);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String roomId = rs.getString("roomId");
+                    SeatLayout layout = seatLayoutDAO.getByRoomId(roomId);
+
+                    Room r = new Room(
+                            roomId,
+                            rs.getString("name"),
+                            rs.getInt("capacity"),
+                            rs.getString("type"),
+                            layout
+                    );
+
+                    r.setActive(rs.getBoolean("active"));
+                    list.add(r);
+                }
+            }
+        }
+
+        return list;
+    }
+
+    public List<RoomTableRow> getAllForTable() throws Exception {
+        return searchForTable("", "Tất cả trạng thái");
+    }
+
+    public List<RoomTableRow> searchForTable(String keyword, String status) throws Exception {
+        List<RoomTableRow> list = new ArrayList<>();
+
+        if (keyword == null) {
+            keyword = "";
+        }
+
+        if (status == null) {
+            status = "Tất cả trạng thái";
+        }
 
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT r.roomId, r.name, r.capacity, r.type, r.active, ");
-        sql.append("sl.numberOfRows, sl.seatsPerRow, sl.vipStartRow, sl.vipEndRow, sl.coupleRow ");
+        sql.append("       sl.numberOfRows, sl.seatsPerRow ");
         sql.append("FROM Room r ");
         sql.append("LEFT JOIN SeatLayout sl ON r.roomId = sl.roomId ");
-        sql.append("WHERE r.active = 1 ");
+        sql.append("WHERE (r.roomId LIKE ? OR r.name LIKE ? OR r.type LIKE ?) ");
 
-        List<Object> params = new ArrayList<>();
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (LOWER(r.roomId) LIKE ? OR LOWER(r.name) LIKE ?) ");
-            String key = "%" + keyword.trim().toLowerCase() + "%";
-            params.add(key);
-            params.add(key);
-        }
-
-        if (type != null && !type.equalsIgnoreCase("Tất cả")) {
-            sql.append("AND LOWER(r.type) = ? ");
-            params.add(type.trim().toLowerCase());
+        if (status.equals("Đang hoạt động")) {
+            sql.append("AND r.active = 1 ");
+        } else if (status.equals("Ngừng hoạt động")) {
+            sql.append("AND r.active = 0 ");
         }
 
         sql.append("ORDER BY r.roomId");
 
-        try (Connection conn = DBConnection.getConnection();
+        try (Connection conn = getConn();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+            String key = "%" + keyword + "%";
+
+            ps.setString(1, key);
+            ps.setString(2, key);
+            ps.setString(3, key);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(mapRoom(rs));
+                    int rows = rs.getObject("numberOfRows") == null ? 0 : rs.getInt("numberOfRows");
+                    int cols = rs.getObject("seatsPerRow") == null ? 0 : rs.getInt("seatsPerRow");
+
+                    RoomTableRow row = new RoomTableRow(
+                            rs.getString("roomId"),
+                            rs.getString("name"),
+                            rs.getInt("capacity"),
+                            rs.getString("type"),
+                            rs.getInt("active"),
+                            rows,
+                            cols
+                    );
+
+                    list.add(row);
                 }
             }
         }
+
         return list;
     }
 
     public Room getById(String id) throws Exception {
-        String sql = "SELECT r.roomId, r.name, r.capacity, r.type, r.active, "
-                + "sl.numberOfRows, sl.seatsPerRow, sl.vipStartRow, sl.vipEndRow, sl.coupleRow "
-                + "FROM Room r "
-                + "LEFT JOIN SeatLayout sl ON r.roomId = sl.roomId "
-                + "WHERE r.roomId = ? AND r.active = 1";
+        String sql = "SELECT * FROM Room WHERE roomId = ?";
 
-        try (Connection conn = DBConnection.getConnection();
+        try (Connection conn = getConn();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, id);
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapRoom(rs);
+                    SeatLayout layout = seatLayoutDAO.getByRoomId(id);
+
+                    Room r = new Room(
+                            rs.getString("roomId"),
+                            rs.getString("name"),
+                            rs.getInt("capacity"),
+                            rs.getString("type"),
+                            layout
+                    );
+
+                    r.setActive(rs.getBoolean("active"));
+                    return r;
                 }
             }
         }
+
         return null;
     }
 
-    public void insert(Room room) throws Exception {
-        String insertRoom = "INSERT INTO Room(roomId, name, capacity, type, active) VALUES (?, ?, ?, ?, 1)";
-        String insertLayout = "INSERT INTO SeatLayout(roomId, numberOfRows, seatsPerRow, vipStartRow, vipEndRow, coupleRow) "
-                + "VALUES (?, ?, ?, ?, ?, ?)";
-        String insertSeat = "INSERT INTO Seat(roomId, rowIndex, colIndex, seatLabel, seatType, active) VALUES (?, ?, ?, ?, ?, 1)";
+    public void insert(Room r) throws Exception {
+        String sql = "INSERT INTO Room(roomId, name, capacity, type, active) VALUES (?, ?, ?, ?, 1)";
 
-        try (Connection conn = DBConnection.getConnection()) {
-            conn.setAutoCommit(false);
-            try {
-                try (PreparedStatement ps = conn.prepareStatement(insertRoom)) {
-                    ps.setString(1, room.getRoomId());
-                    ps.setString(2, room.getName());
-                    ps.setInt(3, room.getCapacity());
-                    ps.setString(4, room.getType());
-                    ps.executeUpdate();
-                }
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-                SeatLayout layout = room.getSeatLayout();
-                if (layout != null) {
-                    try (PreparedStatement ps = conn.prepareStatement(insertLayout)) {
-                        ps.setString(1, room.getRoomId());
-                        ps.setInt(2, layout.getNumberOfRows());
-                        ps.setInt(3, layout.getSeatsPerRow());
-                        ps.setInt(4, layout.getVipStartRow());
-                        ps.setInt(5, layout.getVipEndRow());
-                        ps.setInt(6, layout.getCoupleRow());
-                        ps.executeUpdate();
-                    }
+            ps.setString(1, r.getRoomId());
+            ps.setString(2, r.getName());
+            ps.setInt(3, r.getCapacity());
+            ps.setString(4, r.getType());
 
-                    Seat[][] seats = layout.getSeats();
-                    try (PreparedStatement ps = conn.prepareStatement(insertSeat)) {
-                        for (Seat[] row : seats) {
-                            for (Seat seat : row) {
-                                ps.setString(1, room.getRoomId());
-                                ps.setInt(2, seat.getRowIndex());
-                                ps.setInt(3, seat.getColIndex());
-                                ps.setString(4, seat.getSeatLabel());
-                                ps.setString(5, seat.getSeatType().name());
-                                ps.addBatch();
-                            }
-                        }
-                        ps.executeBatch();
-                    }
-                }
-
-                conn.commit();
-            } catch (Exception e) {
-                conn.rollback();
-                throw e;
-            } finally {
-                conn.setAutoCommit(true);
-            }
+            ps.executeUpdate();
         }
     }
 
-    public void update(Room room) throws Exception {
-        String updateRoom = "UPDATE Room SET name = ?, capacity = ?, type = ? WHERE roomId = ?";
-        String updateLayout = "UPDATE SeatLayout SET numberOfRows = ?, seatsPerRow = ?, vipStartRow = ?, vipEndRow = ?, coupleRow = ? WHERE roomId = ?";
-        String insertLayout = "INSERT INTO SeatLayout(roomId, numberOfRows, seatsPerRow, vipStartRow, vipEndRow, coupleRow) "
-                + "VALUES (?, ?, ?, ?, ?, ?)";
+    public void update(Room r) throws Exception {
+        String sql = "UPDATE Room SET name = ?, capacity = ?, type = ? WHERE roomId = ?";
 
-        try (Connection conn = DBConnection.getConnection()) {
-            conn.setAutoCommit(false);
-            try {
-                try (PreparedStatement ps = conn.prepareStatement(updateRoom)) {
-                    ps.setString(1, room.getName());
-                    ps.setInt(2, room.getCapacity());
-                    ps.setString(3, room.getType());
-                    ps.setString(4, room.getRoomId());
-                    ps.executeUpdate();
-                }
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-                SeatLayout layout = room.getSeatLayout();
-                if (layout != null) {
-                    int affected;
-                    try (PreparedStatement ps = conn.prepareStatement(updateLayout)) {
-                        ps.setInt(1, layout.getNumberOfRows());
-                        ps.setInt(2, layout.getSeatsPerRow());
-                        ps.setInt(3, layout.getVipStartRow());
-                        ps.setInt(4, layout.getVipEndRow());
-                        ps.setInt(5, layout.getCoupleRow());
-                        ps.setString(6, room.getRoomId());
-                        affected = ps.executeUpdate();
-                    }
+            ps.setString(1, r.getName());
+            ps.setInt(2, r.getCapacity());
+            ps.setString(3, r.getType());
+            ps.setString(4, r.getRoomId());
 
-                    if (affected == 0) {
-                        try (PreparedStatement ps = conn.prepareStatement(insertLayout)) {
-                            ps.setString(1, room.getRoomId());
-                            ps.setInt(2, layout.getNumberOfRows());
-                            ps.setInt(3, layout.getSeatsPerRow());
-                            ps.setInt(4, layout.getVipStartRow());
-                            ps.setInt(5, layout.getVipEndRow());
-                            ps.setInt(6, layout.getCoupleRow());
-                            ps.executeUpdate();
-                        }
-                    }
-                }
-
-                conn.commit();
-            } catch (Exception e) {
-                conn.rollback();
-                throw e;
-            } finally {
-                conn.setAutoCommit(true);
-            }
+            ps.executeUpdate();
         }
     }
 
     public void delete(String roomId) throws Exception {
-        String deleteRoom = "UPDATE Room SET active = 0 WHERE roomId = ?";
-        String deleteSeats = "UPDATE Seat SET active = 0 WHERE roomId = ?";
+        String sql = "UPDATE Room SET active = 0 WHERE roomId = ?";
 
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, roomId);
+            ps.executeUpdate();
+        }
+    }
+
+    public void insertRoomWithSeats(String roomId, String name, int capacity, String type,
+                                    int active, int rows, int cols, String[][] draftSeatTypes) throws Exception {
+
+        String sqlRoom = "INSERT INTO Room(roomId, name, capacity, type, active) VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conn = getConn()) {
             conn.setAutoCommit(false);
+
             try {
-                try (PreparedStatement ps = conn.prepareStatement(deleteSeats)) {
+                try (PreparedStatement ps = conn.prepareStatement(sqlRoom)) {
                     ps.setString(1, roomId);
+                    ps.setString(2, name);
+                    ps.setInt(3, capacity);
+                    ps.setString(4, type);
+                    ps.setInt(5, active);
                     ps.executeUpdate();
                 }
-                try (PreparedStatement ps = conn.prepareStatement(deleteRoom)) {
-                    ps.setString(1, roomId);
-                    ps.executeUpdate();
-                }
+
+                int[] layoutInfo = calculateLayoutInfo(draftSeatTypes);
+
+                seatLayoutDAO.insertOrUpdate(
+                        conn,
+                        roomId,
+                        rows,
+                        cols,
+                        layoutInfo[0],
+                        layoutInfo[1],
+                        layoutInfo[2]
+                );
+
+                seatDao.insertOrUpdateSeats(conn, roomId, draftSeatTypes);
+
                 conn.commit();
+
             } catch (Exception e) {
                 conn.rollback();
                 throw e;
@@ -227,38 +342,103 @@ public class RoomDAO {
         }
     }
 
-    public boolean existsRoomId(String roomId) throws Exception {
-        String sql = "SELECT COUNT(*) FROM Room WHERE roomId = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, roomId);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() && rs.getInt(1) > 0;
+    public void updateRoomWithSeats(String roomId, String name, int capacity, String type,
+                                    int active, int rows, int cols, String[][] draftSeatTypes) throws Exception {
+
+        String sqlRoom = "UPDATE Room SET name = ?, capacity = ?, type = ?, active = ? WHERE roomId = ?";
+
+        try (Connection conn = getConn()) {
+            conn.setAutoCommit(false);
+
+            try {
+                try (PreparedStatement ps = conn.prepareStatement(sqlRoom)) {
+                    ps.setString(1, name);
+                    ps.setInt(2, capacity);
+                    ps.setString(3, type);
+                    ps.setInt(4, active);
+                    ps.setString(5, roomId);
+                    ps.executeUpdate();
+                }
+
+                int[] layoutInfo = calculateLayoutInfo(draftSeatTypes);
+
+                seatLayoutDAO.insertOrUpdate(
+                        conn,
+                        roomId,
+                        rows,
+                        cols,
+                        layoutInfo[0],
+                        layoutInfo[1],
+                        layoutInfo[2]
+                );
+
+                seatDao.insertOrUpdateSeats(conn, roomId, draftSeatTypes);
+                seatDao.deactivateOutOfLayoutSeats(conn, roomId, rows, cols);
+
+                conn.commit();
+
+            } catch (Exception e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
             }
         }
     }
 
-    private Room mapRoom(ResultSet rs) throws SQLException {
-        SeatLayout layout = null;
-        int numberOfRows = rs.getInt("numberOfRows");
-        if (!rs.wasNull()) {
-            layout = new SeatLayout(
-                    numberOfRows,
-                    rs.getInt("seatsPerRow"),
-                    rs.getInt("vipStartRow"),
-                    rs.getInt("vipEndRow"),
-                    rs.getInt("coupleRow")
-            );
+    private int[] calculateLayoutInfo(String[][] draftSeatTypes) {
+        int vipStart = -1;
+        int vipEnd = -1;
+        int coupleRow = -1;
+
+        if (draftSeatTypes == null) {
+            return new int[]{-1, -1, -1};
         }
 
-        Room room = new Room(
-                rs.getString("roomId"),
-                rs.getString("name"),
-                rs.getInt("capacity"),
-                rs.getString("type"),
-                layout
-        );
-        room.setActive(rs.getBoolean("active"));
-        return room;
+        for (int i = 0; i < draftSeatTypes.length; i++) {
+            boolean hasVip = false;
+            boolean hasCouple = false;
+
+            for (int j = 0; j < draftSeatTypes[i].length; j++) {
+                if ("VIP".equalsIgnoreCase(draftSeatTypes[i][j])) {
+                    hasVip = true;
+                }
+
+                if ("COUPLE".equalsIgnoreCase(draftSeatTypes[i][j])) {
+                    hasCouple = true;
+                }
+            }
+
+            if (hasVip) {
+                if (vipStart == -1) {
+                    vipStart = i;
+                }
+                vipEnd = i;
+            }
+
+            if (hasCouple && coupleRow == -1) {
+                coupleRow = i;
+            }
+        }
+
+        return new int[]{vipStart, vipEnd, coupleRow};
+    }
+    public String getNextRoomId() throws Exception {
+        String sql = "SELECT roomId FROM Room ORDER BY CAST(SUBSTRING(roomId, 2) AS UNSIGNED) DESC LIMIT 1";
+
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                String lastId = rs.getString("roomId"); 
+                int number = Integer.parseInt(lastId.substring(1)); 
+                number++;
+
+                return String.format("R%03d", number);
+            }
+        }
+
+        return "R001";
     }
 }

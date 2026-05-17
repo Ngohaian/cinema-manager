@@ -1,7 +1,5 @@
 package cinema.models;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Customer{
     private static int autoId = 1;
@@ -71,8 +69,11 @@ public class Customer{
     public void setPhone(String Phone){phone = Phone;}
     public void setEmail(String Email){email = Email;}
     public void setNote(String note) { this.note = note;}
-
-    
+    public void setId(String id) { this.id = id;}
+    public void setTotalSpent(double totalSpent) { this.totalSpent = totalSpent; }
+    public void setLoyaltyPoints(double loyaltyPoints) { this.loyaltyPoints = loyaltyPoints; }
+    public void setType(CustomerType type) { this.type = type; }
+  
     private void updateCustomerType(){
         if(totalSpent >= DIAMOND_THRESHOLD) type = CustomerType.DIAMOND;
         else if(totalSpent >= GOLD_THRESHOLD) type = CustomerType.GOLD;

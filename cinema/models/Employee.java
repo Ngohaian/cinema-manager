@@ -1,9 +1,5 @@
 package cinema.models;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
-import cinema.dao.CustomerDAO;
 
 public class Employee {
     private static int autoId =1;
@@ -63,6 +59,7 @@ public class Employee {
     public EmployeeStatus getStatus() { return status; }
     public String getUsername() { return username; }
     public String getPassword() { return password; }
+    public LocalDate getHireDate() { return hireDate; }
 
     public void setName(String name) { this.name = name; }
     public void setPhone(String phone) { this.phone = phone; }
@@ -70,6 +67,11 @@ public class Employee {
     public void setNote(String note) { this.note = note; }
     public void setUsername(String username) { this.username = username; }
     public void setPassword(String password) { this.password = password; }
+    public void setPosition(Position position) { this.position = position; }
+    public void setId(String id) { this.id = id; }
+    public void setHireDate(LocalDate hireDate) { this.hireDate = hireDate; }
+    public void setStatus(EmployeeStatus status) { this.status = status; }
+    public void setSalary(double salary) {this.salary = salary;}
 
     public double calculateSalary() {
         return salary * position.getSalaryMultiplier();

@@ -1,5 +1,8 @@
 package cinema.form;
+
 public class LoginFrame extends javax.swing.JFrame {
+    private static final int MAX_ATTEMPTS = 3; 
+    private int loginAttempts = 0;
 
     public LoginFrame() {
         initComponents();
@@ -7,14 +10,14 @@ public class LoginFrame extends javax.swing.JFrame {
     }
 
     private void initComponents() {
-
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        txt_password = new javax.swing.JTextField();
+        txt_password = new javax.swing.JPasswordField();
         jLabel3 = new javax.swing.JLabel();
         btn_login = new javax.swing.JButton();
         txt_username = new javax.swing.JTextField();
+        lbl_error = new javax.swing.JLabel(); 
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(255, 255, 255));
@@ -50,6 +53,9 @@ public class LoginFrame extends javax.swing.JFrame {
         });
 
         txt_username.setName("txt_username"); // NOI18N
+        lbl_error.setFont(new java.awt.Font("Segoe UI", 0, 12));
+        lbl_error.setForeground(new java.awt.Color(220, 50, 50));
+        lbl_error.setText("");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -67,7 +73,8 @@ public class LoginFrame extends javax.swing.JFrame {
                             .addComponent(jLabel3)
                             .addComponent(txt_password, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(btn_login, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txt_username, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(txt_username, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lbl_error, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(33, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -84,6 +91,9 @@ public class LoginFrame extends javax.swing.JFrame {
                 .addGap(17, 17, 17)
                 .addComponent(txt_password, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(30, 30, 30)
+                .addGap(6, 6, 6)
+                .addComponent(lbl_error)
+                .addGap(14, 14, 14)
                 .addComponent(btn_login, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(40, Short.MAX_VALUE))
         );
@@ -101,41 +111,87 @@ public class LoginFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void btn_loginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_loginActionPerformed
-        
-    }//GEN-LAST:event_btn_loginActionPerformed
-
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(LoginFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(LoginFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(LoginFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(LoginFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+ 
+     private void btn_loginActionPerformed(java.awt.event.ActionEvent evt) {
+        String username = txt_username.getText().trim();
+        String password = new String(txt_password.getPassword()).trim();
+ 
+        if (username.isEmpty() || password.isEmpty()) {
+            lbl_error.setText("Vui lòng nhập đầy đủ thông tin.");
+            return;
+        }
+         if (loginAttempts >= MAX_ATTEMPTS) {
+            lbl_error.setText("Tài khoản bị khóa do nhập sai " + MAX_ATTEMPTS + " lần.");
+            btn_login.setEnabled(false);
+            return;
         }
  
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new LoginFrame().setVisible(true);
-                
+        cinema.models.Employee emp = checkLogin(username, password);
+        if (emp != null) {
+            switch (emp.getPosition()) {
+                case MANAGER:
+                    new ManagerFrame(emp).setVisible(true);
+                    break;
+                case TICKET_SELLER:
+                    new SellTicketFrame(emp).setVisible(true);
+                    break;
+                case TICKET_CHECKER:
+                    new CheckerTicket(emp).setVisible(true);
+                    break;
             }
-        });
+            this.dispose();
+        } else {
+            loginAttempts++;
+            int remaining = MAX_ATTEMPTS - loginAttempts;
+            if (remaining > 0) {
+                lbl_error.setText("Sai tài khoản hoặc mật khẩu. Còn " + remaining + " lần thử.");
+            } else {
+                lbl_error.setText("Tài khoản bị khóa do nhập sai " + MAX_ATTEMPTS + " lần.");
+                btn_login.setEnabled(false);
+            }
+            txt_password.setText("");
+        }
     }
+
+    private cinema.models.Employee checkLogin(String username, String password) {
+        String sql = "SELECT * FROM employee WHERE username = ? AND password = ? AND status = 'ACTIVE'";
+        try (java.sql.Connection conn = cinema.DBConnection.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setString(2, password);
+            java.sql.ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                String posStr = rs.getString("Position");
+                cinema.models.Employee.Position pos;
+                switch (posStr) {
+                    case "Quan ly":
+                        pos = cinema.models.Employee.Position.MANAGER;
+                        break;
+                    case "Nhan vien ban ve":
+                        pos = cinema.models.Employee.Position.TICKET_SELLER;
+                        break;
+                    default:
+                        pos = cinema.models.Employee.Position.TICKET_CHECKER;
+                        break;
+                }
+                cinema.models.Employee emp = new cinema.models.Employee(
+                    rs.getString("EmployeeName"),
+                    rs.getString("EmployeePhone"),
+                    rs.getString("EmployeeEmail"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    pos,
+                    rs.getDouble("salary")
+                );
+                return emp;
+            }
+        } catch (java.sql.SQLException e) {
+            lbl_error.setText("Lỗi kết nối cơ sở dữ liệu.");
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
 
     private javax.swing.JButton btn_login;
@@ -143,7 +199,8 @@ public class LoginFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JTextField txt_password;
+    private javax.swing.JPasswordField txt_password;
     private javax.swing.JTextField txt_username;
+    private javax.swing.JLabel lbl_error;
 
 }
