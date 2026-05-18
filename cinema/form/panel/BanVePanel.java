@@ -512,6 +512,15 @@ public class BanVePanel extends javax.swing.JPanel {
         TTHoaDonPanel.setLayout(new java.awt.BorderLayout(15, 15));
         TTHoaDonPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200), 1, true), 
         BorderFactory.createEmptyBorder(20, 30, 20, 30)));
+        double totalInvoiceAmount = 0;
+        for(Ticket t : dsVeFinal){
+            totalInvoiceAmount += t.getPrice();
+        }
+        final double totalInvoiceAmountFinal = totalInvoiceAmount;
+        final double[] discountRef = {0};
+        final double[] totalAfterRef = {totalInvoiceAmount};
+        final JLabel lblSaleVal = new JLabel("0 VNĐ");
+        final JLabel lblTotalVal = new JLabel(String.format("%,.0f VNĐ", totalInvoiceAmount));
 
         //1.Title hóa đơn
         JLabel lblTitle = new JLabel("THÔNG TIN HÓA ĐƠN");
@@ -544,17 +553,25 @@ public class BanVePanel extends javax.swing.JPanel {
         javax.swing.JTextField txtSdtKH = new javax.swing.JTextField("");
         txtSdtKH.addActionListener(ev -> {
             String sdt = txtSdtKH.getText().trim();
-            Customer found = customerDao.getCustomerBySDT(sdt);
             if (sdt.isEmpty()) return;
+                Customer found = customerDao.getCustomerBySDT(sdt);
                 if (found != null) {
                     txtTenKH.setText(found.getName());
                     txtTenKH.setEditable(false);
                     txtTenKH.setBackground(new java.awt.Color(240, 240, 240));
+                    discountRef[0] = found.calculateDiscount(totalInvoiceAmountFinal);
+                    totalAfterRef[0] = totalInvoiceAmountFinal - discountRef[0];
+                    lblSaleVal.setText(String.format("%,.0f VNĐ", discountRef[0]));
+                    lblTotalVal.setText(String.format("%,.0f VNĐ", totalAfterRef[0]));
                 } else {
                     txtTenKH.setText("");
                     txtTenKH.setEditable(true);
                     txtTenKH.setBackground(java.awt.Color.WHITE);
                     txtTenKH.requestFocus();
+                    discountRef[0] = 0;
+                    totalAfterRef[0] = totalInvoiceAmountFinal;
+                    lblSaleVal.setText("0 VNĐ");
+                    lblTotalVal.setText(String.format("%,.0f VNĐ", totalInvoiceAmountFinal));
                 }
             });
         txtTenKH.addActionListener(ev -> {
@@ -594,7 +611,7 @@ public class BanVePanel extends javax.swing.JPanel {
         JTable tblDetails = new JTable(tableModel);
         tblDetails.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
         tblDetails.setRowHeight(25);
-        
+        tblDetails.getTableHeader().setBackground(java.awt.Color.WHITE);
         List<String> seatType = new ArrayList<>();
         for (Ticket ticket : dsVeFinal) {
             String loaiGhe = ticket.getSeat().getSeatType().toString();
@@ -603,7 +620,6 @@ public class BanVePanel extends javax.swing.JPanel {
             }
         }
 
-        double totalInvoiceAmount = 0;
         for (String loaiGhe : seatType) {
             StringBuilder sbTenGhe = new StringBuilder();
             double donGia = 0;
@@ -624,13 +640,9 @@ public class BanVePanel extends javax.swing.JPanel {
                     soLuong++;
                 }
             }
-            
             double thanhTien = donGia * soLuong;
-            totalInvoiceAmount += thanhTien;
 
-            tableModel.addRow(new Object[]{
-                loaiGhe, 
-                sbTenGhe.toString(), 
+            tableModel.addRow(new Object[]{loaiGhe, sbTenGhe.toString(), 
                 String.format("%,.0f VNĐ", donGia), 
                 soLuong, 
                 String.format("%,.0f VNĐ", thanhTien)
@@ -638,23 +650,61 @@ public class BanVePanel extends javax.swing.JPanel {
         }
         
         JScrollPane scrollPane = new JScrollPane(tblDetails);
+        scrollPane.setBackground(java.awt.Color.WHITE);
         scrollPane.setPreferredSize(new java.awt.Dimension(400, 150));
         scrollPane.setBorder(BorderFactory.createTitledBorder("Chi tiết vị trí ghế đặt"));
         pnlBody.add(scrollPane);
         pnlBody.add(Box.createVerticalStrut(10));
         
-        // 3. Tổng tiền
-        JPanel pnlTotal = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
-        pnlTotal.setBackground(java.awt.Color.WHITE);
-        JLabel lblTotalText = new JLabel("TỔNG TIỀN: ");
-        lblTotalText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
-        JLabel lblTotalVal = new JLabel(String.format("%,.0f VNĐ", totalInvoiceAmount));
-        lblTotalVal.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 18));
-        lblTotalVal.setForeground(java.awt.Color.RED);
-        pnlTotal.add(lblTotalText);
-        pnlTotal.add(lblTotalVal);
-        pnlBody.add(pnlTotal);
+        //3. Tổng tiền
+        JPanel pnlTotalWrapper = new JPanel(new java.awt.BorderLayout());
+        pnlTotalWrapper.setBackground(java.awt.Color.WHITE);
+        pnlTotalWrapper.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 100));
 
+        JPanel pnlTotal = new JPanel();
+        pnlTotal.setLayout(new BoxLayout(pnlTotal, BoxLayout.Y_AXIS));
+        pnlTotal.setBackground(java.awt.Color.WHITE);
+
+        // 3.1. Tổng tiền
+        JPanel row1 = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 5, 0));
+        row1.setBackground(java.awt.Color.WHITE);
+        row1.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 30));
+        JLabel lblTotalInvoiceText = new JLabel("Tổng tiền: ");
+        lblTotalInvoiceText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+        JLabel lblTotalInvoiceVal = new JLabel(String.format("%,.0f VNĐ", totalInvoiceAmount));
+        lblTotalInvoiceVal.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+        row1.add(lblTotalInvoiceText);
+        row1.add(lblTotalInvoiceVal);
+
+        // 3.2. Giảm giá
+        JPanel row2 = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 5, 0));
+        row2.setBackground(java.awt.Color.WHITE);
+        row2.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 30));
+        JLabel lblSaleOff = new JLabel("Giảm giá: ");
+        lblSaleOff.setForeground(java.awt.Color.BLUE);
+        lblSaleOff.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+        lblSaleVal.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+        lblSaleVal.setForeground(java.awt.Color.BLUE);
+        row2.add(lblSaleOff);
+        row2.add(lblSaleVal);
+
+        // 3.3. Tổng thanh toán
+        JPanel row3 = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 5, 0));
+        row3.setBackground(java.awt.Color.WHITE);
+        row3.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 30));
+        JLabel lblTotal = new JLabel("Tổng thanh toán: ");
+        lblTotal.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 15));
+        lblTotalVal.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
+        lblTotalVal.setForeground(java.awt.Color.RED);
+        row3.add(lblTotal);
+        row3.add(lblTotalVal);
+
+        pnlTotal.add(row1);
+        pnlTotal.add(row2);
+        pnlTotal.add(row3);
+        pnlTotalWrapper.add(pnlTotal, java.awt.BorderLayout.EAST);
+        pnlBody.add(pnlTotalWrapper);
+        
         TTHoaDonPanel.add(pnlBody, java.awt.BorderLayout.CENTER);
 
         //4. Phương thức thanh toán
@@ -668,7 +718,6 @@ public class BanVePanel extends javax.swing.JPanel {
         btnTienMat.setBackground(new java.awt.Color(46, 204, 113)); btnTienMat.setForeground(java.awt.Color.WHITE);
         btnChuyenKhoan.setBackground(new java.awt.Color(52, 152, 219)); btnChuyenKhoan.setForeground(java.awt.Color.WHITE);
         
-        final double targetTotal = totalInvoiceAmount;
         java.awt.event.ActionListener paymentListener = new java.awt.event.ActionListener() {
         @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -685,12 +734,12 @@ public class BanVePanel extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(HoaDonPanel,
                 "Thanh toán thành công qua hình thức: " + phuongThuc, "Xác nhận", JOptionPane.INFORMATION_MESSAGE);
             String ngayLapStr = ngayLap.toLocalDate().toString();
-            Invoice newInvoice = new Invoice(maHD, customerId, maNV, ngayLap, targetTotal); 
+            Invoice newInvoice = new Invoice(maHD, customerId, maNV, ngayLap, totalAfterRef[0]); 
             if (invoiceDao.insert(newInvoice)) {
                 for (Ticket t : dsVeFinal) {
                     invoiceDao.insertTicket(t);
                 }
-                xuatVeRaFilePDF(maHD, tenPhim, ngayLapStr, ten, sdt, tableModel, targetTotal);
+                xuatVeRaFilePDF(maHD, tenPhim, ngayLapStr, ten, sdt, tableModel, totalInvoiceAmountFinal, discountRef[0], totalAfterRef[0] );
                 ShowPanel("ChonPhim");
             }
         }
@@ -707,7 +756,7 @@ public class BanVePanel extends javax.swing.JPanel {
     }
 
 
-    private void xuatVeRaFilePDF(String maHD, String tenPhim, String ngayLap, String tenKH, String sdtKH, DefaultTableModel model, double tongTien) {
+    private void xuatVeRaFilePDF(String maHD, String tenPhim, String ngayLap, String tenKH, String sdtKH, DefaultTableModel model, double tongTien, double giamGia, double tongThanhToan) {
         Document document = new Document(org.openpdf.text.PageSize.A5);
         String filePath = "VeXemPhim_" + maHD + ".pdf";
         
@@ -764,7 +813,13 @@ public class BanVePanel extends javax.swing.JPanel {
 
             Paragraph total = new Paragraph("TONG TIEN: " + String.format("%,.0f VND", tongTien));
             total.setAlignment(org.openpdf.text.Element.ALIGN_RIGHT);
+            Paragraph discount = new Paragraph("GIAM GIA: " + String.format("%,.0f VND", giamGia));
+            discount.setAlignment(org.openpdf.text.Element.ALIGN_RIGHT);
+            Paragraph finalTotal = new Paragraph("THANH TOAN: " + String.format("%,.0f VND", tongThanhToan));
+            finalTotal.setAlignment(org.openpdf.text.Element.ALIGN_RIGHT);
             document.add(total);
+            document.add(discount);
+            document.add(finalTotal);
 
             document.add(org.openpdf.text.Chunk.NEWLINE);
             Paragraph footer = new Paragraph("Cam on quy khach! Chuc xem phim vui ve!");
