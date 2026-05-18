@@ -606,7 +606,7 @@ public class BanVePanel extends javax.swing.JPanel {
         pnlBody.add(Box.createVerticalStrut(15));
 
         //2.2. Bảng chi tiết vé
-        String[] columnHeaders = {"Loại Ghế", "Tên Ghế", "Đơn Giá", "Số Lượng", "Thành Tiền"};
+        String[] columnHeaders = {"Mã Vé", "Loại Ghế", "Tên Ghế", "Đơn Giá", "Thành Tiền"};
         DefaultTableModel tableModel = new DefaultTableModel(columnHeaders, 0);
         JTable tblDetails = new JTable(tableModel);
         tblDetails.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
@@ -614,38 +614,16 @@ public class BanVePanel extends javax.swing.JPanel {
         tblDetails.getTableHeader().setBackground(java.awt.Color.WHITE);
         List<String> seatType = new ArrayList<>();
         for (Ticket ticket : dsVeFinal) {
-            String loaiGhe = ticket.getSeat().getSeatType().toString();
-            if (!seatType.contains(loaiGhe)) {
-                seatType.add(loaiGhe);
-            }
-        }
+            Seat ghe = ticket.getSeat();
+            String tenGhe = (char) ('A' + ghe.getRowIndex()) + String.valueOf(ghe.getColIndex() + 1);
+            String loaiGhe = ghe.getSeatType() != null ? ghe.getSeatType().toString() : "STANDARD";
 
-        for (String loaiGhe : seatType) {
-            StringBuilder sbTenGhe = new StringBuilder();
-            double donGia = 0;
-            int soLuong = 0;
-            boolean laVeDauTien = true;
-            
-            for (Ticket ticket : dsVeFinal) {
-                if (ticket.getSeat().getSeatType().toString().equals(loaiGhe)) {
-                    if (laVeDauTien) {
-                        donGia = ticket.getPrice();
-                        laVeDauTien = false;
-                    } else {
-                        sbTenGhe.append(", ");
-                    }
-                    Seat ghe = ticket.getSeat();
-                    String tenGhe = (char) ('A' + ghe.getRowIndex()) + String.valueOf(ghe.getColIndex() + 1);
-                    sbTenGhe.append(tenGhe);
-                    soLuong++;
-                }
-            }
-            double thanhTien = donGia * soLuong;
-
-            tableModel.addRow(new Object[]{loaiGhe, sbTenGhe.toString(), 
-                String.format("%,.0f VNĐ", donGia), 
-                soLuong, 
-                String.format("%,.0f VNĐ", thanhTien)
+            tableModel.addRow(new Object[]{
+                ticket.getTicketId(),
+                loaiGhe,
+                tenGhe,
+                String.format("%,.0f VNĐ", ticket.getPrice()),
+                String.format("%,.0f VNĐ", ticket.getPrice())
             });
         }
         
@@ -788,20 +766,20 @@ public class BanVePanel extends javax.swing.JPanel {
             }) { infoTable.addCell(c); }
             document.add(infoTable);
 
-            PdfPTable table = new PdfPTable(4);
+            PdfPTable table = new PdfPTable(5);
             table.setWidthPercentage(100);
-            table.setWidths(new float[]{2f, 3f, 1f, 2.5f});
+            table.setWidths(new float[]{3f, 2.5f, 2f, 2.5f, 2.5f});
             table.setSpacingBefore(5);
             table.setSpacingAfter(10);
 
-            for (String h : new String[]{"Loai Ghe", "Ghe", "SL", "Thanh Tien"}) {
+            for (String h : new String[]{"Ma Ve", "Loai Ghe", "Ten Ghe", "Don Gia", "Thanh Tien"}) {
                 org.openpdf.text.pdf.PdfPCell c = cell(h);
                 c.setHorizontalAlignment(org.openpdf.text.Element.ALIGN_CENTER);
                 table.addCell(c);
             }
 
             for (int i = 0; i < model.getRowCount(); i++) {
-                for (int col : new int[]{0, 1, 3, 4}) {
+                for (int col = 0; col < 5; col++) {
                     org.openpdf.text.pdf.PdfPCell c = cell(model.getValueAt(i, col).toString());
                     c.setHorizontalAlignment(org.openpdf.text.Element.ALIGN_CENTER);
                     table.addCell(c);
