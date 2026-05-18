@@ -41,7 +41,6 @@ public class Customer{
     private LocalDate createdDate;
     private CustomerStatus status;
     private String note;
-
     public Customer(String name, String phone, String email){
         this.id = String.format("CUS%03d", autoId++);
         this.name = name;
@@ -64,7 +63,6 @@ public class Customer{
     public CustomerStatus getStatus() { return status; }
     public double getTotalSpent(){return totalSpent;}
   
-
     public void setName(String Name){name = Name;}
     public void setPhone(String Phone){phone = Phone;}
     public void setEmail(String Email){email = Email;}
@@ -73,7 +71,7 @@ public class Customer{
     public void setTotalSpent(double totalSpent) { this.totalSpent = totalSpent; }
     public void setLoyaltyPoints(double loyaltyPoints) { this.loyaltyPoints = loyaltyPoints; }
     public void setType(CustomerType type) { this.type = type; }
-  
+    public void setCreatedDate(LocalDate createdDate) { this.createdDate = createdDate; }
     private void updateCustomerType(){
         if(totalSpent >= DIAMOND_THRESHOLD) type = CustomerType.DIAMOND;
         else if(totalSpent >= GOLD_THRESHOLD) type = CustomerType.GOLD;

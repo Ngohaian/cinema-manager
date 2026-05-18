@@ -6,7 +6,6 @@ import cinema.models.Invoice;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class HoaDonManagerPanel extends JPanel {
@@ -46,8 +45,8 @@ public class HoaDonManagerPanel extends JPanel {
         String date = "Chưa có ngày";
 
         if (inv.getInvoiceDate() != null) {
-            date = new SimpleDateFormat("dd/MM/yyyy")
-                    .format(inv.getInvoiceDate());
+            date = inv.getInvoiceDate()
+                  .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
         }
 
         ((DefaultTableModel) DSTable.getModel()).addRow(new Object[]{

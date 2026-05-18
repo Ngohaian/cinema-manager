@@ -180,15 +180,16 @@ public List<Employee> getAllEmployeesFromDB() {
    public List<Object[]> getTop5NhanVienBanVeThang() {
     List<Object[]> list = new ArrayList<>();
 
-    String sql = "SELECT e.EmployeeId, e.EmployeeName, COUNT(i.invoiceId) as soLuongVe " +
-                 "FROM invoice i " +
-                 "JOIN employee e ON e.EmployeeId = i.employeeId " +
-                 "WHERE MONTH(i.invoiceDate) = MONTH(CURDATE()) " +
-                 "  AND YEAR(i.invoiceDate) = YEAR(CURDATE()) " +
-                 "  AND e.Position = 'Nhan vien ban ve' " +
-                 "GROUP BY i.employeeId " +
-                 "ORDER BY soLuongVe DESC " +
-                 "LIMIT 5";
+    String sql = "SELECT "+
+        " e.EmployeeId, e.EmployeeName, SUM(t.price) AS doanhThu"+
+        " FROM invoice i JOIN employee e ON e.EmployeeId = i.employeeId "+
+        " JOIN ticket t ON i.invoiceId = t.invoiceId "+
+        " WHERE MONTH(i.invoiceDate) = MONTH(CURDATE()) "+
+        " AND YEAR(i.invoiceDate) = YEAR(CURDATE())"+
+        " AND e.Position = 'Nhan vien ban ve'"+
+        " GROUP BY e.EmployeeId, e.EmployeeName"+
+        " ORDER BY doanhThu DESC "+
+        " LIMIT 5;";
 
     try (Connection conn = cinema.DBConnection.getConnection();
          PreparedStatement ps = conn.prepareStatement(sql);
@@ -198,7 +199,7 @@ public List<Employee> getAllEmployeesFromDB() {
             list.add(new Object[]{
                 rs.getString("EmployeeId"),
                 rs.getString("EmployeeName"),
-                rs.getInt("soLuongVe")
+                rs.getLong("doanhThu")
             });
         }
 
@@ -217,4 +218,5 @@ public List<Employee> getAllEmployeesFromDB() {
         }
         return null;
     }
+    
 }

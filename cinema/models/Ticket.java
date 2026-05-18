@@ -9,6 +9,8 @@ public class Ticket{
     private ShowTime showtime;
     private TicketStatus status;
 
+    public Ticket() {
+    }
     public Ticket(String ticketId, Seat seat, ShowTime showtime){
         this.ticketId = ticketId;
         this.showtime = showtime;
@@ -21,6 +23,21 @@ public class Ticket{
             status = TicketStatus.Canceled;
             showtime.cancelSeat(seat.getRowIndex(), seat.getColIndex());
         }
+    }
+    public void setTicketId(String ticketId) {
+        this.ticketId = ticketId;
+    }
+    public void setPrice(double price) {
+        this.price = price;
+    }
+    public void setSeat(Seat seat) {
+        this.seat = seat;
+    }
+    public void setShowtime(ShowTime showtime) {
+        this.showtime = showtime;
+    }
+    public void setInvoiceId(String invoiceId) {
+        this.invoiceId = invoiceId;
     }
     public void setStatus(TicketStatus status){
         this.status = status;

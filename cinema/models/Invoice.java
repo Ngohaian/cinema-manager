@@ -2,13 +2,14 @@ package cinema.models;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public class Invoice {
 
     private String invoiceId;
     private String customerId;
-    private Date invoiceDate;
+    private String employeeId;
+    private LocalDateTime invoiceDate;
     private double totalAmount;
 
     private List<Ticket> tickets;
@@ -17,9 +18,10 @@ public class Invoice {
         tickets = new ArrayList<>();
     }
 
-    public Invoice(String invoiceId, String customerId, Date invoiceDate, double totalAmount) {
+    public Invoice(String invoiceId, String customerId,String employeeId, LocalDateTime invoiceDate, double totalAmount) {
         this.invoiceId = invoiceId;
         this.customerId = customerId;
+        this.employeeId = employeeId;
         this.invoiceDate = invoiceDate;
         this.totalAmount = totalAmount;
         this.tickets = new ArrayList<>();
@@ -49,12 +51,17 @@ public class Invoice {
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
     }
-
-    public Date getInvoiceDate() {
+    public String getEmployeeId() {
+        return employeeId;
+    }
+    public void setEmployeeId(String employeeId) {
+        this.employeeId = employeeId;
+    }
+    public LocalDateTime getInvoiceDate() {
         return invoiceDate;
     }
 
-    public void setInvoiceDate(Date invoiceDate) {
+    public void setInvoiceDate(LocalDateTime invoiceDate) {
         this.invoiceDate = invoiceDate;
     }
 
