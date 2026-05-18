@@ -101,6 +101,7 @@ public class SellTicketFrame extends javax.swing.JFrame {
         switch (name) {
             case "BanVe":
                 BanVePanel banVe = new BanVePanel();
+                banVe.setCurrentEmployee(currentEmployee);
                 if (data != null) {
                     banVe.displayShowTime((cinema.models.Movie) data); 
                 }

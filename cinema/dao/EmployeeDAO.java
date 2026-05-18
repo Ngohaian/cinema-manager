@@ -1,5 +1,8 @@
 package cinema.dao;
 import cinema.models.Employee;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -173,6 +176,39 @@ public List<Employee> getAllEmployeesFromDB() {
         return false;
     }
 }
+// TKE:
+   public List<Object[]> getTop5NhanVienBanVeThang() {
+    List<Object[]> list = new ArrayList<>();
+
+    String sql = "SELECT "+
+        " e.EmployeeId, e.EmployeeName, SUM(t.price) AS doanhThu"+
+        " FROM invoice i JOIN employee e ON e.EmployeeId = i.employeeId "+
+        " JOIN ticket t ON i.invoiceId = t.invoiceId "+
+        " WHERE MONTH(i.invoiceDate) = MONTH(CURDATE()) "+
+        " AND YEAR(i.invoiceDate) = YEAR(CURDATE())"+
+        " AND e.Position = 'Nhan vien ban ve'"+
+        " GROUP BY e.EmployeeId, e.EmployeeName"+
+        " ORDER BY doanhThu DESC "+
+        " LIMIT 5;";
+
+    try (Connection conn = cinema.DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+
+        while (rs.next()) {
+            list.add(new Object[]{
+                rs.getString("EmployeeId"),
+                rs.getString("EmployeeName"),
+                rs.getLong("doanhThu")
+            });
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return list;
+}
         //login
     public Employee getPosition(String username, String password){
         for(Employee emp : employeeList){
@@ -182,4 +218,5 @@ public List<Employee> getAllEmployeesFromDB() {
         }
         return null;
     }
+    
 }

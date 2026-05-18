@@ -115,7 +115,25 @@ public class SeatDao {
 
         return list;
     }
+    public int getSeatId(String roomId, int rowIndex, int colIndex) throws Exception {
+        String sql = "SELECT seatId FROM Seat WHERE roomId = ? AND rowIndex = ? AND colIndex = ?";
 
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, roomId);
+            ps.setInt(2, rowIndex);
+            ps.setInt(3, colIndex);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("seatId");
+                } else {
+                    throw new Exception("Không tìm thấy ghế với roomId: " + roomId + ", rowIndex: " + rowIndex + ", colIndex: " + colIndex);
+                }
+            }
+        }
+    }
     public void insert(String roomId, Seat s) throws Exception {
         String sql = "INSERT INTO Seat(roomId, rowIndex, colIndex, seatLabel, seatType, active) " +
                 "VALUES (?, ?, ?, ?, ?, 1)";

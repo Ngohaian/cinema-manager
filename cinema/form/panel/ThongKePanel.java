@@ -2,11 +2,14 @@ package cinema.form.panel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
+import cinema.dao.EmployeeDAO;
 import cinema.dao.MovieDAO;
 
 public class ThongKePanel extends javax.swing.JPanel {
@@ -15,6 +18,7 @@ public class ThongKePanel extends javax.swing.JPanel {
     private org.jfree.chart.plot.CategoryPlot globalPlot;
     private DefaultPieDataset dataSuatChieu;
     MovieDAO moviedao = new MovieDAO();
+    EmployeeDAO employeedao = new EmployeeDAO();
     public ThongKePanel() {
         initComponents();
         loadData();
@@ -27,12 +31,12 @@ public class ThongKePanel extends javax.swing.JPanel {
         dataDoanhThu.addValue(200, "VND", "T4");
 
         dataNhanVien = new DefaultCategoryDataset();
-        dataNhanVien.addValue(180, "Vé", "E001");
-        dataNhanVien.addValue(150, "Vé", "E002");
-        dataNhanVien.addValue(155, "Vé", "E003");
-        dataNhanVien.addValue(196, "Vé", "E004");
-        dataNhanVien.addValue(200, "Vé", "E005");
-        dataNhanVien.addValue(200, "Vé", "Khác");
+        List<Object[]> topNhanVien = employeedao.getTop5NhanVienBanVeThang();
+        for(int i=0;i<topNhanVien.size();i++){
+            String id = topNhanVien.get(i)[0].toString();
+            long doanhThu = topNhanVien.get(i)[2] != null ? Long.parseLong(topNhanVien.get(i)[2].toString()) : 0;
+            dataNhanVien.addValue(doanhThu, "Doanh thu", id);
+        }
 
         dataSuatChieu = new DefaultPieDataset();
         dataSuatChieu.setValue("08:00 - 11:59", 5);    
@@ -112,7 +116,7 @@ public class ThongKePanel extends javax.swing.JPanel {
         JPanel row = new JPanel(new GridLayout(1, 2, 20, 0));
         row.setOpaque(false);
         
-        org.jfree.chart.JFreeChart barChart = ChartFactory.createBarChart("Hiệu suất nhân viên của tháng này", null, "Số vé", dataNhanVien);
+        org.jfree.chart.JFreeChart barChart = ChartFactory.createBarChart("Hiệu suất nhân viên của tháng này", null, "Doanh thu", dataNhanVien);
         barChart.getTitle().setFont(new Font("Segoe UI", Font.BOLD, 18));
         barChart.getTitle().setPadding(10, 0, 20, 0);
         barChart.setBackgroundPaint(Color.WHITE); 
