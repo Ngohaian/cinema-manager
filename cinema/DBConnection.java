@@ -1,22 +1,26 @@
 package cinema;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 
 public class DBConnection {
-   private static final String URL = "jdbc:mysql://10.239.40.212:3306/cinemaManager?useSSL=false&serverTimezone=GMT%2B7";
-    private static final String USER = "test";
-    private static final String PASSWORD = "123456";
 
     public static Connection getConnection() {
+
+        Connection conn = null;
+
         try {
-            Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-            System.out.println("Ket noi thanh cong!");
-            return conn;
-        } catch (SQLException e) {
-            System.out.println("Ket noi that bai!");
+
+            String url = "jdbc:mysql://127.0.0.1:3306/`cinema-manage`";
+            String user = "root";
+            String password = "";
+
+            conn = DriverManager.getConnection(url, user, password);
+
+        } catch (Exception e) {
             e.printStackTrace();
-            return null;
         }
+
+        return conn;
     }
 }
