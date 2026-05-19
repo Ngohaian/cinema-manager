@@ -32,7 +32,7 @@ public class MovieDAO {
     }
     public List<Movie> GetAvailableMovies(){
         List<Movie> ds = new ArrayList<>();
-        String sql = "SELECT DISTINCT m.* FROM movie m JOIN showtime s ON m.movieId = s.movieId WHERE m.active = 1 AND s.startTime >= now();";
+        String sql = "SELECT DISTINCT m.* FROM movie m JOIN showtime s ON m.movieId = s.movieId WHERE m.active = 1 AND s.startTime >= now() AND DAY(s.startTime) = DAY(NOW())";
         try(Connection conn = DBConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);){
                 ResultSet rs = ps.executeQuery();
