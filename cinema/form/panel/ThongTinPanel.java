@@ -281,7 +281,7 @@ public class ThongTinPanel extends javax.swing.JPanel {
     jButton3.addActionListener(e -> openDoiMatKhau(emp));
 }
 
-private void openSuaHoSo(cinema.models.Employee emp) {
+public void openSuaHoSo(cinema.models.Employee emp) {
     javax.swing.JDialog d = new javax.swing.JDialog(
         (java.awt.Frame) javax.swing.SwingUtilities.getWindowAncestor(this),
         "Chỉnh sửa hồ sơ", true);
@@ -338,7 +338,7 @@ private javax.swing.JTextField addField(javax.swing.JPanel p, String label, int 
     return tf;
 }
 
-private void openDoiMatKhau(cinema.models.Employee emp) {
+public void openDoiMatKhau(cinema.models.Employee emp) {
     javax.swing.JDialog d = new javax.swing.JDialog(
         (java.awt.Frame) javax.swing.SwingUtilities.getWindowAncestor(this),
         "Đổi mật khẩu", true);

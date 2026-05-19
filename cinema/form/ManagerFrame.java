@@ -128,7 +128,7 @@ public class ManagerFrame extends javax.swing.JFrame {
         pContent.revalidate();
         pContent.repaint();
     }
-    private void customizeScrollBar(JScrollPane JScroll){
+    public void customizeScrollBar(JScrollPane JScroll){
         JScroll.getVerticalScrollBar().setUnitIncrement(20);
         JScroll.getVerticalScrollBar().setUI(new BasicScrollBarUI(){
 

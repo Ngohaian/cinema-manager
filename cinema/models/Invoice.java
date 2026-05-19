@@ -20,7 +20,15 @@ public class Invoice {
     public Invoice() {
         tickets = new ArrayList<>();
     }
-
+    public Invoice(String invoiceId, String customerId, String employeeId, LocalDateTime invoiceDate, double totalAmount) {
+        this.invoiceId = invoiceId;
+        this.customerId = customerId;
+        this.employeeId = employeeId;
+        this.invoiceDate = invoiceDate;
+        this.totalAmount = totalAmount;
+        this.status = 
+        tickets = new ArrayList<>();
+    }
     // ===== GET =====
 
     public String getInvoiceId() {

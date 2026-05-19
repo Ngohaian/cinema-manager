@@ -2,6 +2,7 @@ package cinema.form;
 
 import cinema.DBConnection;
 import cinema.enums.TicketStatus;
+import cinema.form.panel.ThongTinPanel;
 import cinema.models.Employee;
 
 import javax.swing.*;
@@ -20,9 +21,8 @@ public class CheckerTicket extends JFrame {
     private JButton btnXemTK;
     private JButton btnDangXuat;
     private JLabel lblUsername;
-
     private Employee currentEmployee;
-
+    private ManagerFrame managerFrame;
     private static final Color BLUE_MENU = new Color(24, 144, 255);
 
     public CheckerTicket(Employee employee) {
@@ -67,7 +67,7 @@ public class CheckerTicket extends JFrame {
         btnXemTK.setBorder(BorderFactory.createLineBorder(BLUE_MENU));
         btnXemTK.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnXemTK.setFocusPainted(false);
-        btnXemTK.addActionListener(e -> toggleAccountPanel());
+        btnXemTK.addActionListener(e -> tttaikhoan());
 
         btnDangXuat.setText("Đăng xuất");
         btnDangXuat.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -127,79 +127,25 @@ public class CheckerTicket extends JFrame {
         getContentPane().add(headerPanel, BorderLayout.NORTH);
         getContentPane().add(centerPanel, BorderLayout.CENTER);
     }
-
-    // ===== DIALOG THÔNG TIN TÀI KHOẢN =====
-    private void toggleAccountPanel() {
-
+    private void tttaikhoan(){
         JDialog dialog = new JDialog(this, "Thông tin tài khoản", true);
-        dialog.setSize(420, 320);
+        dialog.setSize(1000, 700);
         dialog.setLocationRelativeTo(this);
-        dialog.setResizable(false);
         dialog.getContentPane().setBackground(Color.WHITE);
         dialog.setLayout(new BorderLayout());
-
-        // header dialog
-        JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(Color.WHITE);
-        header.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(220, 220, 220)),
-            BorderFactory.createEmptyBorder(14, 20, 14, 16)
-        ));
-
-        JLabel lblDialogTitle = new JLabel("Thông tin tài khoản");
-        lblDialogTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        header.add(lblDialogTitle, BorderLayout.WEST);
-
-        JButton btnClose = new JButton("✕");
-        btnClose.setFocusPainted(false);
-        btnClose.setBorderPainted(false);
-        btnClose.setContentAreaFilled(false);
-        btnClose.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnClose.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        btnClose.addActionListener(e -> dialog.dispose());
-        header.add(btnClose, BorderLayout.EAST);
-
-        // body dialog
-        JPanel body = new JPanel(new GridLayout(0, 1, 0, 12));
-        body.setBackground(Color.WHITE);
-        body.setBorder(BorderFactory.createEmptyBorder(20, 24, 20, 24));
-
-        body.add(makeInfoRow("Mã nhân viên",  currentEmployee.getId()));
-        body.add(makeInfoRow("Họ tên",        currentEmployee.getName()));
-        body.add(makeInfoRow("Tên đăng nhập", currentEmployee.getUsername()));
-        body.add(makeInfoRow("Số điện thoại", currentEmployee.getPhone()));
-        body.add(makeInfoRow("Email",         currentEmployee.getEmail()));
-        body.add(makeInfoRow("Chức vụ",       currentEmployee.getPosition().getDisplayName()));
-        body.add(makeInfoRow("Trạng thái",
-            currentEmployee.getStatus() == Employee.EmployeeStatus.ACTIVE
-                ? "Đang hoạt động"
-                : "Ngừng hoạt động"
-        ));
-
-        dialog.add(header, BorderLayout.NORTH);
-        dialog.add(body,   BorderLayout.CENTER);
+        ThongTinPanel thongTinPanel = new ThongTinPanel();
+        thongTinPanel.loadEmployee(currentEmployee);
+        dialog.add(wrap(thongTinPanel), java.awt.BorderLayout.CENTER);
         dialog.setVisible(true);
     }
-
-    // helper: 1 hàng label + value
-    private JPanel makeInfoRow(String label, String value) {
-
-        JPanel row = new JPanel(new BorderLayout(10, 0));
-        row.setBackground(Color.WHITE);
-
-        JLabel lb = new JLabel(label + ":");
-        lb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        lb.setForeground(new Color(100, 100, 100));
-        lb.setPreferredSize(new Dimension(130, 0));
-
-        JLabel val = new JLabel(value != null ? value : "—");
-        val.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        val.setForeground(new Color(30, 30, 30));
-
-        row.add(lb,  BorderLayout.WEST);
-        row.add(val, BorderLayout.CENTER);
-        return row;
+    private JScrollPane wrap(JPanel panel){
+        JScrollPane sp = new JScrollPane(panel);
+        managerFrame = new ManagerFrame();
+        managerFrame.customizeScrollBar(sp);
+        return sp;
     }
+    
+
 
     // ===== ĐĂNG XUẤT =====
     private void dangXuat() {
