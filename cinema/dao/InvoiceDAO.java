@@ -32,7 +32,7 @@ public class InvoiceDAO {
                 inv.setCustomerId(rs.getString("customerId"));
                 inv.setInvoiceDate(rs.getTimestamp("invoiceDate").toLocalDateTime());
                 inv.setTotalAmount(rs.getDouble("totalAmount"));
-
+                inv.setEmployeeId(rs.getString("EmployeeId"));
                 list.add(inv);
             }
 

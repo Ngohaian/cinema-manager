@@ -1,16 +1,13 @@
 package cinema.form.panel;
-
-import cinema.DBConnection;
+import cinema.dao.CustomerDAO;
 import cinema.dao.InvoiceDAO;
 import cinema.models.Invoice;
+import cinema.models.Seat;
 import cinema.models.Ticket;
-
+import cinema.models.Customer;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -238,86 +235,8 @@ public class HoaDonManagerPanel extends JPanel {
         });
     }
 
-    // ===================== QUERY THẲNG TRONG PANEL =====================
-
-    /**
-     * Lấy tên phim từ DB: Invoice -> Ticket -> ShowTime -> Movie
-     * Viết thẳng ở đây để không sửa InvoiceDAO
-     */
-    private String queryMovieName(String invoiceId) {
-        String sql = """
-            SELECT m.title
-            FROM Ticket t
-            JOIN ShowTime st ON st.showtimeId = t.showtimeId
-            JOIN Movie m     ON m.movieId     = st.movieId
-            WHERE t.invoiceId = ?
-            LIMIT 1
-            """;
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, invoiceId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getString("title");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
-    /**
-     * Lấy danh sách vé kèm seatType và seatLabel đúng từ DB
-     * Viết thẳng ở đây vì InvoiceDAO.getTicketsByInvoiceId không set seatType vào Seat
-     */
-    private DefaultTableModel queryTicketTable(String invoiceId) {
-        DefaultTableModel model = new DefaultTableModel(
-                new String[]{"Mã Vé", "Loại Ghế", "Tên Ghế", "Đơn Giá", "Thành Tiền"}, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
-        };
-
-        String sql = """
-            SELECT t.ticketId,
-                   s.seatType,
-                   s.seatLabel,
-                   t.price
-            FROM Ticket t
-            JOIN Seat s ON t.seatId = s.seatId
-            WHERE t.invoiceId = ?
-            ORDER BY s.rowIndex, s.colIndex
-            """;
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, invoiceId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                model.addRow(new Object[]{
-                        rs.getString("ticketId"),
-                        rs.getString("seatType"),
-                        rs.getString("seatLabel"),
-                        String.format("%,.0f VNĐ", rs.getDouble("price")),
-                        String.format("%,.0f VNĐ", rs.getDouble("price"))
-                });
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return model;
-    }
-
-    /** Tính tổng tiền từ model vé */
-    private double calcTotal(DefaultTableModel ticketModel) {
-        double total = 0;
-        for (int i = 0; i < ticketModel.getRowCount(); i++) {
-            String val = ticketModel.getValueAt(i, 3).toString();
-            try { total += Double.parseDouble(val.replaceAll("[^0-9]", "")); }
-            catch (Exception ignored) {}
-        }
-        return total;
-    }
 
     // ===================== DIALOG CHI TIẾT =====================
-
     private void showInvoiceDialog(
             String maHD, String maKH, String maNV,
             String ngay, String tongTien, String trangThai, int modelRow) {
@@ -348,91 +267,53 @@ public class HoaDonManagerPanel extends JPanel {
         body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
 
         // ----- THÔNG TIN CHUNG -----
-        String tenPhim = queryMovieName(maHD);
-
-        JPanel pnlInfo = new JPanel(new GridBagLayout());
-        pnlInfo.setBackground(Color.WHITE);
-        pnlInfo.setAlignmentX(Component.LEFT_ALIGNMENT);
-        pnlInfo.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(new Color(210, 210, 210)),
-                "Thông tin chung",
-                javax.swing.border.TitledBorder.LEFT,
-                javax.swing.border.TitledBorder.TOP,
-                new Font("Segoe UI", Font.PLAIN, 13),
-                Color.GRAY));
 
         GridBagConstraints gc = new GridBagConstraints();
         gc.insets = new Insets(6, 10, 6, 10);
         gc.anchor = GridBagConstraints.WEST;
+        gc.fill   = GridBagConstraints.NONE;
 
-        // Hàng 1: Mã HD | Ngày lập | Nhân viên
-        gc.gridy = 0;
-        gc.gridx = 0; pnlInfo.add(boldLabel("Mã hóa đơn:"), gc);
-        gc.gridx = 1; pnlInfo.add(plainLabel(maHD), gc);
-        gc.gridx = 2; pnlInfo.add(boldLabel("Ngày lập:"), gc);
-        gc.gridx = 3; pnlInfo.add(plainLabel(ngay), gc);
-        gc.gridx = 4; pnlInfo.add(boldLabel("Nhân viên:"), gc);
-        gc.gridx = 5; pnlInfo.add(plainLabel(maNV), gc);
-
-        // Hàng 2: Tên phim | Mã KH (bỏ SĐT)
-        gc.gridy = 1;
-        gc.gridx = 0; pnlInfo.add(boldLabel("Tên phim:"), gc);
-        gc.gridx = 1; pnlInfo.add(plainLabel(tenPhim), gc);
-        gc.gridx = 2; pnlInfo.add(boldLabel("Mã khách hàng:"), gc);
-        gc.gridx = 3; pnlInfo.add(plainLabel(maKH), gc);
-        gc.gridx = 4; pnlInfo.add(new JLabel(), gc);
-        gc.gridx = 5; pnlInfo.add(new JLabel(), gc);
-
-        pnlInfo.setMaximumSize(new Dimension(Integer.MAX_VALUE, pnlInfo.getPreferredSize().height + 20));
+        JPanel pnlInfo = new JPanel(new java.awt.GridLayout(2, 2, 15, 10)); 
+        pnlInfo.setBackground(java.awt.Color.WHITE);
+        pnlInfo.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(java.awt.Color.LIGHT_GRAY, 1), "Thông tin chung"
+        ));
+        pnlInfo.add(new JLabel("<html><b>Mã hóa đơn:</b> " + maHD + "</html>"));
+        pnlInfo.add(new JLabel("<html><b>Ngày lập:</b> " + ngay + "</html>"));
+        pnlInfo.add(new JLabel("<html><b>Mã nhân viên:</b> " + maNV +  "</html>"));
+        pnlInfo.add(new JLabel("<html><b>Mã khách: </b> " + maKH + "</html>"));
         body.add(pnlInfo);
-        body.add(Box.createVerticalStrut(12));
+        body.add(Box.createVerticalStrut(15));
 
-        // ----- BẢNG VÉ -----
-        // Dùng JPanel BorderLayout → JScrollPane fill full width bằng pnlInfo
-        JPanel ticketSection = new JPanel(new BorderLayout(0, 6));
-        ticketSection.setBackground(Color.WHITE);
-        ticketSection.setAlignmentX(Component.LEFT_ALIGNMENT);
-        ticketSection.setMaximumSize(new Dimension(Integer.MAX_VALUE, 210));
+        String[] columnHeaders = {"Mã Vé", "Loại Ghế", "Tên Ghế", "Đơn Giá", "Thành Tiền"};
+        DefaultTableModel tableModel = new DefaultTableModel(columnHeaders, 0);
+        JTable tblDetails = new JTable(tableModel);
+        tblDetails.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+        tblDetails.setRowHeight(25);
+        tblDetails.getTableHeader().setBackground(java.awt.Color.WHITE);
+        List<Ticket> tickets = invoiceDAO.getTicketsByInvoiceId(maHD);
+        double finalTotal=0;
+        for (Ticket ticket : tickets) {
+            Seat ghe = ticket.getSeat();
+            finalTotal += ticket.getPrice();
+            String tenGhe = (char) ('A' + ghe.getRowIndex()) + String.valueOf(ghe.getColIndex() + 1);
+            String loaiGhe = ghe.getSeatType() != null ? ghe.getSeatType().toString() : "STANDARD";
 
-        JLabel lblChiTiet = new JLabel("Chi tiết vị trí ghế đặt");
-        lblChiTiet.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        lblChiTiet.setForeground(new Color(80, 80, 80));
-        ticketSection.add(lblChiTiet, BorderLayout.NORTH);
-
-        // Query trực tiếp — có đủ seatType + seatLabel
-        DefaultTableModel ticketModel = queryTicketTable(maHD);
-        double finalTotal = ticketModel.getRowCount() > 0
-                ? calcTotal(ticketModel)
-                : parseTien(tongTien);
-
-        JTable ticketTable = new JTable(ticketModel);
-        ticketTable.setRowHeight(36);
-        ticketTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        ticketTable.setShowGrid(false);
-        ticketTable.setShowHorizontalLines(true);
-        ticketTable.setGridColor(new Color(235, 235, 235));
-        ticketTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
-        ticketTable.getTableHeader().setBackground(new Color(248, 249, 252));
-        ticketTable.getTableHeader().setForeground(new Color(60, 60, 80));
-        ticketTable.getTableHeader().setPreferredSize(new Dimension(0, 38));
-
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        for (int i = 0; i < 5; i++) {
-            ticketTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            tableModel.addRow(new Object[]{
+                ticket.getTicketId(),
+                loaiGhe,
+                tenGhe,
+                String.format("%,.0f VNĐ", ticket.getPrice()),
+                String.format("%,.0f VNĐ", ticket.getPrice())
+            });
         }
-        ticketTable.getColumnModel().getColumn(0).setPreferredWidth(150);
-        ticketTable.getColumnModel().getColumn(1).setPreferredWidth(110);
-        ticketTable.getColumnModel().getColumn(2).setPreferredWidth(80);
-        ticketTable.getColumnModel().getColumn(3).setPreferredWidth(120);
-        ticketTable.getColumnModel().getColumn(4).setPreferredWidth(120);
-
-        JScrollPane sp = new JScrollPane(ticketTable);
-        sp.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
-        ticketSection.add(sp, BorderLayout.CENTER);
-
-        body.add(ticketSection);
-        body.add(Box.createVerticalStrut(12));
+        
+        JScrollPane scrollPane = new JScrollPane(tblDetails);
+        scrollPane.setBackground(java.awt.Color.WHITE);
+        scrollPane.setPreferredSize(new java.awt.Dimension(400, 150));
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Chi tiết vị trí ghế đặt"));
+        body.add(scrollPane);
+        body.add(Box.createVerticalStrut(10));
 
         // ----- TỔNG TIỀN -----
         JPanel pnlTotals = new JPanel(new GridBagLayout());
@@ -450,14 +331,18 @@ public class HoaDonManagerPanel extends JPanel {
         lblTong.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         pnlTotals.add(lblTong, tc);
 
+        CustomerDAO customerdao = new CustomerDAO();
+        Customer customer = customerdao.getCustomerById(maKH);
+        double discount = customer.calculateDiscount(finalTotal);
+        double totalAfter= finalTotal - discount;
         tc.gridy = 1;
-        JLabel lblGiam = new JLabel("Giảm giá:   0 VNĐ");
+        JLabel lblGiam = new JLabel("Giảm giá:   "+ String.format("%,.0f VNĐ", discount));
         lblGiam.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lblGiam.setForeground(new Color(41, 128, 185));
         pnlTotals.add(lblGiam, tc);
 
         tc.gridy = 2;
-        JLabel lblThanhToan = new JLabel("Tổng thanh toán:   " + String.format("%,.0f VNĐ", finalTotal));
+        JLabel lblThanhToan = new JLabel("Tổng thanh toán:   " + String.format("%,.0f VNĐ", totalAfter));
         lblThanhToan.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblThanhToan.setForeground(new Color(200, 30, 30));
         pnlTotals.add(lblThanhToan, tc);
@@ -598,17 +483,17 @@ public class HoaDonManagerPanel extends JPanel {
         header.setReorderingAllowed(false);
 
         // Mã HD | Khách hàng | Nhân viên | Ngày lập | Tổng tiền | Trạng thái | Thao tác
-        int[] widths = {100, 150, 110, 170, 120, 150, 60};
+        int[] widths = {100, 100, 110, 170, 120, 150, 80};
         for (int i = 0; i < widths.length; i++) {
             table.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
         }
-        table.getColumnModel().getColumn(6).setMaxWidth(60);
-        table.getColumnModel().getColumn(6).setMinWidth(60);
+        table.getColumnModel().getColumn(6).setMaxWidth(80);
+        table.getColumnModel().getColumn(6).setMinWidth(80);
 
         // Căn giữa: Mã HD, Nhân viên, Ngày lập, Tổng tiền
         DefaultTableCellRenderer centerRender = new DefaultTableCellRenderer();
         centerRender.setHorizontalAlignment(SwingConstants.CENTER);
-        for (int col : new int[]{0, 2, 3, 4}) {
+        for (int col : new int[]{0, 1, 2, 3, 4}) {
             table.getColumnModel().getColumn(col).setCellRenderer(centerRender);
         }
 
