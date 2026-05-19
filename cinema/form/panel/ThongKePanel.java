@@ -10,6 +10,7 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
 import cinema.dao.EmployeeDAO;
+import cinema.dao.InvoiceDAO;
 import cinema.dao.MovieDAO;
 
 public class ThongKePanel extends javax.swing.JPanel {
@@ -17,8 +18,9 @@ public class ThongKePanel extends javax.swing.JPanel {
     private DefaultCategoryDataset dataNgay, dataThang, dataNam;
     private org.jfree.chart.plot.CategoryPlot globalPlot;
     private DefaultPieDataset dataSuatChieu;
-    MovieDAO moviedao = new MovieDAO();
-    EmployeeDAO employeedao = new EmployeeDAO();
+    private MovieDAO moviedao = new MovieDAO();
+    private InvoiceDAO invoicedao = new InvoiceDAO();
+    private EmployeeDAO employeedao = new EmployeeDAO();
     public ThongKePanel() {
         initComponents();
         loadData();
@@ -45,31 +47,31 @@ public class ThongKePanel extends javax.swing.JPanel {
         dataSuatChieu.setValue("19:00 - 22:59", 45);          
         dataSuatChieu.setValue("23:00 - 07:59", 15);
         
-        dataNgay = new org.jfree.data.category.DefaultCategoryDataset();
-        dataNgay.addValue(120, "Doanh thu", "01/05");
-        dataNgay.addValue(150, "Doanh thu", "02/05");
-        dataNgay.addValue(120, "Doanh thu", "03/05");
-        dataNgay.addValue(150, "Doanh thu", "04/05");
-        dataNgay.addValue(120, "Doanh thu", "05/05");
-        dataNgay.addValue(150, "Doanh thu", "06/05");
-        dataNgay.addValue(120, "Doanh thu", "07/05");
-        dataNgay.addValue(150, "Doanh thu", "08/05");
-        dataNgay.addValue(120, "Doanh thu", "09/05");
-        dataNgay.addValue(150, "Doanh thu", "10/05");
+        // ---- Doanh thu theo ngày (10 ngày gần nhất) ----
+        dataNgay = new DefaultCategoryDataset();
+        java.time.LocalDate today = java.time.LocalDate.now();
+        for (int i = 9; i >= 0; i--) {
+            java.time.LocalDate date = today.minusDays(i);
+            String label = date.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM"));
+            String dateStr = date.toString(); // yyyy-MM-dd
+            double revenue = invoicedao.getRevenueByDay(dateStr);
+            dataNgay.addValue(revenue, "Doanh thu", label);
+    }
 
-        dataThang = new org.jfree.data.category.DefaultCategoryDataset();
-        dataThang.addValue(4500, "Doanh thu", "Tháng 1");
-        dataThang.addValue(5200, "Doanh thu", "Tháng 2");
-        dataThang.addValue(4500, "Doanh thu", "Tháng 3");
-        dataThang.addValue(5200, "Doanh thu", "Tháng 4");
-        dataThang.addValue(4500, "Doanh thu", "Tháng 5");
+        // ---- Doanh thu theo tháng (12 tháng năm nay) ----
+        dataThang = new DefaultCategoryDataset();
+        int currentYear = today.getYear();
+        for (int m = 1; m <= 12; m++) {
+            double revenue = invoicedao.getRevenueByMonth(m, currentYear);
+            dataThang.addValue(revenue, "Doanh thu", "T " + m);
+        }
 
-        dataNam = new org.jfree.data.category.DefaultCategoryDataset();
-        dataNam.addValue(55000, "Doanh thu", "2023");
-        dataNam.addValue(72000, "Doanh thu", "2024");
-        dataNam.addValue(59990, "Doanh thu", "2025");
-        dataNam.addValue(80000, "Doanh thu", "2026");
-        
+        // ---- Doanh thu theo năm (4 năm gần nhất) ----
+        dataNam = new DefaultCategoryDataset();
+        for (int y = currentYear - 3; y <= currentYear; y++) {
+            double revenue = invoicedao.getRevenueByYear(y);
+            dataNam.addValue(revenue, "Doanh thu", String.valueOf(y));
+        }
     }
     private void setupCustomUI() {
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
@@ -105,10 +107,15 @@ public class ThongKePanel extends javax.swing.JPanel {
     }
 
     private JPanel createKpiRow() {
+        double todayRevenue = invoicedao.getTodayRevenue();
+        int todayTickets    = invoicedao.getTodayTicketSold();
+
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#,###đ");
+
         JPanel row = new JPanel(new GridLayout(1, 4, 20, 0));
         row.setOpaque(false);
-        row.add(createCard("Doanh thu vé (Hôm nay)", "123.456.000đ", Color.black));
-        row.add(createCard("Số vé bán (Hôm nay)", "567 vé", Color.black));
+        row.add(createCard("Doanh thu vé (Hôm nay)", df.format(todayRevenue), Color.black));
+        row.add(createCard("Số vé bán (Hôm nay)", todayTickets + " vé", Color.black));
         return row;
     }
 

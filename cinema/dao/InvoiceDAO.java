@@ -33,6 +33,7 @@ public class InvoiceDAO {
                 inv.setInvoiceDate(rs.getTimestamp("invoiceDate").toLocalDateTime());
                 inv.setTotalAmount(rs.getDouble("totalAmount"));
                 inv.setEmployeeId(rs.getString("EmployeeId"));
+                inv.setStatus(rs.getString("status"));
                 list.add(inv);
             }
 
@@ -342,12 +343,7 @@ public class InvoiceDAO {
 
     public boolean cancelInvoiceAndTickets(String invoiceId) {
 
-        String sqlTicket = """
-            UPDATE Ticket
-            SET status = 'Canceled',
-                invoiceId = NULL
-            WHERE invoiceId = ?
-        """;
+        String sqlTicket = "UPDATE Ticket SET status = 'Canceled', invoiceID =NULL  WHERE invoiceId = ?";
 
         String sqlInvoice = """
             UPDATE Invoice
