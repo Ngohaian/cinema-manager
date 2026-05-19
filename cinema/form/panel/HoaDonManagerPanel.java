@@ -2,18 +2,22 @@ package cinema.form.panel;
 
 import cinema.dao.InvoiceDAO;
 import cinema.models.Invoice;
+import cinema.models.Seat;
 
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 
 public class HoaDonManagerPanel extends JPanel {
 
-    private InvoiceDAO invoiceDAO = new InvoiceDAO();
-    private TableRowSorter<TableModel> sorter;
+    private final InvoiceDAO invoiceDAO = new InvoiceDAO();
 
     private JTable DSTable;
+    private TableRowSorter<TableModel> sorter;
 
     private JTextField txtSearch;
     private JTextField txtFrom;
@@ -22,20 +26,15 @@ public class HoaDonManagerPanel extends JPanel {
     private JComboBox<String> cbStatus;
 
     public HoaDonManagerPanel() {
-
         initComponents();
-
         setTable(DSTable);
 
         loadTableInvoice();
 
         initSearch();
-
         initFilterStatus();
-
-        initAction();
-
         initFilterDate();
+        initAction();
     }
 
     // ================= LOAD DATA =================
@@ -46,17 +45,17 @@ public class HoaDonManagerPanel extends JPanel {
 
         if (inv.getInvoiceDate() != null) {
             date = inv.getInvoiceDate()
-                  .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                    .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
         }
 
         ((DefaultTableModel) DSTable.getModel()).addRow(new Object[]{
                 inv.getInvoiceId(),
-                "Nguyễn Văn A",
-                "0912345678",
+                inv.getCustomerId(),
+                inv.getPhone(),
                 date,
-                "EMP01",
-                String.format("%.0f đ", inv.getTotalAmount()),
-                "Đã thanh toán",
+                inv.getEmployeeId(),
+                String.format("%,.0f đ", inv.getTotalAmount()),
+                inv.getStatus(),
                 editIcon()
         });
     }
@@ -71,51 +70,6 @@ public class HoaDonManagerPanel extends JPanel {
         List<Invoice> list = invoiceDAO.getAll();
 
         if (list == null || list.isEmpty()) {
-
-            model.addRow(new Object[]{
-                    "INV001",
-                    "Nguyễn Văn A",
-                    "0912345678",
-                    "01/04/2026",
-                    "EMP01",
-                    "90000 đ",
-                    "Đã thanh toán",
-                    editIcon()
-            });
-
-            model.addRow(new Object[]{
-                    "INV002",
-                    "Nguyễn Văn B",
-                    "0987654321",
-                    "02/04/2026",
-                    "EMP02",
-                    "120000 đ",
-                    "Chưa thanh toán",
-                    editIcon()
-            });
-
-            model.addRow(new Object[]{
-                    "INV003",
-                    "Trần Văn C",
-                    "0909123456",
-                    "03/04/2026",
-                    "EMP01",
-                    "150000 đ",
-                    "Đã thanh toán",
-                    editIcon()
-            });
-
-            model.addRow(new Object[]{
-                    "INV004",
-                    "Lê Thị D",
-                    "0977123456",
-                    "04/04/2026",
-                    "EMP03",
-                    "80000 đ",
-                    "Chưa thanh toán",
-                    editIcon()
-            });
-
             return;
         }
 
@@ -125,15 +79,8 @@ public class HoaDonManagerPanel extends JPanel {
     }
 
     private ImageIcon editIcon() {
-
-        var url =
-                getClass().getResource(
-                        "/cinema/images/edit(black).png"
-                );
-
-        return url != null
-                ? new ImageIcon(url)
-                : null;
+        var url = getClass().getResource("/cinema/images/edit(black).png");
+        return url != null ? new ImageIcon(url) : null;
     }
 
     // ================= UI =================
@@ -141,19 +88,13 @@ public class HoaDonManagerPanel extends JPanel {
     private void initComponents() {
 
         setBackground(new Color(245, 247, 250));
-
         setLayout(new BorderLayout(0, 20));
 
         setBorder(
-                BorderFactory.createEmptyBorder(
-                        20,
-                        30,
-                        20,
-                        30
-                )
+                BorderFactory.createEmptyBorder(20, 30, 20, 30)
         );
 
-        // ================= FILTER PANEL =================
+        // ================= FILTER =================
 
         JPanel filterWrapper = new JPanel(new BorderLayout());
 
@@ -162,205 +103,88 @@ public class HoaDonManagerPanel extends JPanel {
         filterWrapper.setBorder(
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(
-                                new Color(220,220,220)
+                                new Color(220, 220, 220)
                         ),
                         BorderFactory.createEmptyBorder(
-                                20,
-                                20,
-                                20,
-                                20
+                                20, 20, 20, 20
                         )
                 )
         );
 
-        JPanel filterPanel =
-                new JPanel(new GridLayout(1,4,20,0));
+        JPanel filterPanel = new JPanel(
+                new GridLayout(1, 4, 20, 0)
+        );
 
         filterPanel.setOpaque(false);
 
-        // ===== SEARCH =====
-
-        JPanel pSearch = new JPanel();
-
-        pSearch.setLayout(
-                new BoxLayout(
-                        pSearch,
-                        BoxLayout.Y_AXIS
-                )
-        );
-
-        pSearch.setOpaque(false);
-
-        JLabel lbSearch = new JLabel("Tìm kiếm");
-
-        lbSearch.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.PLAIN,
-                        14
-                )
-        );
+        // SEARCH
+        JPanel pSearch = makeFilterGroup("Tìm kiếm");
 
         txtSearch = new JTextField();
 
         styleInput(txtSearch, "Nhập từ khóa...");
 
-        pSearch.add(lbSearch);
-
-        pSearch.add(Box.createVerticalStrut(5));
-
         pSearch.add(txtSearch);
 
-        // ===== FROM =====
-
-        JPanel pFrom = new JPanel();
-
-        pFrom.setLayout(
-                new BoxLayout(
-                        pFrom,
-                        BoxLayout.Y_AXIS
-                )
-        );
-
-        pFrom.setOpaque(false);
-
-        JLabel lbFrom = new JLabel("Từ ngày");
-
-        lbFrom.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.PLAIN,
-                        14
-                )
-        );
+        // FROM
+        JPanel pFrom = makeFilterGroup("Từ ngày");
 
         txtFrom = new JTextField();
 
         styleInput(txtFrom, "dd/MM/yyyy");
 
-        pFrom.add(lbFrom);
-
-        pFrom.add(Box.createVerticalStrut(5));
-
         pFrom.add(txtFrom);
 
-        // ===== TO =====
-
-        JPanel pTo = new JPanel();
-
-        pTo.setLayout(
-                new BoxLayout(
-                        pTo,
-                        BoxLayout.Y_AXIS
-                )
-        );
-
-        pTo.setOpaque(false);
-
-        JLabel lbTo = new JLabel("Đến ngày");
-
-        lbTo.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.PLAIN,
-                        14
-                )
-        );
+        // TO
+        JPanel pTo = makeFilterGroup("Đến ngày");
 
         txtTo = new JTextField();
 
         styleInput(txtTo, "dd/MM/yyyy");
 
-        pTo.add(lbTo);
-
-        pTo.add(Box.createVerticalStrut(5));
-
         pTo.add(txtTo);
 
-        // ===== STATUS =====
+        // STATUS
+        JPanel pStatus = makeFilterGroup("Trạng thái");
 
-        JPanel pStatus = new JPanel();
+        cbStatus = new JComboBox<>(new String[]{
+                "Tất cả",
+                "Đã thanh toán",
+                "Chưa thanh toán",
+                "Đã hủy"
+        });
 
-        pStatus.setLayout(
-                new BoxLayout(
-                        pStatus,
-                        BoxLayout.Y_AXIS
-                )
-        );
-
-        pStatus.setOpaque(false);
-
-        JLabel lbStatus = new JLabel("Trạng thái");
-
-        lbStatus.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.PLAIN,
-                        14
-                )
-        );
-
-        cbStatus = new JComboBox<>(
-                new String[]{
-                        "Tất cả",
-                        "Đã thanh toán",
-                        "Chưa thanh toán"
-                }
-        );
-
-        cbStatus.setPreferredSize(
-                new Dimension(200,35)
-        );
-
-        pStatus.add(lbStatus);
-
-        pStatus.add(Box.createVerticalStrut(5));
+        cbStatus.setPreferredSize(new Dimension(200, 35));
 
         pStatus.add(cbStatus);
 
-        // ADD
-
         filterPanel.add(pSearch);
-
         filterPanel.add(pFrom);
-
         filterPanel.add(pTo);
-
         filterPanel.add(pStatus);
 
         filterWrapper.add(filterPanel);
 
         // ================= TITLE =================
 
-        JLabel title =
-                new JLabel("Danh sách hóa đơn");
+        JLabel title = new JLabel("Danh sách hóa đơn");
 
         title.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.BOLD,
-                        28
-                )
+                new Font("Segoe UI", Font.BOLD, 28)
         );
 
-        JPanel titlePanel =
-                new JPanel(new BorderLayout());
+        JPanel titlePanel = new JPanel(new BorderLayout());
 
         titlePanel.setOpaque(false);
 
         titlePanel.add(title, BorderLayout.WEST);
-
-        // ================= TOP =================
 
         JPanel topContainer = new JPanel();
 
         topContainer.setOpaque(false);
 
         topContainer.setLayout(
-                new BoxLayout(
-                        topContainer,
-                        BoxLayout.Y_AXIS
-                )
+                new BoxLayout(topContainer, BoxLayout.Y_AXIS)
         );
 
         topContainer.add(filterWrapper);
@@ -373,45 +197,39 @@ public class HoaDonManagerPanel extends JPanel {
 
         DSTable = new JTable();
 
-        DSTable.setModel(new DefaultTableModel(
-                new Object[][]{},
-                new String[]{
-                        "Mã HD",
-                        "Khách hàng",
-                        "SĐT",
-                        "Ngày lập",
-                        "Nhân viên",
-                        "Tổng tiền",
-                        "Trạng thái",
-                        "Thao tác"
+        DSTable.setModel(
+                new DefaultTableModel(
+                        new Object[][]{},
+                        new String[]{
+                                "Mã HD",
+                                "Khách hàng",
+                                "SĐT",
+                                "Ngày lập",
+                                "Nhân viên",
+                                "Tổng tiền",
+                                "Trạng thái",
+                                "Thao tác"
+                        }
+                ) {
+                    @Override
+                    public Class<?> getColumnClass(int columnIndex) {
+                        return columnIndex == 7
+                                ? Icon.class
+                                : String.class;
+                    }
+
+                    @Override
+                    public boolean isCellEditable(int row, int column) {
+                        return false;
+                    }
                 }
-        ) {
+        );
 
-            @Override
-            public Class<?> getColumnClass(int columnIndex) {
-
-                if(columnIndex == 7){
-                    return Icon.class;
-                }
-
-                return String.class;
-            }
-
-            @Override
-            public boolean isCellEditable(
-                    int row,
-                    int column
-            ) {
-                return false;
-            }
-        });
-
-        JScrollPane scrollPane =
-                new JScrollPane(DSTable);
+        JScrollPane scrollPane = new JScrollPane(DSTable);
 
         scrollPane.setBorder(
                 BorderFactory.createLineBorder(
-                        new Color(220,220,220)
+                        new Color(220, 220, 220)
                 )
         );
 
@@ -420,98 +238,109 @@ public class HoaDonManagerPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
+    private JPanel makeFilterGroup(String label) {
+
+        JPanel p = new JPanel();
+
+        p.setLayout(
+                new BoxLayout(p, BoxLayout.Y_AXIS)
+        );
+
+        p.setOpaque(false);
+
+        JLabel lbl = new JLabel(label);
+
+        lbl.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        p.add(lbl);
+
+        p.add(Box.createVerticalStrut(5));
+
+        return p;
+    }
+
     // ================= SEARCH =================
 
     private void initSearch() {
 
-    sorter = new TableRowSorter<>(DSTable.getModel());
+        sorter = new TableRowSorter<>(DSTable.getModel());
 
-    DSTable.setRowSorter(sorter);
+        DSTable.setRowSorter(sorter);
 
-    txtSearch.getDocument().addDocumentListener(
-            new javax.swing.event.DocumentListener() {
+        txtSearch.getDocument().addDocumentListener(
+                new javax.swing.event.DocumentListener() {
 
-                public void insertUpdate(
-                        javax.swing.event.DocumentEvent e
-                ) {
-                    filter();
-                }
-
-                public void removeUpdate(
-                        javax.swing.event.DocumentEvent e
-                ) {
-                    filter();
-                }
-
-                public void changedUpdate(
-                        javax.swing.event.DocumentEvent e
-                ) {
-                    filter();
-                }
-
-                private void filter() {
-
-                    String keyword =
-                            txtSearch.getText();
-
-                    if(keyword.equals("Nhập từ khóa...")){
-                        keyword = "";
+                    public void insertUpdate(
+                            javax.swing.event.DocumentEvent e
+                    ) {
+                        filter();
                     }
 
-                    sorter.setRowFilter(
-                            RowFilter.regexFilter(
-                                    "(?i)" + keyword
-                            )
-                    );
+                    public void removeUpdate(
+                            javax.swing.event.DocumentEvent e
+                    ) {
+                        filter();
+                    }
+
+                    public void changedUpdate(
+                            javax.swing.event.DocumentEvent e
+                    ) {
+                        filter();
+                    }
+
+                    private void filter() {
+
+                        String keyword = txtSearch.getText();
+
+                        if (keyword.equals("Nhập từ khóa...")) {
+                            keyword = "";
+                        }
+
+                        sorter.setRowFilter(
+                                RowFilter.regexFilter(
+                                        "(?i)" + keyword
+                                )
+                        );
+                    }
                 }
-            }
-    );
-}
+        );
+    }
 
     // ================= FILTER STATUS =================
 
-   private void initFilterStatus() {
+    private void initFilterStatus() {
 
-    cbStatus.addActionListener(e -> {
+        cbStatus.addActionListener(e -> {
 
-        String selected =
-                cbStatus.getSelectedItem().toString();
+            String status =
+                    cbStatus.getSelectedItem().toString();
 
-        if(selected.equals("Tất cả")){
+            if (status.equals("Tất cả")) {
+                sorter.setRowFilter(null);
+            } else {
+                sorter.setRowFilter(
+                        RowFilter.regexFilter(status, 6)
+                );
+            }
+        });
+    }
 
-            sorter.setRowFilter(null);
-        }
-        else{
+    // ================= FILTER DATE =================
 
-            sorter.setRowFilter(
-                    RowFilter.regexFilter(
-                            selected,
-                            6
-                    )
-            );
-        }
-    });
-}
-private void initFilterDate() {
+    private void initFilterDate() {
 
     javax.swing.event.DocumentListener listener =
             new javax.swing.event.DocumentListener() {
 
-        public void insertUpdate(
-                javax.swing.event.DocumentEvent e
-        ) {
+        public void insertUpdate(javax.swing.event.DocumentEvent e) {
             filterDate();
         }
 
-        public void removeUpdate(
-                javax.swing.event.DocumentEvent e
-        ) {
+        public void removeUpdate(javax.swing.event.DocumentEvent e) {
             filterDate();
         }
 
-        public void changedUpdate(
-                javax.swing.event.DocumentEvent e
-        ) {
+        public void changedUpdate(javax.swing.event.DocumentEvent e) {
             filterDate();
         }
 
@@ -519,196 +348,261 @@ private void initFilterDate() {
 
             try {
 
-                String fromText =
-                        txtFrom.getText().trim();
-
-                String toText =
-                        txtTo.getText().trim();
-
                 java.text.SimpleDateFormat sdf =
-                        new java.text.SimpleDateFormat(
-                                "dd/MM/yyyy"
-                        );
+                        new java.text.SimpleDateFormat("dd/MM/yyyy");
 
                 java.util.Date fromDate =
-                        sdf.parse(fromText);
+                        sdf.parse(txtFrom.getText().trim());
 
                 java.util.Date toDate =
-                        sdf.parse(toText);
+                        sdf.parse(txtTo.getText().trim());
 
-                TableRowSorter<TableModel> sorter =
-                        new TableRowSorter<>(
-                                DSTable.getModel()
-                        );
-
-                DSTable.setRowSorter(sorter);
-
-                sorter.setRowFilter(
-                        new RowFilter<TableModel,Integer>() {
+                sorter.setRowFilter(new RowFilter<TableModel, Integer>() {
 
                     @Override
                     public boolean include(
                             Entry<? extends TableModel,
-                            ? extends Integer> entry
-                    ) {
+                            ? extends Integer> entry) {
 
                         try {
 
                             String dateStr =
-                                    entry.getStringValue(3);
+                                    entry.getStringValue(3).split(" ")[0];
 
                             java.util.Date rowDate =
                                     sdf.parse(dateStr);
 
                             return !rowDate.before(fromDate)
-                                    &&
-                                   !rowDate.after(toDate);
+                                    && !rowDate.after(toDate);
 
-                        }
-                        catch(Exception ex){
+                        } catch (Exception ex) {
                             return true;
                         }
                     }
                 });
 
-            }
-            catch(Exception ex){
+            } catch (Exception ex) {
 
-                DSTable.setRowSorter(null);
+                sorter.setRowFilter(null);
             }
         }
     };
 
-    txtFrom.getDocument()
-            .addDocumentListener(listener);
-
-    txtTo.getDocument()
-            .addDocumentListener(listener);
+    txtFrom.getDocument().addDocumentListener(listener);
+    txtTo.getDocument().addDocumentListener(listener);
 }
 
-private void initAction() {
+    // ================= ACTION =================
 
-    DSTable.addMouseListener(new java.awt.event.MouseAdapter() {
+    private void initAction() {
 
-        @Override
-        public void mouseClicked(java.awt.event.MouseEvent evt) {
+        DSTable.addMouseListener(
+                new java.awt.event.MouseAdapter() {
 
-            int row = DSTable.rowAtPoint(evt.getPoint());
+                    @Override
+                    public void mouseClicked(
+                            java.awt.event.MouseEvent evt
+                    ) {
 
-            int col = DSTable.columnAtPoint(evt.getPoint());
+                        int row =
+                                DSTable.rowAtPoint(evt.getPoint());
 
-            // click cột thao tác
-            if(col == 7){
+                        int col =
+                                DSTable.columnAtPoint(evt.getPoint());
 
-                String maHD =
-                        DSTable.getValueAt(row,0).toString();
+                        if (col != 7) return;
 
-                String kh =
-                        DSTable.getValueAt(row,1).toString();
+                        String maHD =
+                                DSTable.getValueAt(row, 0).toString();
 
-                String sdt =
-                        DSTable.getValueAt(row,2).toString();
+                        String tenKH =
+                                DSTable.getValueAt(row, 1).toString();
 
-                String ngay =
-                        DSTable.getValueAt(row,3).toString();
+                        String sdt =
+                                DSTable.getValueAt(row, 2).toString();
 
-                String tongTien =
-                        DSTable.getValueAt(row,5).toString();
+                        String ngay =
+                                DSTable.getValueAt(row, 3).toString();
 
-                String trangThai =
-                        DSTable.getValueAt(row,6).toString();
+                        String maNV =
+                                DSTable.getValueAt(row, 4).toString();
 
-                // PANEL CHI TIẾT
-                JPanel panel = new JPanel();
+                        String tongTien =
+                                DSTable.getValueAt(row, 5).toString();
 
-                panel.setLayout(
-                        new BoxLayout(
-                                panel,
-                                BoxLayout.Y_AXIS
-                        )
-                );
+                        String trangThai =
+                                DSTable.getValueAt(row, 6).toString();
 
-                panel.add(new JLabel("Mã HD: " + maHD));
-                panel.add(Box.createVerticalStrut(10));
+                        int modelRow =
+                                DSTable.convertRowIndexToModel(row);
 
-                panel.add(new JLabel("Khách hàng: " + kh));
-                panel.add(Box.createVerticalStrut(10));
+                        showInvoiceDialog(
+                                maHD,
+                                tenKH,
+                                sdt,
+                                ngay,
+                                maNV,
+                                tongTien,
+                                trangThai,
+                                modelRow
+                        );
+                    }
+                }
+        );
+    }
 
-                panel.add(new JLabel("SĐT: " + sdt));
-                panel.add(Box.createVerticalStrut(10));
+    // ================= DIALOG =================
 
-                panel.add(new JLabel("Ngày lập: " + ngay));
-                panel.add(Box.createVerticalStrut(10));
+    private void showInvoiceDialog(
+            String maHD,
+            String tenKH,
+            String sdt,
+            String ngay,
+            String maNV,
+            String tongTien,
+            String trangThai,
+            int modelRow
+    ) {
 
-                panel.add(new JLabel("Tổng tiền: " + tongTien));
-                panel.add(Box.createVerticalStrut(10));
+        JDialog dialog = new JDialog();
 
-                panel.add(new JLabel("Trạng thái: " + trangThai));
-                panel.add(Box.createVerticalStrut(20));
+        dialog.setTitle("Chi tiết hóa đơn");
 
-                JButton btnRefund =
-                        new JButton("Trả vé");
+        dialog.setSize(700, 600);
 
-                btnRefund.setBackground(
-                        new Color(220,50,50)
-                );
+        dialog.setLocationRelativeTo(null);
 
-                btnRefund.setForeground(Color.WHITE);
+        dialog.setResizable(false);
 
-                btnRefund.setFocusPainted(false);
+        JPanel root = new JPanel(new BorderLayout());
 
-                panel.add(btnRefund);
+        root.setBackground(Color.WHITE);
 
-                JDialog dialog =
-                        new JDialog();
+        root.setBorder(
+                BorderFactory.createEmptyBorder(
+                        20, 30, 15, 30
+                )
+        );
 
-                dialog.setTitle("Chi tiết hóa đơn");
+        JLabel lblTitle =
+                new JLabel("THÔNG TIN HÓA ĐƠN");
 
-                dialog.setSize(400,350);
+        lblTitle.setFont(
+                new Font("Segoe UI", Font.BOLD, 22)
+        );
 
-                dialog.setLocationRelativeTo(null);
+        lblTitle.setHorizontalAlignment(
+                SwingConstants.CENTER
+        );
 
-                dialog.add(panel);
+        root.add(lblTitle, BorderLayout.NORTH);
 
-                btnRefund.addActionListener(e -> {
+        JTextArea area = new JTextArea();
 
-                    JOptionPane.showMessageDialog(
-                            dialog,
-                            "Đã gửi yêu cầu trả vé"
-                    );
-                });
+        area.setEditable(false);
 
-                dialog.setVisible(true);
-            }
+        area.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        area.setText(
+                "Mã hóa đơn: " + maHD +
+                "\nKhách hàng: " + tenKH +
+                "\nSĐT: " + sdt +
+                "\nNgày lập: " + ngay +
+                "\nNhân viên: " + maNV +
+                "\nTổng tiền: " + tongTien +
+                "\nTrạng thái: " + trangThai
+        );
+
+        root.add(new JScrollPane(area), BorderLayout.CENTER);
+
+        JButton btnHuy =
+                new JButton("Hủy hóa đơn");
+
+        btnHuy.setBackground(
+                new Color(220, 50, 50)
+        );
+
+        btnHuy.setForeground(Color.WHITE);
+
+        if (trangThai.equals("Đã hủy")) {
+
+            btnHuy.setEnabled(false);
+
+            btnHuy.setText("Đã hủy");
         }
-    });
-}
-    // ================= INPUT STYLE =================
+
+        btnHuy.addActionListener(e -> {
+
+            int confirm =
+                    JOptionPane.showConfirmDialog(
+                            dialog,
+                            "Bạn có chắc muốn hủy hóa đơn?",
+                            "Xác nhận",
+                            JOptionPane.YES_NO_OPTION
+                    );
+
+            if (confirm != JOptionPane.YES_OPTION) {
+                return;
+            }
+
+            boolean ok =
+                    invoiceDAO.cancelInvoiceAndTickets(maHD);
+
+            if (ok) {
+
+                DefaultTableModel model =
+                        (DefaultTableModel)
+                                DSTable.getModel();
+
+                model.setValueAt(
+                        "Đã hủy",
+                        modelRow,
+                        6
+                );
+
+                btnHuy.setEnabled(false);
+
+                btnHuy.setText("Đã hủy");
+
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        "Hủy hóa đơn thành công!"
+                );
+
+            } else {
+
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        "Hủy thất bại!"
+                );
+            }
+        });
+
+        JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+        south.add(btnHuy);
+
+        root.add(south, BorderLayout.SOUTH);
+
+        dialog.setContentPane(root);
+
+        dialog.setVisible(true);
+    }
+
+    // ================= STYLE INPUT =================
 
     private void styleInput(
             JTextField txt,
             String placeholder
     ) {
 
-        txt.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.PLAIN,
-                        14
-                )
-        );
+        txt.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
-        txt.setPreferredSize(
-                new Dimension(200,35)
-        );
-
-        txt.setMaximumSize(
-                new Dimension(Integer.MAX_VALUE,35)
-        );
+        txt.setPreferredSize(new Dimension(200, 35));
 
         txt.setBorder(
                 BorderFactory.createLineBorder(
-                        new Color(200,200,200)
+                        new Color(200, 200, 200)
                 )
         );
 
@@ -723,7 +617,7 @@ private void initAction() {
                             java.awt.event.FocusEvent e
                     ) {
 
-                        if(txt.getText().equals(placeholder)){
+                        if (txt.getText().equals(placeholder)) {
 
                             txt.setText("");
 
@@ -735,7 +629,7 @@ private void initAction() {
                             java.awt.event.FocusEvent e
                     ) {
 
-                        if(txt.getText().isEmpty()){
+                        if (txt.getText().isEmpty()) {
 
                             txt.setText(placeholder);
 
@@ -753,91 +647,50 @@ private void initAction() {
         table.setRowHeight(45);
 
         table.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.PLAIN,
-                        14
-                )
+                new Font("Segoe UI", Font.PLAIN, 14)
         );
 
         table.setShowGrid(false);
 
         table.setShowHorizontalLines(true);
 
-        JTableHeader header =
-                table.getTableHeader();
+        JTableHeader header = table.getTableHeader();
 
         header.setBackground(
-                new Color(240,240,240)
+                new Color(240, 240, 240)
         );
 
         header.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.BOLD,
-                        14
-                )
+                new Font("Segoe UI", Font.BOLD, 14)
         );
 
-        header.setPreferredSize(
-                new Dimension(0,40)
-        );
-
-        table.getColumnModel().getColumn(0)
-                .setPreferredWidth(80);
-
-        table.getColumnModel().getColumn(1)
-                .setPreferredWidth(180);
-
-        table.getColumnModel().getColumn(2)
-                .setPreferredWidth(120);
-
-        table.getColumnModel().getColumn(3)
-                .setPreferredWidth(120);
-
-        table.getColumnModel().getColumn(4)
-                .setPreferredWidth(100);
-
-        table.getColumnModel().getColumn(5)
-                .setPreferredWidth(120);
-
-        table.getColumnModel().getColumn(6)
-                .setPreferredWidth(150);
-
-        table.getColumnModel().getColumn(7)
-                .setMaxWidth(70);
-
-        // ===== ICON =====
+        header.setPreferredSize(new Dimension(0, 40));
 
         table.getColumnModel().getColumn(7)
                 .setCellRenderer(
-                        new DefaultTableCellRenderer(){
+                        new DefaultTableCellRenderer() {
 
                             @Override
-                            protected void setValue(
-                                    Object value
-                            ) {
+                            protected void setValue(Object value) {
 
-                                if(value instanceof Icon){
+                                if (value instanceof Icon) {
 
                                     setIcon((Icon) value);
 
                                     setText("");
 
                                     setHorizontalAlignment(CENTER);
-                                }
-                                else{
+
+                                } else {
                                     super.setValue(value);
                                 }
                             }
                         }
                 );
 
-        // ===== STATUS COLOR =====
-
         table.getColumnModel().getColumn(6)
                 .setCellRenderer(
-                        new DefaultTableCellRenderer(){
+                        new DefaultTableCellRenderer() {
 
                             @Override
                             public Component getTableCellRendererComponent(
@@ -859,21 +712,21 @@ private void initAction() {
                                                 column
                                         );
 
-                                if(!isSelected){
+                                if (!isSelected) {
 
-                                    String status =
-                                            value.toString();
+                                    String s = value.toString();
 
-                                    if(status.equals("Đã thanh toán")){
-
+                                    if (s.equals("Đã thanh toán")) {
                                         c.setForeground(
-                                                new Color(0,150,0)
+                                                new Color(0, 150, 0)
                                         );
-                                    }
-                                    else{
-
+                                    } else if (s.equals("Đã hủy")) {
                                         c.setForeground(
-                                                new Color(220,50,50)
+                                                Color.GRAY
+                                        );
+                                    } else {
+                                        c.setForeground(
+                                                new Color(220, 50, 50)
                                         );
                                     }
                                 }

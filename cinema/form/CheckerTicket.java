@@ -3,12 +3,11 @@ package cinema.form;
 import cinema.DBConnection;
 import cinema.enums.TicketStatus;
 import cinema.models.Employee;
-
-import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import javax.swing.*;
 
 public class CheckerTicket extends JFrame {
 
@@ -267,15 +266,109 @@ public class CheckerTicket extends JFrame {
                 lblKetQua.setForeground(Color.RED);
                 lblKetQua.setText("❌ Vé đã bị hủy");
             } else if (status == TicketStatus.Sold) {
-                updateUsed(maVe);
-                lblKetQua.setForeground(new Color(0, 150, 0));
-                lblKetQua.setText("✅ Vé hợp lệ");
-            }
+
+    updateUsed(maVe);
+
+    lblKetQua.setForeground(new Color(0, 150, 0));
+
+    lblKetQua.setText("✅ Vé hợp lệ");
+
+    showTicketInfo(maVe);
+}
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, e.getMessage());
         }
     }
+    private void showTicketInfo(String ticketId) {
+
+    String sql = """
+        SELECT
+            t.ticketId,
+            m.title,
+            s.rowIndex,
+            s.colIndex,
+            st.startTime,
+            r.roomName
+        FROM Ticket t
+        JOIN Showtime st ON t.showtimeId = st.showtimeId
+        JOIN Movie m ON st.movieId = m.movieId
+        JOIN Seat s ON t.seatId = s.seatId
+        JOIN Room r ON st.roomId = r.roomId
+        WHERE t.ticketId = ?
+    """;
+
+    try {
+
+        Connection conn = DBConnection.getConnection();
+
+        PreparedStatement ps = conn.prepareStatement(sql);
+
+        ps.setString(1, ticketId);
+
+        ResultSet rs = ps.executeQuery();
+
+        if (rs.next()) {
+
+            String movie = rs.getString("title");
+
+            String ghe =
+                    (char)('A' + rs.getInt("rowIndex"))
+                    + String.valueOf(rs.getInt("colIndex") + 1);
+
+            String room = rs.getString("roomName");
+
+            String time = rs.getString("startTime");
+
+            JDialog dialog = new JDialog(this, "Thông tin vé", true);
+
+            dialog.setSize(450, 300);
+
+            dialog.setLocationRelativeTo(this);
+
+            JPanel panel = new JPanel();
+
+            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+            panel.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+
+            JLabel lb1 = new JLabel("🎬 Phim: " + movie);
+            JLabel lb2 = new JLabel("💺 Ghế: " + ghe);
+            JLabel lb3 = new JLabel("🏠 Phòng: " + room);
+            JLabel lb4 = new JLabel("⏰ Suất chiếu: " + time);
+            JLabel lb5 = new JLabel("✅ Vé hợp lệ - Đã check-in");
+
+            lb1.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            lb2.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            lb3.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            lb4.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+
+            lb5.setFont(new Font("Segoe UI", Font.BOLD, 18));
+            lb5.setForeground(new Color(0,150,0));
+
+            panel.add(lb1);
+            panel.add(Box.createVerticalStrut(10));
+
+            panel.add(lb2);
+            panel.add(Box.createVerticalStrut(10));
+
+            panel.add(lb3);
+            panel.add(Box.createVerticalStrut(10));
+
+            panel.add(lb4);
+            panel.add(Box.createVerticalStrut(20));
+
+            panel.add(lb5);
+
+            dialog.add(panel);
+
+            dialog.setVisible(true);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
     public static void main(String[] args) {
     java.awt.EventQueue.invokeLater(() -> {
         new LoginFrame().setVisible(true);
