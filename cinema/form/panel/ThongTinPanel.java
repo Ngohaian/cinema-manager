@@ -273,7 +273,6 @@ public class ThongTinPanel extends javax.swing.JPanel {
         emp.getStatus() == cinema.models.Employee.EmployeeStatus.ACTIVE 
         ? "Vẫn còn làm việc" : "Đã nghỉ việc");
 
-    jButton1.addActionListener(null); 
     for (var l : jButton1.getActionListeners()) jButton1.removeActionListener(l);
     jButton1.addActionListener(e -> openSuaHoSo(emp));
 
@@ -282,9 +281,9 @@ public class ThongTinPanel extends javax.swing.JPanel {
 }
 
 private void openSuaHoSo(cinema.models.Employee emp) {
-    javax.swing.JDialog d = new javax.swing.JDialog(
-        (java.awt.Frame) javax.swing.SwingUtilities.getWindowAncestor(this),
-        "Chỉnh sửa hồ sơ", true);
+    javax.swing.JDialog d = new javax.swing.JDialog();
+    d.setTitle("Chỉnh sửa hồ sơ");
+    d.setModal(true);
     d.setSize(430, 390);
     d.setLocationRelativeTo(null);
     javax.swing.JPanel p = new javax.swing.JPanel(null);
@@ -317,7 +316,7 @@ private void openSuaHoSo(cinema.models.Employee emp) {
         new cinema.dao.EmployeeDAO().updateEmployee(emp);
         loadEmployee(emp); // refresh panel
         d.dispose();
-        javax.swing.JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+        javax.swing.JOptionPane.showMessageDialog(null, "Cập nhật thành công!");
     });
     p.add(btn);
     d.setContentPane(p);
@@ -339,9 +338,9 @@ private javax.swing.JTextField addField(javax.swing.JPanel p, String label, int 
 }
 
 private void openDoiMatKhau(cinema.models.Employee emp) {
-    javax.swing.JDialog d = new javax.swing.JDialog(
-        (java.awt.Frame) javax.swing.SwingUtilities.getWindowAncestor(this),
-        "Đổi mật khẩu", true);
+    javax.swing.JDialog d = new javax.swing.JDialog();
+    d.setTitle("Đổi mật khẩu");
+    d.setModal(true);
     d.setSize(380, 260);
     d.setLocationRelativeTo(null);
     javax.swing.JPanel p = new javax.swing.JPanel(null);
@@ -396,7 +395,7 @@ private void openDoiMatKhau(cinema.models.Employee emp) {
         emp.setPassword(moi);
         new cinema.dao.EmployeeDAO().updateEmployee(emp);
         d.dispose();
-        javax.swing.JOptionPane.showMessageDialog(this, "Đổi mật khẩu thành công!");
+        javax.swing.JOptionPane.showMessageDialog(null, "Đổi mật khẩu thành công!");
     });
     p.add(lbCu); p.add(tfCu);
     p.add(lbMoi); p.add(tfMoi);
