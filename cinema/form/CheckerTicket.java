@@ -4,12 +4,11 @@ import cinema.DBConnection;
 import cinema.enums.TicketStatus;
 import cinema.form.panel.ThongTinPanel;
 import cinema.models.Employee;
-
-import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import javax.swing.*;
 
 public class CheckerTicket extends JFrame {
 

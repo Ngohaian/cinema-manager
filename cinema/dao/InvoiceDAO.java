@@ -4,6 +4,7 @@ import cinema.DBConnection;
 import cinema.models.Invoice;
 import cinema.models.Seat;
 import cinema.models.Ticket;
+import cinema.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -16,13 +17,7 @@ public class InvoiceDAO {
     public List<Invoice> getAll() {
 
         List<Invoice> list = new ArrayList<>();
-
-        String sql = """
-            SELECT i.*
-            FROM Invoice i
-            LEFT JOIN Customer c
-                ON i.customerId = c.customerId
-        """;
+        String sql = "SELECT * FROM Invoice";
 
         try (
                 Connection conn = DBConnection.getConnection();
@@ -33,30 +28,10 @@ public class InvoiceDAO {
             while (rs.next()) {
 
                 Invoice inv = new Invoice();
-
-                inv.setInvoiceId(
-                        rs.getString("invoiceId")
-                );
-
-                inv.setCustomerId(
-                        rs.getString("customerId")
-                );
-
-                inv.setEmployeeId(
-                        rs.getString("employeeId")
-                );
-
-                inv.setInvoiceDate(
-                        rs.getTimestamp("invoiceDate")
-                                .toLocalDateTime()
-                );
-
-                inv.setTotalAmount(
-                        rs.getDouble("totalAmount")
-                );
-                inv.setStatus(
-                    rs.getString("status")
-                );
+                inv.setInvoiceId(rs.getString("invoiceId"));
+                inv.setCustomerId(rs.getString("customerId"));
+                inv.setInvoiceDate(rs.getTimestamp("invoiceDate").toLocalDateTime());
+                inv.setTotalAmount(rs.getDouble("totalAmount"));
 
                 list.add(inv);
             }

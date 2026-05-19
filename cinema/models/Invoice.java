@@ -1,8 +1,8 @@
 package cinema.models;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.time.LocalDateTime;
 
 public class Invoice {
 
@@ -11,7 +11,7 @@ public class Invoice {
     private String employeeId;
     private LocalDateTime invoiceDate;
     private double totalAmount;
-    private String status;
+
     private List<Ticket> tickets;
 
     public Invoice() {
@@ -25,7 +25,6 @@ public class Invoice {
         this.invoiceDate = invoiceDate;
         this.totalAmount = totalAmount;
         this.tickets = new ArrayList<>();
-        this.status = "Đã thanh toán";
     }
 
     public double calculateTotalAmount() {
@@ -41,45 +40,57 @@ public class Invoice {
         return invoiceId;
     }
 
-    public void setInvoiceId(String invoiceId) {
-        this.invoiceId = invoiceId;
-    }
-
     public String getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
     public String getEmployeeId() {
         return employeeId;
     }
-    public void setEmployeeId(String employeeId) {
-        this.employeeId = employeeId;
-    }
+
     public LocalDateTime getInvoiceDate() {
         return invoiceDate;
-    }
-
-    public void setInvoiceDate(LocalDateTime invoiceDate) {
-        this.invoiceDate = invoiceDate;
     }
 
     public double getTotalAmount() {
         return totalAmount;
     }
-    public String getStatus() {
-        return status;
-    }
-    public void setStatus(String status) {
-        this.status = status;
-    }
+
     public void setTotalAmount(double totalAmount) {
         this.totalAmount = totalAmount;
     }
 
     public List<Ticket> getTickets() {
         return tickets;
+    }
+
+    // ===== SET =====
+
+    public void setInvoiceId(String invoiceId) {
+        this.invoiceId = invoiceId;
+    }
+
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
+    }
+
+    public void setEmployeeId(String employeeId) {
+        this.employeeId = employeeId;
+    }
+
+    public void setInvoiceDate(LocalDateTime invoiceDate) {
+        this.invoiceDate = invoiceDate;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 }
