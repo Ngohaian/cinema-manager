@@ -18,7 +18,7 @@ public class InvoiceDAO {
         List<Invoice> list = new ArrayList<>();
 
         String sql = """
-            SELECT i.*, c.phone
+            SELECT i.*
             FROM Invoice i
             LEFT JOIN Customer c
                 ON i.customerId = c.customerId
@@ -54,14 +54,8 @@ public class InvoiceDAO {
                 inv.setTotalAmount(
                         rs.getDouble("totalAmount")
                 );
-
                 inv.setStatus(
-                        rs.getString("status")
-                );
-
-                // SĐT khách hàng
-                inv.setPhone(
-                        rs.getString("phone")
+                    rs.getString("status")
                 );
 
                 list.add(inv);

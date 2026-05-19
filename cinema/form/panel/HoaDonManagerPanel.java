@@ -51,9 +51,8 @@ public class HoaDonManagerPanel extends JPanel {
         ((DefaultTableModel) DSTable.getModel()).addRow(new Object[]{
                 inv.getInvoiceId(),
                 inv.getCustomerId(),
-                inv.getPhone(),
-                date,
                 inv.getEmployeeId(),
+                date,
                 String.format("%,.0f đ", inv.getTotalAmount()),
                 inv.getStatus(),
                 editIcon()
@@ -201,11 +200,10 @@ public class HoaDonManagerPanel extends JPanel {
                 new DefaultTableModel(
                         new Object[][]{},
                         new String[]{
-                                "Mã HD",
+                                "Mã hóa đơn",
                                 "Khách hàng",
-                                "SĐT",
-                                "Ngày lập",
                                 "Nhân viên",
+                                "Ngày lập",
                                 "Tổng tiền",
                                 "Trạng thái",
                                 "Thao tác"
@@ -213,7 +211,7 @@ public class HoaDonManagerPanel extends JPanel {
                 ) {
                     @Override
                     public Class<?> getColumnClass(int columnIndex) {
-                        return columnIndex == 7
+                        return columnIndex == 6
                                 ? Icon.class
                                 : String.class;
                     }
@@ -410,38 +408,34 @@ public class HoaDonManagerPanel extends JPanel {
                         int col =
                                 DSTable.columnAtPoint(evt.getPoint());
 
-                        if (col != 7) return;
+                        if (col != 6) return;
 
                         String maHD =
                                 DSTable.getValueAt(row, 0).toString();
 
-                        String tenKH =
+                        String maKH =
                                 DSTable.getValueAt(row, 1).toString();
 
-                        String sdt =
+                        String ngay =
                                 DSTable.getValueAt(row, 2).toString();
 
-                        String ngay =
+                        String tongTien =
                                 DSTable.getValueAt(row, 3).toString();
 
                         String maNV =
                                 DSTable.getValueAt(row, 4).toString();
 
-                        String tongTien =
-                                DSTable.getValueAt(row, 5).toString();
-
                         String trangThai =
-                                DSTable.getValueAt(row, 6).toString();
+                                DSTable.getValueAt(row, 5).toString();
 
                         int modelRow =
                                 DSTable.convertRowIndexToModel(row);
 
                         showInvoiceDialog(
                                 maHD,
-                                tenKH,
-                                sdt,
-                                ngay,
+                                maKH,
                                 maNV,
+                                ngay,
                                 tongTien,
                                 trangThai,
                                 modelRow
@@ -455,10 +449,9 @@ public class HoaDonManagerPanel extends JPanel {
 
     private void showInvoiceDialog(
             String maHD,
-            String tenKH,
-            String sdt,
-            String ngay,
+            String maKH,
             String maNV,
+            String ngay,
             String tongTien,
             String trangThai,
             int modelRow
@@ -505,10 +498,9 @@ public class HoaDonManagerPanel extends JPanel {
 
         area.setText(
                 "Mã hóa đơn: " + maHD +
-                "\nKhách hàng: " + tenKH +
-                "\nSĐT: " + sdt +
-                "\nNgày lập: " + ngay +
+                "\nKhách hàng: " + maKH +
                 "\nNhân viên: " + maNV +
+                "\nNgày lập: " + ngay +
                 "\nTổng tiền: " + tongTien +
                 "\nTrạng thái: " + trangThai
         );
@@ -666,7 +658,7 @@ public class HoaDonManagerPanel extends JPanel {
 
         header.setPreferredSize(new Dimension(0, 40));
 
-        table.getColumnModel().getColumn(7)
+        table.getColumnModel().getColumn(6)
                 .setCellRenderer(
                         new DefaultTableCellRenderer() {
 
@@ -688,7 +680,7 @@ public class HoaDonManagerPanel extends JPanel {
                         }
                 );
 
-        table.getColumnModel().getColumn(6)
+        table.getColumnModel().getColumn(5)
                 .setCellRenderer(
                         new DefaultTableCellRenderer() {
 
