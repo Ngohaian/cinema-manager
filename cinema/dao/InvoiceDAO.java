@@ -388,4 +388,158 @@ public class InvoiceDAO {
             return false;
         }
     }
+    // ================= DOANH THU HÔM NAY =================
+
+    public double getTodayRevenue() {
+
+        String sql = """
+            SELECT IFNULL(SUM(totalAmount), 0) AS revenue
+            FROM Invoice
+            WHERE DATE(invoiceDate) = CURDATE()
+            AND status = 'Đã thanh toán'
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()
+        ) {
+
+            if (rs.next()) {
+                return rs.getDouble("revenue");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    // ================= TỔNG VÉ BÁN HÔM NAY =================
+
+    public int getTodayTicketSold() {
+
+        String sql = """
+            SELECT COUNT(*) AS total
+            FROM Ticket t
+            JOIN Invoice i
+                ON t.invoiceId = i.invoiceId
+            WHERE DATE(i.invoiceDate) = CURDATE()
+            AND t.status IN ('Sold', 'Used')
+            AND i.status = 'Đã thanh toán'
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()
+        ) {
+
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    // ================= DOANH THU THEO NGÀY =================
+
+    public double getRevenueByDay(String date) {
+
+        String sql = """
+            SELECT IFNULL(SUM(totalAmount), 0) AS revenue
+            FROM Invoice
+            WHERE DATE(invoiceDate) = ?
+            AND status = 'Đã thanh toán'
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+
+            ps.setString(1, date);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getDouble("revenue");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    // ================= DOANH THU THEO THÁNG =================
+
+    public double getRevenueByMonth(int month, int year) {
+
+        String sql = """
+            SELECT IFNULL(SUM(totalAmount), 0) AS revenue
+            FROM Invoice
+            WHERE MONTH(invoiceDate) = ?
+            AND YEAR(invoiceDate) = ?
+            AND status = 'Đã thanh toán'
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+
+            ps.setInt(1, month);
+            ps.setInt(2, year);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getDouble("revenue");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    // ================= DOANH THU THEO NĂM =================
+
+    public double getRevenueByYear(int year) {
+
+        String sql = """
+            SELECT IFNULL(SUM(totalAmount), 0) AS revenue
+            FROM Invoice
+            WHERE YEAR(invoiceDate) = ?
+            AND status = 'Đã thanh toán'
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+
+            ps.setInt(1, year);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getDouble("revenue");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
 }

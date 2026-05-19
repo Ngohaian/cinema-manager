@@ -11,7 +11,7 @@ public class Invoice {
     private String employeeId;
     private LocalDateTime invoiceDate;
     private double totalAmount;
-
+    private String status;
     private List<Ticket> tickets;
 
     public Invoice() {
@@ -25,6 +25,7 @@ public class Invoice {
         this.invoiceDate = invoiceDate;
         this.totalAmount = totalAmount;
         this.tickets = new ArrayList<>();
+        this.status = "Đã thanh toán";
     }
 
     public double calculateTotalAmount() {
@@ -56,10 +57,6 @@ public class Invoice {
         return totalAmount;
     }
 
-    public void setTotalAmount(double totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
     public List<Ticket> getTickets() {
         return tickets;
     }
@@ -89,8 +86,7 @@ public class Invoice {
     public void setStatus(String status) {
         this.status = status;
     }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public String getStatus(){
+        return this.status;
     }
 }
