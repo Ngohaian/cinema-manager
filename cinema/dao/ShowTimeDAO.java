@@ -668,6 +668,9 @@ public class ShowTimeDAO {
     }
 
 
+
+    //================= THỐNG KÊ - DÀNH CHO ThongKePanel =================
+
     public Object[][] getCustomerByTimeSlotThisMonth() {
         String sql =
                 "SELECT " +
@@ -712,14 +715,20 @@ public class ShowTimeDAO {
 
         return list.toArray(new Object[0][]);
     }
-    public List<Seat> getSeatStatusByShowtimeId(String id){
-        String sql = "Select * from ticket t join seat s on t.seatId = s.seatId where t.showtimeId = ?";
+
+    //================= GHẾ / SUẤT CHIẾU - DÀNH CHO MÀN ĐẶT VÉ =================
+
+    public List<Seat> getSeatStatusByShowtimeId(String id) {
+        String sql = "SELECT * FROM Ticket t JOIN Seat s ON t.seatId = s.seatId WHERE t.showtimeId = ?";
         List<Seat> list = new ArrayList<>();
-        try(Connection conn = DBConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);){
-                ps.setString(1, id);
-                ResultSet rs = ps.executeQuery();
-                while(rs.next()){
+
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
                     Seat s = new Seat();
                     s.setRowIndex(rs.getInt("rowIndex"));
                     s.setColIndex(rs.getInt("colIndex"));
@@ -728,18 +737,23 @@ public class ShowTimeDAO {
                     s.setActive(rs.getBoolean("active"));
                     list.add(s);
                 }
-                
             }
-        catch(SQLException ex){
-            System.out.print("Co loi" + ex.getMessage());
+
+        } catch (Exception ex) {
+            System.out.print("Co loi: " + ex.getMessage());
         }
+
         return list;
     }
-  public ShowTime getShowtimeById(String showtimeId){
+
+    public ShowTime getShowtimeById(String showtimeId) {
         String sql = "SELECT * FROM Showtime WHERE showtimeId = ?";
+
         try (Connection conn = getConn();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, showtimeId);
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String movieId = rs.getString("movieId");
@@ -767,11 +781,171 @@ public class ShowTimeDAO {
                     return s;
                 }
             }
-        } catch(Exception ex){
+
+        } catch (Exception ex) {
             return null;
         }
+
         return null;
     }
+
+    //================= LỊCH CHIẾU - DÀNH CHO LichChieuPanel =================
+
+    public List<LocalDate> getAvailableScheduleDates() {
+        List<LocalDate> list = new ArrayList<>();
+
+        String sql =
+                "SELECT DISTINCT DATE(startTime) AS showDate " +
+                "FROM Showtime " +
+                "WHERE active = 1 AND startTime >= NOW() " +
+                "ORDER BY showDate " +
+                "LIMIT 7";
+
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(rs.getDate("showDate").toLocalDate());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public List<LichChieuItem> getLichChieuByDate(LocalDate date) {
+        List<LichChieuItem> list = new ArrayList<>();
+
+        String sql =
+                "SELECT " +
+                "   s.showtimeId, s.startTime, s.endTime, s.active, " +
+                "   m.movieId, m.title, m.duration, m.poster, " +
+                "   g.genreName, " +
+                "   r.roomId, r.name AS roomName, r.type AS roomType, r.capacity, " +
+                "   COALESCE(SUM(CASE WHEN t.status IN ('Sold', 'Used') THEN 1 ELSE 0 END), 0) AS soldSeats " +
+                "FROM Showtime s " +
+                "JOIN Movie m ON s.movieId = m.movieId " +
+                "LEFT JOIN Genre g ON m.genreId = g.genreId " +
+                "JOIN Room r ON s.roomId = r.roomId " +
+                "LEFT JOIN Ticket t ON s.showtimeId = t.showtimeId " +
+                "WHERE s.active = 1 " +
+                "  AND m.active = 1 " +
+                "  AND DATE(s.startTime) = ? " +
+                "  AND s.startTime >= NOW() " +
+                "GROUP BY " +
+                "   s.showtimeId, s.startTime, s.endTime, s.active, " +
+                "   m.movieId, m.title, m.duration, m.poster, " +
+                "   g.genreName, r.roomId, r.name, r.type, r.capacity " +
+                "ORDER BY m.title, r.type, s.startTime";
+
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setDate(1, java.sql.Date.valueOf(date));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new LichChieuItem(
+                            rs.getString("showtimeId"),
+                            rs.getString("movieId"),
+                            rs.getString("title"),
+                            rs.getInt("duration"),
+                            rs.getString("poster"),
+                            rs.getString("genreName"),
+                            rs.getString("roomId"),
+                            rs.getString("roomName"),
+                            rs.getString("roomType"),
+                            rs.getTimestamp("startTime").toLocalDateTime(),
+                            rs.getTimestamp("endTime").toLocalDateTime(),
+                            rs.getInt("capacity"),
+                            rs.getInt("soldSeats")
+                    ));
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public static class LichChieuItem {
+        private String showtimeId;
+        private String movieId;
+        private String movieTitle;
+        private int duration;
+        private String poster;
+        private String genreName;
+        private String roomId;
+        private String roomName;
+        private String roomType;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private int capacity;
+        private int soldSeats;
+
+        public LichChieuItem(String showtimeId,
+                             String movieId,
+                             String movieTitle,
+                             int duration,
+                             String poster,
+                             String genreName,
+                             String roomId,
+                             String roomName,
+                             String roomType,
+                             LocalDateTime startTime,
+                             LocalDateTime endTime,
+                             int capacity,
+                             int soldSeats) {
+            this.showtimeId = showtimeId;
+            this.movieId = movieId;
+            this.movieTitle = movieTitle;
+            this.duration = duration;
+            this.poster = poster;
+            this.genreName = genreName;
+            this.roomId = roomId;
+            this.roomName = roomName;
+            this.roomType = roomType;
+            this.startTime = startTime;
+            this.endTime = endTime;
+            this.capacity = capacity;
+            this.soldSeats = soldSeats;
+        }
+
+        public String getShowtimeId() { return showtimeId; }
+        public String getMovieId() { return movieId; }
+        public String getMovieTitle() { return movieTitle; }
+        public int getDuration() { return duration; }
+        public String getPoster() { return poster; }
+        public String getGenreName() { return genreName; }
+        public String getRoomId() { return roomId; }
+        public String getRoomName() { return roomName; }
+        public String getRoomType() { return roomType; }
+        public LocalDateTime getStartTime() { return startTime; }
+        public LocalDateTime getEndTime() { return endTime; }
+        public int getCapacity() { return capacity; }
+        public int getSoldSeats() { return soldSeats; }
+
+        public boolean isSoldOut() {
+            return capacity > 0 && soldSeats >= capacity;
+        }
+
+        public boolean isFastSelling() {
+            if (capacity <= 0) return false;
+            int remainingSeats = capacity - soldSeats;
+            return remainingSeats > 0 && remainingSeats <= capacity * 0.15;
+        }
+
+        public String getFormatText() {
+            String type = roomType == null ? "2D" : roomType;
+            return type + " - Phụ đề tiếng Việt";
+        }
+    }
+
     public static class ShowtimeView {
         private String showtimeId;
         private String movieId;
