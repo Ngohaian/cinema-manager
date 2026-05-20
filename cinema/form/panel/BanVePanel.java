@@ -716,7 +716,11 @@ public class BanVePanel extends javax.swing.JPanel {
                     invoiceDao.insertTicket(t);
                 }
                 xuatVeRaFilePDF(maHD, tenPhim, ngayLapStr, ten, sdt, tableModel, totalInvoiceAmountFinal, discountRef[0], totalAfterRef[0] );
+                
                 ShowPanel("ChonPhim");
+                currentStep=0;
+                updateNavigation();
+                
             }
         }
         };
