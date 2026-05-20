@@ -362,7 +362,7 @@ public class ShowTimeDAO {
         for (String movieId : movieIds) {
             Movie m = movieDAO.getById(movieId);
 
-            if (m != null && m.getActive()==MovieStatus.ACTIVE) {
+            if (m != null && m.getActive() == MovieStatus.ACTIVE) {
                 selectedMovies.add(m);
             }
         }
@@ -380,52 +380,73 @@ public class ShowTimeDAO {
         selectedMovies.sort(Comparator.comparing(Movie::getTitle));
         rooms.sort(Comparator.comparing(Room::getRoomId));
 
-        int nextNumber = getNextShowtimeNumber();
         int movieIndex = 0;
         int bufferMinutes = 15;
 
-        for (LocalDate date = fromDate; !date.isAfter(toDate); date = date.plusDays(1)) {
+        /*
+         * Khi bấm Tạo, mã ST được lấy từ mã lớn nhất hiện có trong database.
+         * Ví dụ DB đang có ST005 thì danh sách nháp sẽ bắt đầu từ ST006.
+         * Đồng thời kiểm tra trùng phòng/thời gian với database và với chính danh sách nháp.
+         */
+        try (Connection conn = getConn()) {
+            int nextNumber = getNextShowtimeNumber(conn);
 
-            for (Room room : rooms) {
-                LocalDateTime cursor = LocalDateTime.of(date, openTime);
+            for (LocalDate date = fromDate; !date.isAfter(toDate); date = date.plusDays(1)) {
 
-                while (cursor.toLocalTime().isBefore(closeTime)) {
-                    Movie movie = selectedMovies.get(movieIndex % selectedMovies.size());
+                for (Room room : rooms) {
+                    LocalDateTime cursor = LocalDateTime.of(date, openTime);
 
-                    LocalDateTime start = cursor;
-                    LocalDateTime end = start.plusMinutes(movie.getDuration());
+                    while (cursor.toLocalTime().isBefore(closeTime)) {
+                        Movie movie = selectedMovies.get(movieIndex % selectedMovies.size());
 
-                    if (end.toLocalTime().isAfter(closeTime)) {
-                        break;
-                    }
+                        LocalDateTime start = cursor;
+                        LocalDateTime end = start.plusMinutes(movie.getDuration());
 
-                    if (!existsConflict(null, room.getRoomId(), start, end)
-                            && !hasDraftConflict(result, room.getRoomId(), start, end)) {
+                        if (end.toLocalTime().isAfter(closeTime)) {
+                            break;
+                        }
 
-                        boolean isGolden = isGoldenHour(start.toLocalTime(), goldenHour);
-                        double finalBasePrice = isGolden ? basePrice + 10000 : basePrice;
-
-                        String autoId = String.format("SC%03d", nextNumber++);
-
-                        result.add(new GeneratedShowtime(
-                                autoId,
-                                movie.getId(),
-                                movie.getTitle(),
+                        boolean conflictInDatabase = existsConflict(
+                                conn,
+                                null,
                                 room.getRoomId(),
-                                room.getName(),
                                 start,
-                                end,
-                                finalBasePrice,
-                                vipExtra,
-                                coupleExtra,
-                                true,
-                                isGolden
-                        ));
+                                end
+                        );
 
-                        cursor = end.plusMinutes(bufferMinutes);
-                        movieIndex++;
-                    } else {
-                        cursor = cursor.plusMinutes(15);
+                        boolean conflictInDraft = hasDraftConflict(
+                                result,
+                                room.getRoomId(),
+                                start,
+                                end
+                        );
+
+                        if (!conflictInDatabase && !conflictInDraft) {
+                            boolean isGolden = isGoldenHour(start.toLocalTime(), goldenHour);
+                            double finalBasePrice = isGolden ? basePrice + 10000 : basePrice;
+
+                            String autoId = String.format("ST%03d", nextNumber++);
+
+                            result.add(new GeneratedShowtime(
+                                    autoId,
+                                    movie.getId(),
+                                    movie.getTitle(),
+                                    room.getRoomId(),
+                                    room.getName(),
+                                    start,
+                                    end,
+                                    finalBasePrice,
+                                    vipExtra,
+                                    coupleExtra,
+                                    true,
+                                    isGolden
+                            ));
+
+                            cursor = end.plusMinutes(bufferMinutes);
+                            movieIndex++;
+                        } else {
+                            cursor = cursor.plusMinutes(15);
+                        }
                     }
                 }
             }
@@ -433,6 +454,8 @@ public class ShowTimeDAO {
 
         return result;
     }
+
+    
 
     public int insertGeneratedShowtimes(List<GeneratedShowtime> list) throws Exception {
         if (list == null || list.isEmpty()) {
@@ -451,7 +474,7 @@ public class ShowTimeDAO {
          * Không gọi existsConflict()/existsById() bản mở connection mới trong transaction này.
          * Tất cả kiểm tra trùng và insert phải dùng chung 1 connection để tránh lỗi:
          * - kiểm tra sai dữ liệu trong lúc đang lưu,
-         * - sinh trùng mã SC,
+         * - sinh trùng mã ST,
          * - hoặc nhìn UI báo lưu nhưng DB không có dòng mới.
          */
         try (Connection conn = getConn()) {
@@ -470,11 +493,11 @@ public class ShowTimeDAO {
                     String showtimeId = s.getShowtimeId();
 
                     if (showtimeId == null || showtimeId.trim().isEmpty()) {
-                        showtimeId = String.format("SC%03d", nextNumber++);
+                        showtimeId = String.format("ST%03d", nextNumber++);
                     }
 
                     while (existsById(conn, showtimeId)) {
-                        showtimeId = String.format("SC%03d", nextNumber++);
+                        showtimeId = String.format("ST%03d", nextNumber++);
                     }
 
                     ps.setString(1, showtimeId);
@@ -565,7 +588,7 @@ public class ShowTimeDAO {
     private int getNextShowtimeNumber(Connection conn) throws Exception {
         String sql =
                 "SELECT showtimeId FROM Showtime " +
-                "WHERE showtimeId LIKE 'SC%' " +
+                "WHERE showtimeId LIKE 'ST%' " +
                 "ORDER BY CAST(SUBSTRING(showtimeId, 3) AS UNSIGNED) DESC " +
                 "LIMIT 1";
 
@@ -638,7 +661,7 @@ public class ShowTimeDAO {
     private int getNextShowtimeNumber() throws Exception {
         String sql =
                 "SELECT showtimeId FROM Showtime " +
-                "WHERE showtimeId LIKE 'SC%' " +
+                "WHERE showtimeId LIKE 'ST%' " +
                 "ORDER BY CAST(SUBSTRING(showtimeId, 3) AS UNSIGNED) DESC " +
                 "LIMIT 1";
 
@@ -662,7 +685,7 @@ public class ShowTimeDAO {
     }
 
     private String generateNextShowtimeId() throws Exception {
-        return String.format("SC%03d", getNextShowtimeNumber());
+        return String.format("ST%03d", getNextShowtimeNumber());
     }
 
     private ShowtimeView mapView(ResultSet rs) throws SQLException {

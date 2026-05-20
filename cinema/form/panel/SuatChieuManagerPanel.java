@@ -233,7 +233,7 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
         panel.setPreferredSize(new Dimension(1000, 500));
 
         String[] columns = {
-                "Mã SC",
+                "Mã ST",
                 "Phim",
                 "Phòng",
                 "Ngày chiếu",
@@ -599,7 +599,7 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
             lblRangeInfo.setFont(new Font("Segoe UI", Font.BOLD, 16));
             lblRangeInfo.setForeground(Color.BLACK);
 
-            JLabel note = new JLabel("Khung thời gian sẽ thay đổi theo Từ ngày - Đến ngày. Mã SC tự tăng khi bấm Tạo và Lưu.");
+            JLabel note = new JLabel("Khung thời gian sẽ thay đổi theo Từ ngày - Đến ngày. Mã ST tự tăng khi bấm Tạo và Lưu.");
             note.setFont(new Font("Segoe UI", Font.PLAIN, 13));
             note.setForeground(Color.GRAY);
 
@@ -935,6 +935,8 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
 
         private void createDraftSchedule() {
             try {
+                draftList.clear();
+
                 List<String> selectedMovieIds = new ArrayList<>();
 
                 for (MovieCheckBoxItem item : movieCheckBoxItems) {
@@ -979,7 +981,7 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
                 renderDraftCalendar();
 
                 JOptionPane.showMessageDialog(this,
-                        "Đã tạo " + draftList.size() + " suất chiếu dự kiến.\nMã SC đã được sinh tự động.");
+                        "Đã tạo " + draftList.size() + " suất chiếu dự kiến.\nMã ST đã được sinh tự động.");
 
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this,
@@ -998,6 +1000,7 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
 
                 int count = showTimeDAO.insertGeneratedShowtimes(draftList);
 
+                draftList.clear();
                 saved = true;
 
                 JOptionPane.showMessageDialog(this,
@@ -1600,7 +1603,7 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
         }
 
         private String generateShowtimeId() {
-            return "SC" + System.currentTimeMillis() % 100000;
+            return "ST" + System.currentTimeMillis() % 100000;
         }
 
         private boolean validateForm() {
