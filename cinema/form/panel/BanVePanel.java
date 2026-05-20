@@ -78,6 +78,41 @@ public class BanVePanel extends javax.swing.JPanel {
         this.movies = movieDao.GetAvailableMovies();
         addMovies(this.movies);
     }
+
+    public void openSeatBooking(ShowTime selectedShowTime) {
+        if (selectedShowTime == null) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy suất chiếu!");
+            return;
+        }
+
+        Movie selectedMovie = selectedShowTime.getMovie();
+        if (selectedMovie == null || selectedShowTime.getRoom() == null) {
+            JOptionPane.showMessageDialog(this, "Dữ liệu phim hoặc phòng chiếu không hợp lệ!");
+            return;
+        }
+
+        String maPhong = selectedShowTime.getRoom().getRoomId();
+        String maSuatChieu = selectedShowTime.getShowtimeId();
+
+        SoDoGhePanel.removeAll();
+        SoDoGhePanel.setLayout(new java.awt.BorderLayout());
+
+        seatMap.setSelectMode(true);
+        JPanel seatBox = seatMap.createSeatMapBox();
+        SoDoGhePanel.add(seatBox, java.awt.BorderLayout.CENTER);
+        SoDoGhePanel.revalidate();
+        SoDoGhePanel.repaint();
+
+        List<cinema.models.Seat> bookedSeats = showtimeDao.getSeatStatusByShowtimeId(maSuatChieu);
+        seatMap.loadSeatMapForSelling(maPhong, bookedSeats);
+
+        currentStep = 2;
+        updateNavigation();
+        ShowPanel("ChonGhe");
+
+        seatMap.setOnSeatClickAction(() -> updateSummaryInfo(selectedShowTime));
+        setupSummaryPanel(BookingSummaryPanel, selectedMovie, selectedShowTime);
+    }
     private javax.swing.JPanel createMovieCard(Movie m) {
         javax.swing.JPanel card = new javax.swing.JPanel();
         card.setLayout(new java.awt.BorderLayout());
@@ -467,7 +502,9 @@ public class BanVePanel extends javax.swing.JPanel {
                     ticketNumber++;
                     dsticket.add(t);
                 }
-                renderHoaDon(maHD, currentEmployee.getId(), currentEmployee.getName(), selectedMovie.getTitle(), LocalDateTime.now(), dsticket);
+                String maNV = currentEmployee != null ? currentEmployee.getId() : "EMP002";
+                String tenNV = currentEmployee != null ? currentEmployee.getName() : "Tran Thi Thu";
+                renderHoaDon(maHD, maNV, tenNV, selectedMovie.getTitle(), LocalDateTime.now(), dsticket);
             }
         });
 

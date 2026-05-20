@@ -469,14 +469,6 @@ public class ShowTimeDAO {
                 "INSERT INTO Showtime(showtimeId, movieId, roomId, startTime, endTime, basePrice, vipExtra, coupleExtra, active) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        /*
-         * LƯU Ý:
-         * Không gọi existsConflict()/existsById() bản mở connection mới trong transaction này.
-         * Tất cả kiểm tra trùng và insert phải dùng chung 1 connection để tránh lỗi:
-         * - kiểm tra sai dữ liệu trong lúc đang lưu,
-         * - sinh trùng mã ST,
-         * - hoặc nhìn UI báo lưu nhưng DB không có dòng mới.
-         */
         try (Connection conn = getConn()) {
             conn.setAutoCommit(false);
 
@@ -989,8 +981,10 @@ public class ShowTimeDAO {
         }
 
         public String getFormatText() {
-            String type = roomType == null ? "2D" : roomType;
-            return type + " - Phụ đề tiếng Việt";
+            if (roomType == null || roomType.trim().isEmpty()) {
+                return "Thường";
+            }
+            return roomType.trim().toUpperCase();
         }
     }
 
