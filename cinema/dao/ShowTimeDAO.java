@@ -2,8 +2,10 @@ package cinema.dao;
 
 import cinema.DBConnection;
 import cinema.enums.MovieStatus;
+import cinema.enums.SeatType;
 import cinema.models.Movie;
 import cinema.models.Room;
+import cinema.models.Seat;
 import cinema.models.ShowTime;
 
 import java.sql.*;
@@ -710,7 +712,66 @@ public class ShowTimeDAO {
 
         return list.toArray(new Object[0][]);
     }
+    public List<Seat> getSeatStatusByShowtimeId(String id){
+        String sql = "Select * from ticket t join seat s on t.seatId = s.seatId where t.showtimeId = ?";
+        List<Seat> list = new ArrayList<>();
+        try(Connection conn = DBConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);){
+                ps.setString(1, id);
+                ResultSet rs = ps.executeQuery();
+                while(rs.next()){
+                    Seat s = new Seat();
+                    s.setRowIndex(rs.getInt("rowIndex"));
+                    s.setColIndex(rs.getInt("colIndex"));
+                    s.setSeatLabel(rs.getString("seatLabel"));
+                    s.setSeatType(SeatType.valueOf(rs.getString("seatType")));
+                    s.setActive(rs.getBoolean("active"));
+                    list.add(s);
+                }
+                
+            }
+        catch(SQLException ex){
+            System.out.print("Co loi" + ex.getMessage());
+        }
+        return list;
+    }
+  public ShowTime getShowtimeById(String showtimeId){
+        String sql = "SELECT * FROM Showtime WHERE showtimeId = ?";
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, showtimeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String movieId = rs.getString("movieId");
+                    String roomId = rs.getString("roomId");
 
+                    Movie movie = movieDAO.getById(movieId);
+                    Room room = roomDAO.getById(roomId);
+
+                    if (movie == null || room == null) {
+                        continue;
+                    }
+
+                    LocalDateTime start = rs.getTimestamp("startTime").toLocalDateTime();
+
+                    ShowTime s = new ShowTime(
+                            rs.getString("showtimeId"),
+                            movie,
+                            room,
+                            start,
+                            rs.getDouble("basePrice")
+                    );
+                    s.setVipExtra(rs.getDouble("vipExtra"));
+                    s.setCoupleExtra(rs.getDouble("coupleExtra"));
+                    s.setActive(rs.getBoolean("active"));
+                    return s;
+                }
+            }
+        } catch(Exception ex){
+            return null;
+        }
+        return null;
+    }
     public static class ShowtimeView {
         private String showtimeId;
         private String movieId;
