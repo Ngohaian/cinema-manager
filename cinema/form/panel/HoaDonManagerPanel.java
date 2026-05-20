@@ -424,23 +424,6 @@ public class HoaDonManagerPanel extends JPanel {
         return new Color(220, 50, 50);
     }
 
-    private JLabel boldLabel(String text) {
-        JLabel l = new JLabel("<html><b>" + text + "</b></html>");
-        l.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        return l;
-    }
-
-    private JLabel plainLabel(String text) {
-        JLabel l = new JLabel(text != null ? text : "");
-        l.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        return l;
-    }
-
-    private double parseTien(String s) {
-        try { return Double.parseDouble(s.replaceAll("[^0-9]", "")); }
-        catch (Exception e) { return 0; }
-    }
-
     // ===================== INPUT STYLE =====================
 
     private void styleInput(JTextField txt, String placeholder) {

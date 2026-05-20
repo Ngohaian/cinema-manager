@@ -18,7 +18,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -457,7 +456,7 @@ public class LichChieuPanel extends javax.swing.JPanel {
             java.net.URL url;
 
             if (posterPath.startsWith("http://") || posterPath.startsWith("https://")) {
-                url = new java.net.URL(posterPath);
+                url = java.net.URI.create(posterPath).toURL();
             } else {
                 url = getClass().getResource(posterPath);
             }
@@ -495,7 +494,7 @@ public class LichChieuPanel extends javax.swing.JPanel {
         return new ImageIcon(img);
     }
 
-    @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 

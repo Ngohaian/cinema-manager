@@ -1,6 +1,5 @@
 package cinema.form;
 import cinema.form.panel.*;
-import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;

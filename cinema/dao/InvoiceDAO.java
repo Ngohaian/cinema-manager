@@ -4,7 +4,6 @@ import cinema.DBConnection;
 import cinema.models.Invoice;
 import cinema.models.Seat;
 import cinema.models.Ticket;
-import cinema.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;

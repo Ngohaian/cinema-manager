@@ -371,7 +371,6 @@ public class NhanVienManagerPanel extends javax.swing.JPanel {
         return tf;
     }
 
-    @SuppressWarnings("unchecked")
     private void initComponents() {
         jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -397,10 +396,10 @@ public class NhanVienManagerPanel extends javax.swing.JPanel {
             new Object[][]{},
             new String[]{"Mã NV", "Tên NV", "Chức vụ", "Email", "SĐT", "Mức lương", "Ngày vào làm", "Trạng thái"}
         ) {
-            Class[] types = {String.class, String.class, String.class,
+            Class<?>[] types = {String.class, String.class, String.class,
                 String.class, String.class, String.class, Object.class, Boolean.class};
             boolean[] canEdit = {false, false, false, false, false, false, false, false};
-            public Class getColumnClass(int i) { return types[i]; }
+            public Class<?> getColumnClass(int i) { return types[i]; }
             public boolean isCellEditable(int r, int c) { return canEdit[c]; }
         });
         jTable1.setShowGrid(false);

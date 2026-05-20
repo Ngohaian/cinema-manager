@@ -5,7 +5,6 @@ import java.awt.*;
 import java.util.List;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
@@ -13,13 +12,12 @@ import cinema.dao.EmployeeDAO;
 import cinema.dao.InvoiceDAO;
 import cinema.dao.MovieDAO;
 import cinema.dao.ShowTimeDAO;
-import cinema.models.ShowTime;
 
 public class ThongKePanel extends javax.swing.JPanel {
     private DefaultCategoryDataset dataDoanhThu, dataNhanVien;
     private DefaultCategoryDataset dataNgay, dataThang, dataNam;
     private org.jfree.chart.plot.CategoryPlot globalPlot;
-    private DefaultPieDataset dataSuatChieu;
+    private DefaultPieDataset<String> dataSuatChieu;
     private MovieDAO moviedao = new MovieDAO();
     private InvoiceDAO invoicedao = new InvoiceDAO();
     private EmployeeDAO employeedao = new EmployeeDAO();
@@ -43,7 +41,7 @@ public class ThongKePanel extends javax.swing.JPanel {
             dataNhanVien.addValue(doanhThu, "Doanh thu", id);
         }
 
-        dataSuatChieu = new DefaultPieDataset();
+        dataSuatChieu = new DefaultPieDataset<String>();
         dataSuatChieu.setValue("08:00 - 11:59", 0);
         dataSuatChieu.setValue("12:00 - 15:59", 0);
         dataSuatChieu.setValue("16:00 - 18:00", 0);
@@ -160,7 +158,7 @@ public class ThongKePanel extends javax.swing.JPanel {
         pieChart.setBackgroundPaint(Color.WHITE);
         pieChart.getTitle().setFont(new Font("Segoe UI", Font.BOLD, 18));
         pieChart.getTitle().setPadding(10, 0, 20, 0);
-        org.jfree.chart.plot.PiePlot piePlot = (org.jfree.chart.plot.PiePlot) pieChart.getPlot();
+        org.jfree.chart.plot.PiePlot<?> piePlot = (org.jfree.chart.plot.PiePlot<?>) pieChart.getPlot();
         piePlot.setBackgroundPaint(Color.WHITE);
         piePlot.setOutlineVisible(false);
         piePlot.setShadowPaint(null);
@@ -262,7 +260,6 @@ public class ThongKePanel extends javax.swing.JPanel {
         listPanel.setOpaque(false);
         Object[][] dsTopPhim = moviedao.getTop5Movie(); 
 
-        java.text.DecimalFormat df = new java.text.DecimalFormat("#,###đ");
         for (int i = 0; i < dsTopPhim.length; i++) {
             String ten   = (String) dsTopPhim[i][0];
             long tien  = (long) dsTopPhim[i][1];
@@ -321,7 +318,7 @@ public class ThongKePanel extends javax.swing.JPanel {
 
         return item;
     }
-    @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 

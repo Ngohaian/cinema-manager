@@ -3,12 +3,10 @@ import cinema.dao.MovieDAO;
 import cinema.enums.GenreType;
 import static cinema.enums.GenreType.getNameGenreType;
 import cinema.enums.MovieStatus;
-import static cinema.enums.MovieStatus.fromInt;
 import static cinema.enums.MovieStatus.getNameMovieStatus;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import cinema.models.Movie;
-import java.util.HashSet;
 
 public class PhimManagerPanel extends javax.swing.JPanel {
     private MovieDAO movieDao = new MovieDAO();
@@ -112,13 +110,13 @@ public class PhimManagerPanel extends javax.swing.JPanel {
             }
         });
     }
-    private javax.swing.JComboBox setCBGenre(javax.swing.JComboBox ComboBox){
+    private javax.swing.JComboBox<String> setCBGenre(javax.swing.JComboBox<String> ComboBox){
         for(GenreType g : GenreType.values()){
             ComboBox.addItem(getNameGenreType(g));
         }
         return ComboBox;
     }
-    private javax.swing.JComboBox setCBStatus(javax.swing.JComboBox ComboBox){
+    private javax.swing.JComboBox<String> setCBStatus(javax.swing.JComboBox<String> ComboBox){
         for(MovieStatus g : MovieStatus.values()){
             ComboBox.addItem(getNameMovieStatus(g));
         }
@@ -166,7 +164,7 @@ public class PhimManagerPanel extends javax.swing.JPanel {
         cbThemTrangThai.setSelectedIndex(0);
         cbThemTheLoai.setSelectedIndex(0);
     }
-    @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 
@@ -220,7 +218,7 @@ public class PhimManagerPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         DSPhimTable = new javax.swing.JTable() {
             @Override
-            public Class getColumnClass(int columnIndex) {
+            public Class<?> getColumnClass(int columnIndex) {
                 // Cột 0 và 6 là Icon
                 if (columnIndex == 0 || columnIndex == 6) {
                     return javax.swing.Icon.class;
@@ -657,14 +655,14 @@ public class PhimManagerPanel extends javax.swing.JPanel {
                 "Ảnh", "Mã phim", "Tiêu đề", "Thời lượng", "Thể loại", "Trạng thái", "Thao tác"
             }
         ) {
-            Class[] types = new Class [] {
+            Class<?>[] types = new Class [] {
                 java.lang.Object.class, java.lang.String.class, java.lang.String.class, java.lang.Object.class, java.lang.String.class, java.lang.String.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
                 false, false, false, false, false, false, false
             };
 
-            public Class getColumnClass(int columnIndex) {
+            public Class<?> getColumnClass(int columnIndex) {
                 return types [columnIndex];
             }
 
@@ -713,11 +711,6 @@ public class PhimManagerPanel extends javax.swing.JPanel {
                 btnThemPhimMouseClicked(evt);
             }
         });
-        btnThemPhim.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnThemPhimActionPerformed(evt);
-            }
-        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -748,10 +741,7 @@ public class PhimManagerPanel extends javax.swing.JPanel {
                 .addContainerGap(50, Short.MAX_VALUE))
         );
     }// </editor-fold>                        
-
-    private void btnThemPhimActionPerformed(java.awt.event.ActionEvent evt) {                                            
-        // TODO add your handling code here:
-    }                                           
+                                         
 
     private void btnThemPhimMouseClicked(java.awt.event.MouseEvent evt) {                                         
 

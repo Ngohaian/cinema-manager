@@ -355,7 +355,6 @@ public class KhachHangManagerPanel extends javax.swing.JPanel {
         return tf;
     }
 
-    @SuppressWarnings("unchecked")
     private void initComponents() {
         jPanel2      = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -382,10 +381,10 @@ public class KhachHangManagerPanel extends javax.swing.JPanel {
             new String[]{"Mã KH", "Tên KH", "SĐT", "Email",
                          "Hạng thành viên", "Tổng chi tiêu", "Điểm tích lũy", "Trạng thái"}
         ) {
-            Class[] types = {String.class, String.class, String.class, String.class,
+            Class<?>[] types = {String.class, String.class, String.class, String.class,
                              String.class, String.class, String.class, Boolean.class};
             boolean[] canEdit = {false, false, false, false, false, false, false, false};
-            public Class getColumnClass(int i) { return types[i]; }
+            public Class<?> getColumnClass(int i) { return types[i]; }
             public boolean isCellEditable(int r, int c) { return canEdit[c]; }
         });
         jTable1.setShowGrid(false);

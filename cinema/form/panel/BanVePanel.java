@@ -26,7 +26,6 @@ import cinema.dao.CustomerDAO;
 import cinema.dao.InvoiceDAO;
 import cinema.dao.MovieDAO;
 import cinema.dao.ShowTimeDAO;
-import cinema.dao.CustomerDAO;
 import static cinema.enums.GenreType.getNameGenreType;
 
 import cinema.models.Customer;
@@ -612,7 +611,6 @@ public class BanVePanel extends javax.swing.JPanel {
         tblDetails.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
         tblDetails.setRowHeight(25);
         tblDetails.getTableHeader().setBackground(java.awt.Color.WHITE);
-        List<String> seatType = new ArrayList<>();
         for (Ticket ticket : dsVeFinal) {
             Seat ghe = ticket.getSeat();
             String tenGhe = (char) ('A' + ghe.getRowIndex()) + String.valueOf(ghe.getColIndex() + 1);
@@ -820,7 +818,7 @@ public class BanVePanel extends javax.swing.JPanel {
         c.setPadding(4);
         return c;
     }
-    @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 

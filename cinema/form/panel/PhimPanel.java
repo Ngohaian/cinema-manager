@@ -5,9 +5,7 @@ import cinema.enums.GenreType;
 import static cinema.enums.GenreType.getNameGenreType;
 import cinema.models.Movie;
 import cinema.enums.MovieStatus;
-import static cinema.enums.MovieStatus.fromInt;
 import static cinema.enums.MovieStatus.getNameMovieStatus;
-import java.awt.*;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
@@ -16,7 +14,7 @@ public class PhimPanel extends javax.swing.JPanel {
     MovieDAO movieDao;
     java.util.List<Movie> movies = new java.util.ArrayList<>(); 
     java.util.List<String> listGenre ;
-    private java.util.Map<Movie, JPanel> movieCardCache = new java.util.HashMap<>();
+    private java.util.Map<String, JPanel> movieCardCache = new java.util.HashMap<>();
     private java.util.Map<String, javax.swing.ImageIcon> iconCache = new java.util.HashMap<>();
     private javax.swing.Timer searchTimer;
     private java.util.function.Consumer<Movie> onBookTicket;
@@ -279,20 +277,20 @@ public class PhimPanel extends javax.swing.JPanel {
                 movieCard = movieCardCache.get(m.getId());
             } else {
                 movieCard = createMovieCard(m);
-                movieCardCache.put(m, movieCard);
+                movieCardCache.put(m.getId(), movieCard);
             }
             CardPhimPanel.add(movieCard);
     }
     CardPhimPanel.revalidate();
     CardPhimPanel.repaint();
     }    
-    private javax.swing.JComboBox setCBGenre(javax.swing.JComboBox ComboBox){
+    private javax.swing.JComboBox<String> setCBGenre(javax.swing.JComboBox<String> ComboBox){
         for(GenreType g : GenreType.values()){
             ComboBox.addItem(getNameGenreType(g));
         }
         return ComboBox;
     }
-    private javax.swing.JComboBox setCBStatus(javax.swing.JComboBox ComboBox){
+    private  javax.swing.JComboBox<String> setCBStatus (javax.swing.JComboBox<String> ComboBox){
         for(MovieStatus g : MovieStatus.values()){
             ComboBox.addItem(getNameMovieStatus(g));
         }
@@ -318,7 +316,7 @@ public class PhimPanel extends javax.swing.JPanel {
         java.util.List<Movie> filteredList = movieDao.searchMovies(searchTitle, statusIdx, genreIdx, maxDuration);
         return filteredList;
     }
-    @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 

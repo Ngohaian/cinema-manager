@@ -67,7 +67,6 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
         loadShowtimeData();
     }
 
-    @SuppressWarnings("unchecked")
     private void initComponents() {
         setBackground(BACKGROUND);
         setPreferredSize(new java.awt.Dimension(759, 779));
@@ -1360,11 +1359,9 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
         private JComboBox<String> cboActive;
 
         private boolean saved = false;
-        private String editingId;
 
         public ShowtimeFormDialog(Window owner, String title, String editingId) {
             super(owner, title, ModalityType.APPLICATION_MODAL);
-            this.editingId = editingId;
 
             buildFormUI();
             loadMovieCombobox();
