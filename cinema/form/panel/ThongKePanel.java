@@ -12,6 +12,8 @@ import org.jfree.data.general.DefaultPieDataset;
 import cinema.dao.EmployeeDAO;
 import cinema.dao.InvoiceDAO;
 import cinema.dao.MovieDAO;
+import cinema.dao.ShowTimeDAO;
+import cinema.models.ShowTime;
 
 public class ThongKePanel extends javax.swing.JPanel {
     private DefaultCategoryDataset dataDoanhThu, dataNhanVien;
@@ -21,6 +23,7 @@ public class ThongKePanel extends javax.swing.JPanel {
     private MovieDAO moviedao = new MovieDAO();
     private InvoiceDAO invoicedao = new InvoiceDAO();
     private EmployeeDAO employeedao = new EmployeeDAO();
+    private ShowTimeDAO showtimedao = new ShowTimeDAO();
     public ThongKePanel() {
         initComponents();
         loadData();
@@ -41,11 +44,18 @@ public class ThongKePanel extends javax.swing.JPanel {
         }
 
         dataSuatChieu = new DefaultPieDataset();
-        dataSuatChieu.setValue("08:00 - 11:59", 5);    
-        dataSuatChieu.setValue("12:00 - 15:59", 10);    
-        dataSuatChieu.setValue("16:00 - 18:00", 25);    
-        dataSuatChieu.setValue("19:00 - 22:59", 45);          
-        dataSuatChieu.setValue("23:00 - 07:59", 15);
+        dataSuatChieu.setValue("08:00 - 11:59", 0);
+        dataSuatChieu.setValue("12:00 - 15:59", 0);
+        dataSuatChieu.setValue("16:00 - 18:00", 0);
+        dataSuatChieu.setValue("19:00 - 22:59", 0);
+        dataSuatChieu.setValue("23:00 - 07:59", 0);
+
+        Object[][] dsKhachTheoKhungGio = showtimedao.getCustomerByTimeSlotThisMonth();
+        for (Object[] row : dsKhachTheoKhungGio) {
+            String khungGio = row[0].toString();
+            int soKhach = Integer.parseInt(row[1].toString());
+            dataSuatChieu.setValue(khungGio, soKhach);
+        }
         
         // ---- Doanh thu theo ngày (10 ngày gần nhất) ----
         dataNgay = new DefaultCategoryDataset();
