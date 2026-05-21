@@ -775,13 +775,13 @@ public class BanVePanel extends javax.swing.JPanel {
 
     private void xuatVeRaFilePDF(String maHD, String tenPhim, String ngayLap, String tenKH, String sdtKH, DefaultTableModel model, double tongTien, double giamGia, double tongThanhToan) {
         Document document = new Document(org.openpdf.text.PageSize.A5);
-        String filePath = "VeXemPhim_" + maHD + ".pdf";
+        String filePath = "HoaDon_" + maHD + ".pdf";
         
         try {
             PdfWriter.getInstance(document, new FileOutputStream(filePath));
             document.open();
 
-            Paragraph title = new Paragraph("VE XEM PHIM - BETA CINEMA");
+            Paragraph title = new Paragraph("HOA DON - BETA CINEMA");
             title.setAlignment(org.openpdf.text.Element.ALIGN_CENTER);
             title.setSpacingAfter(10);
             document.add(title);
