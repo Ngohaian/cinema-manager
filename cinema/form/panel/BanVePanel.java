@@ -590,26 +590,31 @@ public class BanVePanel extends javax.swing.JPanel {
         txtSdtKH.addActionListener(ev -> {
             String sdt = txtSdtKH.getText().trim();
             if (sdt.isEmpty()) return;
-                Customer found = customerDao.getCustomerBySDT(sdt);
-                if (found != null) {
-                    txtTenKH.setText(found.getName());
-                    txtTenKH.setEditable(false);
-                    txtTenKH.setBackground(new java.awt.Color(240, 240, 240));
+            Customer found = customerDao.getCustomerBySDT(sdt);
+            if (found != null) {
+                txtTenKH.setText(found.getName());
+                txtTenKH.setEditable(false);
+                txtTenKH.setBackground(new java.awt.Color(240, 240, 240));
+                if (!found.getName().equalsIgnoreCase("GUEST")) {
                     discountRef[0] = found.calculateDiscount(totalInvoiceAmountFinal);
                     totalAfterRef[0] = totalInvoiceAmountFinal - discountRef[0];
-                    lblSaleVal.setText(String.format("%,.0f VNĐ", discountRef[0]));
-                    lblTotalVal.setText(String.format("%,.0f VNĐ", totalAfterRef[0]));
                 } else {
-                    txtTenKH.setText("");
-                    txtTenKH.setEditable(true);
-                    txtTenKH.setBackground(java.awt.Color.WHITE);
-                    txtTenKH.requestFocus();
                     discountRef[0] = 0;
                     totalAfterRef[0] = totalInvoiceAmountFinal;
-                    lblSaleVal.setText("0 VNĐ");
-                    lblTotalVal.setText(String.format("%,.0f VNĐ", totalInvoiceAmountFinal));
                 }
-            });
+                lblSaleVal.setText(String.format("%,.0f VNĐ", discountRef[0]));
+                lblTotalVal.setText(String.format("%,.0f VNĐ", totalAfterRef[0]));
+            } else {
+                txtTenKH.setText("");
+                txtTenKH.setEditable(true);
+                txtTenKH.setBackground(java.awt.Color.WHITE);
+                txtTenKH.requestFocus();
+                discountRef[0] = 0;
+                totalAfterRef[0] = totalInvoiceAmountFinal;
+                lblSaleVal.setText("0 VNĐ");
+                lblTotalVal.setText(String.format("%,.0f VNĐ", totalInvoiceAmountFinal));
+            }
+        });
         txtTenKH.addActionListener(ev -> {
             String tenKH = txtTenKH.getText().trim();
             String sdt = txtSdtKH.getText().trim();
@@ -734,14 +739,21 @@ public class BanVePanel extends javax.swing.JPanel {
         java.awt.event.ActionListener paymentListener = new java.awt.event.ActionListener() {
         @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
+            discountRef[0] = 0;
+            totalAfterRef[0] = totalInvoiceAmountFinal;
+            
             String phuongThuc = (e.getSource() == btnTienMat) ? "Tiền mặt" : "Chuyển khoản";
             String ten = txtTenKH.getText().trim();
             String sdt = txtSdtKH.getText().trim();
             String customerId = "CUS006";
+            
             if (!sdt.isEmpty()) {
                 Customer found = customerDao.getCustomerBySDT(sdt);
-                if (found != null) {
+                if (found != null && !found.getName().equalsIgnoreCase("GUEST")) {
                     customerId = found.getId();
+                    discountRef[0] = found.calculateDiscount(totalInvoiceAmountFinal);
+                    totalAfterRef[0] = totalInvoiceAmountFinal - discountRef[0];
+
                 }
             }
             JOptionPane.showMessageDialog(HoaDonPanel,
@@ -752,6 +764,16 @@ public class BanVePanel extends javax.swing.JPanel {
                 for (Ticket t : dsVeFinal) {
                     invoiceDao.insertTicket(t);
                 }
+                // Cập nhật điểm và chi tiêu khách hàng
+            if (!sdt.isEmpty()) {
+                Customer found = customerDao.getCustomerBySDT(sdt);
+                if (found != null && !found.getName().equalsIgnoreCase("GUEST")) {
+                    double pointsUsed = discountRef[0] - (totalInvoiceAmountFinal * found.getType().getCashbackRate());
+                    if (pointsUsed > 0) found.usePoints(pointsUsed);
+                    found.makePurchase(totalAfterRef[0]);
+                    customerDao.updateCustomerLoyalty(found);
+                }
+            }
                 xuatVeRaFilePDF(maHD, tenPhim, ngayLapStr, ten, sdt, tableModel, totalInvoiceAmountFinal, discountRef[0], totalAfterRef[0] );
                 
                 ShowPanel("ChonPhim");

@@ -333,8 +333,18 @@ public class HoaDonManagerPanel extends JPanel {
 
         CustomerDAO customerdao = new CustomerDAO();
         Customer customer = customerdao.getCustomerById(maKH);
-        double discount = customer.calculateDiscount(finalTotal);
-        double totalAfter= finalTotal - discount;
+        // Lấy totalAmount thực tế đã lưu trong DB
+        double paidAmount = invoiceDAO.getAll().stream()
+                .filter(inv -> inv.getInvoiceId().equals(maHD))
+                .findFirst()
+                .map(inv -> inv.getTotalAmount())
+                .orElse(finalTotal);
+        double discount = 0;
+        double totalAfter = finalTotal;
+        if (customer != null && !customer.getName().equalsIgnoreCase("GUEST")) {
+            discount = finalTotal - paidAmount;
+            totalAfter = paidAmount;
+        }
         tc.gridy = 1;
         JLabel lblGiam = new JLabel("Giảm giá:   "+ String.format("%,.0f VNĐ", discount));
         lblGiam.setFont(new Font("Segoe UI", Font.PLAIN, 13));

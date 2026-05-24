@@ -183,10 +183,11 @@ public class CustomerDAO {
                 c.setEmail(rs.getString("CustomerEmail"));
                 String typeStr = rs.getString("CustomerType");
                 if (typeStr != null) {
-                    try {
-                        c.setType(Customer.CustomerType.valueOf(typeStr));
-                    } catch (IllegalArgumentException e) {
-                        c.setType(Customer.CustomerType.STANDARD);
+                    for (Customer.CustomerType t : Customer.CustomerType.values()) {
+                        if (t.getDisplayName().equalsIgnoreCase(typeStr)) {
+                            c.setType(t);
+                            break;
+                        }
                     }
                 }
                 c.setTotalSpent(rs.getDouble("totalSpent"));     
@@ -206,4 +207,58 @@ public class CustomerDAO {
         }
         return null;
     }
+
+    public Customer getCustomerById(String id) {
+    try {
+        Connection conn = DBConnection.getConnection();
+
+        String sql = "SELECT * FROM customer WHERE CustomerId = ?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, id);
+
+        ResultSet rs = ps.executeQuery();
+
+        if (rs.next()) {
+            Customer c = new Customer("", "", "");
+
+            c.setId(rs.getString("CustomerId"));
+            c.setName(rs.getString("CustomerName"));
+            c.setPhone(rs.getString("CustomerPhone"));
+            c.setEmail(rs.getString("CustomerEmail"));
+
+            c.setTotalSpent(rs.getDouble("totalSpent"));
+            c.setLoyaltyPoints(rs.getDouble("loyaltyPoints"));
+
+            String typeStr = rs.getString("CustomerType");
+
+            if (typeStr != null) {
+                for (Customer.CustomerType t : Customer.CustomerType.values()) {
+                    if (t.getDisplayName().equalsIgnoreCase(typeStr)) {
+                        c.setType(t);
+                        break;
+                    }
+                }
+            }
+
+            String statusStr = rs.getString("status");
+
+            if ("INACTIVE".equalsIgnoreCase(statusStr)) {
+                c.deactivate_Customer();
+            }
+
+            java.sql.Date createdDate = rs.getDate("createdDate");
+
+            if (createdDate != null) {
+                c.setCreatedDate(createdDate.toLocalDate());
+            }
+
+            return c;
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return null;
+}
 }
