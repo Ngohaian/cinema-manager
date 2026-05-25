@@ -35,26 +35,39 @@ public class PhimManagerPanel extends javax.swing.JPanel {
             return null; 
         }
     }
-    public void generateRowTable(Movie m){
-        var posterURL = getClass().getResource(m.getPoster());
+    public void generateRowTable(Movie m) {
         javax.swing.ImageIcon posterIcon = null;
-        var editIcon = getClass().getResource("/cinema/images/edit(black).png");
-        if (posterURL != null) {
-            posterIcon = scaleImage(posterURL, 30, 45); 
-        } else {
-            System.out.println("Không tìm thấy ảnh tại: " + m.getPoster());
-        }
         
+        String posterPath = m.getPoster();
+        if (posterPath != null && !posterPath.isEmpty()) {
+            java.io.File file = new java.io.File(posterPath);
+            if (file.exists()) {
+                // Đường dẫn tuyệt đối
+                java.awt.Image img = new javax.swing.ImageIcon(posterPath).getImage();
+                java.awt.Image scaled = img.getScaledInstance(30, 45, java.awt.Image.SCALE_SMOOTH);
+                posterIcon = new javax.swing.ImageIcon(scaled);
+            } else {
+                // Đường dẫn tương đối
+                var posterURL = getClass().getResource(posterPath);
+                if (posterURL != null) {
+                    posterIcon = scaleImage(posterURL, 30, 45);
+                } else {
+                    System.out.println("Không tìm thấy ảnh: " + posterPath);
+                }
+            }
+        }
+
+        var editIcon = getClass().getResource("/cinema/images/edit(black).png");
         String multiLineTitle = "<html><body style='width: 400px'>" + m.getTitle() + "</body></html>";
         var model = (javax.swing.table.DefaultTableModel) DSPhimTable.getModel();
-        model.addRow(new Object []{
-                posterIcon,    
-                m.getId(),
-                multiLineTitle,
-                m.getDuration(),
-                getNameGenreType(m.getGenre()),
-                getNameMovieStatus(m.getActive()),
-                editIcon != null ? new javax.swing.ImageIcon(editIcon) : null
+        model.addRow(new Object[]{
+            posterIcon,
+            m.getId(),
+            multiLineTitle,
+            m.getDuration(),
+            getNameGenreType(m.getGenre()),
+            getNameMovieStatus(m.getActive()),
+            editIcon != null ? new javax.swing.ImageIcon(editIcon) : null
         });
     }
     public void LoadTableMovie(java.util.List<Movie> ds){
@@ -751,6 +764,7 @@ public class PhimManagerPanel extends javax.swing.JPanel {
         ThemPhimDialog.setResizable(false);
         ThemPhimDialog.setLocationRelativeTo(null); 
         ThemPhimDialog.setVisible(true);
+        resetThemPhim();
     }                                        
 
     private void btnThemAnhMouseClicked(java.awt.event.MouseEvent evt) {                                        
@@ -792,18 +806,29 @@ public class PhimManagerPanel extends javax.swing.JPanel {
         String id= txtThemMaPhim.getText().trim();
         String tenPhim = txtThemTenPhim.getText().trim();       
         String urlAnh = txtURLThemAnh.getText().trim();
-        int statusIdx = cbTrangThai.getSelectedIndex()+1;
+        int statusIdx = cbThemTrangThai.getSelectedIndex() + 1;
         MovieStatus status = MovieStatus.fromInt(statusIdx);
-        int genreIdx = cbTheLoai.getSelectedIndex()+1;
+         int genreIdx = cbThemTheLoai.getSelectedIndex() + 1;
         if(tenPhim.equals("") || txtThemThoiLuong.getText().trim().equals("") || urlAnh.equals("")){
             javax.swing.JOptionPane.showMessageDialog(parentWindow, "Vui lòng nhập đầy đủ dữ liệu", "Thông báo", javax.swing.JOptionPane.WARNING_MESSAGE);
             return;
         }
         try{
-            int thoiLuong = Integer.parseInt(txtThemThoiLuong.getText());
-            if(thoiLuong <= 0){
-                javax.swing.JOptionPane.showMessageDialog(
-                parentWindow, "Thời lượng phải lớn hơn 0", "Thông báo", javax.swing.JOptionPane.WARNING_MESSAGE);
+            int thoiLuong;
+            try {
+                thoiLuong = Integer.parseInt(txtThemThoiLuong.getText().trim());
+            } catch (NumberFormatException ex) {
+                javax.swing.JOptionPane.showMessageDialog(parentWindow, 
+                    "Thời lượng phải là số nguyên!", "Thông báo", 
+                    javax.swing.JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (thoiLuong <= 0) {
+                javax.swing.JOptionPane.showMessageDialog(parentWindow, 
+                    "Thời lượng phải lớn hơn 0", "Thông báo", 
+                    javax.swing.JOptionPane.WARNING_MESSAGE);
+                return;
             }
             Movie m = new Movie(id,tenPhim, genreIdx, thoiLuong, status, urlAnh);
             boolean isSuccess = movieDao.InsertMovie(m);
