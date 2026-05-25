@@ -1621,7 +1621,14 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
 
             try {
                 LocalDateTime.parse(txtStartTime.getText().trim(), DATETIME_FORMAT);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this,
+                    "Giờ bắt đầu không đúng định dạng.\nNhập dạng: yyyy-MM-dd HH:mm\nVí dụ: 2025-12-25 08:45",
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
 
+            try {
                 double basePrice = Double.parseDouble(txtBasePrice.getText().trim());
                 double vipExtra = Double.parseDouble(txtVipExtra.getText().trim());
                 double coupleExtra = Double.parseDouble(txtCoupleExtra.getText().trim());
@@ -1630,12 +1637,10 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
                     JOptionPane.showMessageDialog(this, "Giá và phụ thu phải lớn hơn hoặc bằng 0!");
                     return false;
                 }
-
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this,
-                        "Dữ liệu chưa đúng.\nGiờ nhập dạng: yyyy-mm-dd hh:mm\nVí dụ: 2025-12-25 08:45",
-                        "Lỗi",
-                        JOptionPane.ERROR_MESSAGE);
+                    "Giá tiền và phụ thu phải là số hợp lệ!",
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
 
