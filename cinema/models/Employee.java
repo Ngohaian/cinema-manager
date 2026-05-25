@@ -2,7 +2,6 @@ package cinema.models;
 import java.time.LocalDate;
 
 public class Employee {
-    private static int autoId =1;
     public enum EmployeeStatus {
         ACTIVE, INACTIVE
     }

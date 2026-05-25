@@ -22,7 +22,6 @@ public class ShowTime {
 
     private SeatStatus[][] seatStatus;
     private List<Ticket> tickets;
-    private int ticketCounter = 1;
 
     private double basePrice;
     private double vipExtra;
