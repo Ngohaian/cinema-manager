@@ -745,7 +745,7 @@ public class BanVePanel extends javax.swing.JPanel {
             String phuongThuc = (e.getSource() == btnTienMat) ? "Tiền mặt" : "Chuyển khoản";
             String ten = txtTenKH.getText().trim();
             String sdt = txtSdtKH.getText().trim();
-            String customerId = "CUS006";
+            String customerId = "CUS000";
             
             if (!sdt.isEmpty()) {
                 Customer found = customerDao.getCustomerBySDT(sdt);
