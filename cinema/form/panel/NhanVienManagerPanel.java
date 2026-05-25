@@ -213,40 +213,95 @@ public class NhanVienManagerPanel extends javax.swing.JPanel {
         });
 
         btnThem.addActionListener(e -> {
-            String ten   = txtTen.getText().trim();
-            String sdt   = txtSDT.getText().trim();
-            String email = txtEmail.getText().trim();
-            String user  = txtUser.getText().trim();
-            String pass  = new String(txtPass.getPassword()).trim();
-            String luongStr = txtLuong.getText().trim();
+        String ten     = txtTen.getText().trim();
+        String sdt     = txtSDT.getText().trim();
+        String email   = txtEmail.getText().trim();
+        String user    = txtUser.getText().trim();
+        String pass    = new String(txtPass.getPassword()).trim();
+        String luongStr = txtLuong.getText().trim();
 
-            if (ten.isEmpty() || sdt.isEmpty() || email.isEmpty()
-                    || user.isEmpty() || pass.isEmpty() || luongStr.isEmpty()) {
-                JOptionPane.showMessageDialog(dialog,
-                    "Vui lòng nhập đầy đủ thông tin!", "Thông báo",
-                    JOptionPane.WARNING_MESSAGE);
-                return;
+        Color errorColor  = new Color(220, 53, 69);
+        Color normalColor = new Color(200, 200, 200);
+        txtTen.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(ten.isEmpty()     ? errorColor : normalColor),
+            BorderFactory.createEmptyBorder(4,8,4,8)));
+        txtSDT.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(sdt.isEmpty()     ? errorColor : normalColor),
+            BorderFactory.createEmptyBorder(4,8,4,8)));
+        txtEmail.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(email.isEmpty()   ? errorColor : normalColor),
+            BorderFactory.createEmptyBorder(4,8,4,8)));
+        txtUser.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(user.isEmpty()    ? errorColor : normalColor),
+            BorderFactory.createEmptyBorder(4,8,4,8)));
+        txtPass.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(pass.isEmpty()    ? errorColor : normalColor),
+            BorderFactory.createEmptyBorder(4,8,4,8)));
+        txtLuong.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(luongStr.isEmpty() ? errorColor : normalColor),
+            BorderFactory.createEmptyBorder(4,8,4,8)));
+
+        if (ten.isEmpty() || sdt.isEmpty() || email.isEmpty()
+                || user.isEmpty() || pass.isEmpty() || luongStr.isEmpty()) {
+            JOptionPane.showMessageDialog(dialog,
+                "Vui lòng nhập đầy đủ thông tin!", "Thông báo",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        if (!ten.matches("^[\\p{L} ]+$")) {
+        txtTen.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(errorColor),
+            BorderFactory.createEmptyBorder(4,8,4,8)));
+        JOptionPane.showMessageDialog(dialog,
+            "Họ tên không được chứa số hoặc ký tự đặc biệt!", "Không hợp lệ",
+            JOptionPane.WARNING_MESSAGE);
+        return;
+        }
+
+        if (!sdt.matches("\\d{10}")) {
+            txtSDT.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(errorColor),
+                BorderFactory.createEmptyBorder(4,8,4,8)));
+            JOptionPane.showMessageDialog(dialog,
+                "Số điện thoại phải đúng 10 chữ số!", "Không hợp lệ",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (!email.endsWith("@gmail.com")) {
+            txtEmail.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(errorColor),
+                BorderFactory.createEmptyBorder(4,8,4,8)));
+            JOptionPane.showMessageDialog(dialog,
+                "Email phải có dạng ...@gmail.com!", "Không hợp lệ",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            double luong = Double.parseDouble(luongStr.replace(",", ""));
+            Employee.Position pos = Employee.Position.values()[cbCV.getSelectedIndex()];
+            Employee emp = new Employee(ten, sdt, email, user, pass, pos, luong);
+            emp.setId(dao.getNextEmployeeId());
+            if (dao.addEmployee(emp)) {
+                JOptionPane.showMessageDialog(dialog, "Thêm nhân viên thành công!");
+                dialog.dispose();
+                danhSach = dao.getAllEmployeesFromDB();
+                loadTable(danhSach);
+            } else {
+                JOptionPane.showMessageDialog(dialog, "Thêm thất bại!", "Lỗi",
+                    JOptionPane.ERROR_MESSAGE);
             }
-            try {
-                double luong = Double.parseDouble(luongStr.replace(",", ""));
-                Employee.Position pos = Employee.Position.values()[cbCV.getSelectedIndex()];
-                Employee emp = new Employee(ten, sdt, email, user, pass, pos, luong);
-                emp.setId(dao.getNextEmployeeId());
-                if (dao.addEmployee(emp)) {
-                    JOptionPane.showMessageDialog(dialog, "Thêm nhân viên thành công!");
-                    dialog.dispose();
-                    danhSach = dao.getAllEmployeesFromDB();
-                    loadTable(danhSach);
-                } else {
-                    JOptionPane.showMessageDialog(dialog, "Thêm thất bại!", "Lỗi",
-                        JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialog,
-                    "Mức lương không hợp lệ!", "Thông báo",
-                    JOptionPane.WARNING_MESSAGE);
-            }
-        });
+        } catch (NumberFormatException ex) {
+            txtLuong.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(errorColor),
+                BorderFactory.createEmptyBorder(4,8,4,8)));
+            JOptionPane.showMessageDialog(dialog,
+                "Mức lương không hợp lệ!", "Thông báo",
+                JOptionPane.WARNING_MESSAGE);
+        }
+    });
 
         panel.add(lbMa);    panel.add(txtMa);
         panel.add(lbTen);   panel.add(txtTen);
@@ -318,28 +373,86 @@ public class NhanVienManagerPanel extends javax.swing.JPanel {
         btnLuu.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         btnLuu.addActionListener(e -> {
-            try {
-                emp.setName(txtTen.getText().trim());
-                emp.setPhone(txtSDT.getText().trim());
-                emp.setEmail(txtEmail.getText().trim());
-                emp.setPosition(Employee.Position.values()[cbCV.getSelectedIndex()]);
-                emp.setStatus(Employee.EmployeeStatus.valueOf(cbTT.getSelectedItem().toString()));
-                double luong = Double.parseDouble(txtLuong.getText().trim().replace(",", ""));
-                emp.setSalary(luong);
-                if (dao.updateEmployee(emp)) {
-                    JOptionPane.showMessageDialog(dialog, "Cập nhật thành công!");
-                    dialog.dispose();
-                    danhSach = dao.getAllEmployeesFromDB();
-                    loadTable(danhSach);
-                } else {
-                    JOptionPane.showMessageDialog(dialog, "Cập nhật thất bại!", "Lỗi",
-                        JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dialog, "Dữ liệu không hợp lệ!", "Lỗi",
+        String ten      = txtTen.getText().trim();
+        String sdt      = txtSDT.getText().trim();
+        String email    = txtEmail.getText().trim();
+        String luongStr = txtLuong.getText().trim();
+
+        Color errorColor  = new Color(220, 53, 69);
+        Color normalColor = new Color(200, 200, 200);
+
+        txtTen.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(ten.isEmpty() ? errorColor : normalColor),
+            BorderFactory.createEmptyBorder(4,8,4,8)));
+        txtSDT.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(sdt.isEmpty() ? errorColor : normalColor),
+            BorderFactory.createEmptyBorder(4,8,4,8)));
+        txtEmail.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(email.isEmpty() ? errorColor : normalColor),
+            BorderFactory.createEmptyBorder(4,8,4,8)));
+        txtLuong.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(luongStr.isEmpty() ? errorColor : normalColor),
+            BorderFactory.createEmptyBorder(4,8,4,8)));
+
+        if (ten.isEmpty() || sdt.isEmpty() || email.isEmpty() || luongStr.isEmpty()) {
+            JOptionPane.showMessageDialog(dialog,
+                "Vui lòng nhập đầy đủ thông tin!", "Thông báo",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (!ten.matches("^[\\p{L} ]+$")) {
+            txtTen.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(errorColor),
+                BorderFactory.createEmptyBorder(4,8,4,8)));
+            JOptionPane.showMessageDialog(dialog,
+                "Họ tên không được chứa số hoặc ký tự đặc biệt!", "Không hợp lệ",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (!sdt.matches("\\d{10}")) {
+            txtSDT.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(errorColor),
+                BorderFactory.createEmptyBorder(4,8,4,8)));
+            JOptionPane.showMessageDialog(dialog,
+                "Số điện thoại phải đúng 10 chữ số!", "Không hợp lệ",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (!email.endsWith("@gmail.com")) {
+            txtEmail.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(errorColor),
+                BorderFactory.createEmptyBorder(4,8,4,8)));
+            JOptionPane.showMessageDialog(dialog,
+                "Email phải có dạng ...@gmail.com!", "Không hợp lệ",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            emp.setName(ten);
+            emp.setPhone(sdt);
+            emp.setEmail(email);
+            emp.setPosition(Employee.Position.values()[cbCV.getSelectedIndex()]);
+            emp.setStatus(Employee.EmployeeStatus.valueOf(cbTT.getSelectedItem().toString()));
+            double luong = Double.parseDouble(luongStr.replace(",", ""));
+            emp.setSalary(luong);
+            if (dao.updateEmployee(emp)) {
+                JOptionPane.showMessageDialog(dialog, "Cập nhật thành công!");
+                dialog.dispose();
+                danhSach = dao.getAllEmployeesFromDB();
+                loadTable(danhSach);
+            } else {
+                JOptionPane.showMessageDialog(dialog, "Cập nhật thất bại!", "Lỗi",
                     JOptionPane.ERROR_MESSAGE);
             }
-        });
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(dialog, "Dữ liệu không hợp lệ!", "Lỗi",
+                JOptionPane.ERROR_MESSAGE);
+        }
+    });
 
         panel.add(lbMa);    panel.add(txtMa);
         panel.add(lbTen);   panel.add(txtTen);
