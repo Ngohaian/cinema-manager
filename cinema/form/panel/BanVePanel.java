@@ -318,7 +318,7 @@ public class BanVePanel extends javax.swing.JPanel {
         cl.show(ContentPanel, name);
         jScrollPane1.getVerticalScrollBar().setValue(0);
     }
-    public void renderSuatChieu(Movie m, String[] times, List<String> maPhong, List<String> maSuatChieu){ {
+    public void renderSuatChieu(Movie m, String[] times, List<String> maPhong, List<String> maSuatChieu){ 
         ChonSuatChieuPanel.removeAll();
         ChonSuatChieuPanel.setLayout(new java.awt.GridBagLayout()); 
 
@@ -397,7 +397,7 @@ public class BanVePanel extends javax.swing.JPanel {
         ChonSuatChieuPanel.revalidate();
         ChonSuatChieuPanel.repaint();
     }
-    }
+    
     private javax.swing.JLabel createTag(String text, java.awt.Color bg, java.awt.Color fg) {
         javax.swing.JLabel lbl = new javax.swing.JLabel(text);
         lbl.setFont(new java.awt.Font("Segoe UI", 1, 10));
@@ -407,6 +407,14 @@ public class BanVePanel extends javax.swing.JPanel {
         lbl.setBorder(new javax.swing.border.EmptyBorder(5, 10, 5, 10));
         lbl.putClientProperty("Component.arc", 10);
         return lbl;
+    }
+    private long calcSeatPrice(Seat s, ShowTime st) {
+        if (s.getSeatType() == null) return (long) st.getBasePrice();
+        switch (s.getSeatType().name()) {
+            case "VIP":    return (long)(st.getBasePrice() + st.getVipExtra());
+            case "COUPLE": return (long)(st.getBasePrice() + st.getCoupleExtra());
+            default:       return (long) st.getBasePrice();
+        }
     }
     private javax.swing.JButton createTimeButton(String time, String maPhong, String maSuatChieu, Movie m) {
         javax.swing.JButton btn = new javax.swing.JButton(time);
@@ -434,8 +442,9 @@ public class BanVePanel extends javax.swing.JPanel {
         currentStep = 2;
         updateNavigation();
         ShowPanel("ChonGhe");
-        seatMap.setOnSeatClickAction(() -> updateSummaryInfo(showtimeDao.getShowtimeById(maSuatChieu)));
-        setupSummaryPanel(BookingSummaryPanel, m, showtimeDao.getShowtimeById(maSuatChieu));
+        ShowTime st = showtimeDao.getShowtimeById(maSuatChieu);
+        seatMap.setOnSeatClickAction(() -> updateSummaryInfo(st));
+        setupSummaryPanel(BookingSummaryPanel, m, st);
     });
         return btn;
     }
@@ -486,14 +495,7 @@ public class BanVePanel extends javax.swing.JPanel {
                     t.setSeat(s);
                     t.setShowtime(selectedShowTime);
                     if (s.getSeatType() != null) {
-                        String loaiGheStr = s.getSeatType().name();
-                        if ("VIP".equals(loaiGheStr)) {
-                            t.setPrice(selectedShowTime.getBasePrice() + selectedShowTime.getVipExtra());
-                        } else if ("COUPLE".equals(loaiGheStr)) {
-                            t.setPrice(selectedShowTime.getBasePrice() + selectedShowTime.getCoupleExtra());
-                        } else {
-                            t.setPrice(selectedShowTime.getBasePrice());
-                        }
+                        t.setPrice(calcSeatPrice(s, selectedShowTime));
                     } else {
                         t.setPrice(selectedShowTime.getBasePrice());
                     }
@@ -523,15 +525,7 @@ public class BanVePanel extends javax.swing.JPanel {
             joiner.add(tenGhe);
             
             if (s.getSeatType() != null) {
-                String loaiGheStr = s.getSeatType().name();
-                
-                if ("VIP".equals(loaiGheStr)) {
-                    total += (st.getVipExtra() + st.getBasePrice());
-                } else if ("COUPLE".equals(loaiGheStr)) {
-                    total += (st.getCoupleExtra() + st.getBasePrice());
-                } else {
-                    total += st.getBasePrice();
-                }
+                total += calcSeatPrice(s, st);
             }
         }
 
@@ -739,8 +733,6 @@ public class BanVePanel extends javax.swing.JPanel {
         java.awt.event.ActionListener paymentListener = new java.awt.event.ActionListener() {
         @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
-            discountRef[0] = 0;
-            totalAfterRef[0] = totalInvoiceAmountFinal;
             
             String phuongThuc = (e.getSource() == btnTienMat) ? "Tiền mặt" : "Chuyển khoản";
             String ten = txtTenKH.getText().trim();
