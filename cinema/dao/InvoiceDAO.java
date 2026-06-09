@@ -536,5 +536,79 @@ public class InvoiceDAO {
 
         return 0;
     }
+    public boolean processPayment(Invoice invoice, List<Ticket> tickets) {
+    String sqlInvoice = """
+        INSERT INTO Invoice (invoiceId, customerId, employeeId, invoiceDate, totalAmount, status)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """;
+    String sqlTicket = """
+        INSERT INTO Ticket (ticketId, price, seatId, showtimeId, status, invoiceId)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """;
+    String sqlSeat = "UPDATE Seat SET status = 'Sold' WHERE seatId = ?";
+
+    SeatDao seatDao = new SeatDao();
+
+    
+    try (Connection conn = DBConnection.getConnection()) {
+
+        conn.setAutoCommit(false); 
+
+        try {
+            
+            try (PreparedStatement ps = conn.prepareStatement(sqlInvoice)) {
+                ps.setString(1, invoice.getInvoiceId());
+                ps.setString(2, invoice.getCustomerId());
+                ps.setString(3, invoice.getEmployeeId());
+                ps.setTimestamp(4, Timestamp.valueOf(invoice.getInvoiceDate()));
+                ps.setDouble(5, invoice.getTotalAmount());
+                ps.setString(6, "Đã thanh toán");
+                ps.executeUpdate();
+            }
+
+            
+            try (PreparedStatement psTicket = conn.prepareStatement(sqlTicket);
+                 PreparedStatement psSeat = conn.prepareStatement(sqlSeat)) {
+
+                for (Ticket t : tickets) {
+                    int seatId = seatDao.getSeatId(
+                        conn, 
+                        t.getShowtime().getRoom().getRoomId(),
+                        t.getSeat().getRowIndex(),
+                        t.getSeat().getColIndex()
+                    );
+
+                
+                    psTicket.setString(1, t.getTicketId());
+                    psTicket.setDouble(2, t.getPrice());
+                    psTicket.setInt(3, seatId);
+                    psTicket.setString(4, t.getShowtime().getShowtimeId());
+                    psTicket.setString(5, t.getStatus().name());
+                    psTicket.setString(6, t.getInvoiceId());
+                    psTicket.addBatch();
+
+                  
+                    psSeat.setInt(1, seatId);
+                    psSeat.addBatch();
+                }
+
+                psTicket.executeBatch();
+                psSeat.executeBatch();
+            }
+
+            conn.commit(); 
+            return true;
+
+        } catch (Exception e) {
+            conn.rollback(); 
+            e.printStackTrace();
+            return false;
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
 
 }
