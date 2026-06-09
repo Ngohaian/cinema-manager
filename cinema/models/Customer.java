@@ -73,7 +73,20 @@ public class Customer{
     public void setTotalSpent(double totalSpent) { this.totalSpent = totalSpent; }
     public void setLoyaltyPoints(double loyaltyPoints) { this.loyaltyPoints = loyaltyPoints; }
     public void setType(CustomerType type) { this.type = type; }
-  
+    public void setCreatedDate(LocalDate createdDate) { this.createdDate = createdDate; }
+
+    public double calculateDiscount(double amount) {
+        if (name.equalsIgnoreCase("GUEST")) return 0;
+        if (amount <= 0) return 0;
+        if (status == CustomerStatus.INACTIVE) return 0;
+        
+        double memberDiscount = amount * type.getCashbackRate();
+        double remainingAmount = amount - memberDiscount;
+        double usedPoints = Math.min(loyaltyPoints, remainingAmount);
+        usePoints(usedPoints);
+        return memberDiscount + usedPoints;
+}
+
     private void updateCustomerType(){
         if(totalSpent >= DIAMOND_THRESHOLD) type = CustomerType.DIAMOND;
         else if(totalSpent >= GOLD_THRESHOLD) type = CustomerType.GOLD;

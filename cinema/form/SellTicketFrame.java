@@ -1,11 +1,11 @@
 package cinema.form;
 import cinema.form.panel.*;
-import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.plaf.basic.BasicScrollBarUI;
@@ -13,11 +13,6 @@ public class SellTicketFrame extends javax.swing.JFrame {
     private JPanel indicator = new JPanel();
     private JLabel selectedButton = null;
     private JLabel[] menuLabels;
-    private BanVePanel banVePanel = new BanVePanel();
-    private LichSuHDPanel lichSuPanel = new LichSuHDPanel();
-    private PhimPanel phimPanel = new PhimPanel();
-    private LichChieuPanel lichChieuPanel = new LichChieuPanel();
-    private ThongTinPanel thongTinPanel = new ThongTinPanel();
     private cinema.models.Employee currentEmployee;
     
     public SellTicketFrame(cinema.models.Employee emp) {
@@ -25,7 +20,7 @@ public class SellTicketFrame extends javax.swing.JFrame {
         initComponents();
         lTen.setText(emp.getName());
         lChucVu.setText(emp.getPosition().getDisplayName());
-        thongTinPanel.loadEmployee(emp);
+        
         pThongTin.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         pThongTin.addMouseListener(new java.awt.event.MouseAdapter() {
         @Override
@@ -52,20 +47,7 @@ public class SellTicketFrame extends javax.swing.JFrame {
         pMenu.add(indicator);
         
         
-        // chuyen doi giua cac trang
-        CardLayout card = new CardLayout();
-        pContent.setLayout(card);
-        pContent.add(banVePanel, "BanVe");
-        pContent.add(wrap(phimPanel),"Phim");
-        pContent.add(wrap(lichChieuPanel),"LichChieu");
-        pContent.add(wrap(lichSuPanel),"LichSu");
-        pContent.add(wrap(thongTinPanel),"ThongTin");
-        
-        phimPanel.setOnBookTicket(movie -> {
-            showPanel("BanVe");          
-            setSelectedButton(btnBanVe); 
-            banVePanel.displayShowTime(movie);
-        });
+        pContent.setLayout(new java.awt.BorderLayout());
         pContent.revalidate();
         pContent.repaint();
         
@@ -110,11 +92,54 @@ public class SellTicketFrame extends javax.swing.JFrame {
         
     }
     private void showPanel(String name) {
-        CardLayout cl = (CardLayout) pContent.getLayout();
-        cl.show(pContent, name);
+        showPanel(name, null);
+    }
+    private void showPanel(String name, Object data) {
+        pContent.removeAll();
+        
+        switch (name) {
+            case "BanVe":
+                BanVePanel banVe = new BanVePanel();
+                banVe.setCurrentEmployee(currentEmployee);
+                if (data instanceof cinema.models.ShowTime) {
+                    banVe.openSeatBooking((cinema.models.ShowTime) data); 
+                } else if (data instanceof cinema.models.Movie) {
+                    banVe.displayShowTime((cinema.models.Movie) data); 
+                }
+                pContent.add(banVe, java.awt.BorderLayout.CENTER);
+                break;
+                
+            case "Phim":
+                PhimPanel phim = new PhimPanel();
+                phim.setOnBookTicket(movie -> {
+                    showPanel("BanVe", movie);
+                    setSelectedButton(btnBanVe); 
+                });
+                pContent.add(wrap(phim), java.awt.BorderLayout.CENTER);
+                break;
+                
+            case "LichChieu":
+                LichChieuPanel lichchieu = new LichChieuPanel();
+                lichchieu.setOnBookShowTime(showtime -> {
+                    showPanel("BanVe", showtime);
+                    setSelectedButton(btnBanVe);
+                });
+                pContent.add(wrap(lichchieu), java.awt.BorderLayout.CENTER);
+                break;
+            case "LichSu":
+                pContent.add(wrap(new LichSuHDPanel()), java.awt.BorderLayout.CENTER);
+                break;
+            case "ThongTin":
+                ThongTinPanel thongTinPanel = new ThongTinPanel();
+                thongTinPanel.loadEmployee(currentEmployee);
+                pContent.add(wrap(thongTinPanel), java.awt.BorderLayout.CENTER);
+                break;
+        }
         pContent.revalidate();
         pContent.repaint();
     }
+
+
     private void customizeScrollBar(JScrollPane JScroll){
         JScroll.getVerticalScrollBar().setUnitIncrement(20);
         JScroll.getVerticalScrollBar().setUI(new BasicScrollBarUI(){
@@ -309,7 +334,7 @@ public class SellTicketFrame extends javax.swing.JFrame {
             pThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pThongTinLayout.createSequentialGroup()
                 .addGap(18, 18, 18)
-                .addGroup(pThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(pThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lChucVu)
                     .addComponent(lTen))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -413,8 +438,16 @@ public class SellTicketFrame extends javax.swing.JFrame {
     }                                 
 
     private void btnDangXuatMouseClicked(java.awt.event.MouseEvent evt) {                                         
-        this.dispose();
-        new LoginFrame().setVisible(true);
+        int confirm = JOptionPane.showConfirmDialog(
+            this,
+            "Bạn có chắc muốn đăng xuất?",
+            "Đăng xuất",
+            JOptionPane.YES_NO_OPTION
+        );
+        if (confirm == JOptionPane.YES_OPTION) {
+            new LoginFrame().setVisible(true);
+            this.dispose();
+        }
     }                                        
 
     private void btnBanVeMouseClicked(java.awt.event.MouseEvent evt) {                                      
@@ -437,19 +470,6 @@ public class SellTicketFrame extends javax.swing.JFrame {
         showPanel("ThongTin");
     }                                      
 
-    public static void main(String args[]) {
-        
-        // try {
-        //     com.formdev.flatlaf.FlatLightLaf.setup(); 
-        // } catch( Exception ex ) {
-        //     System.err.println( "Failed to initialize LaF" );
-        // }
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new CheckerTicket(null).setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify                     
     private javax.swing.JLabel btnBanVe;

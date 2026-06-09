@@ -1,31 +1,62 @@
 
 package cinema.form.panel;
 
-import java.awt.CardLayout;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicScrollBarUI;
+import javax.swing.table.DefaultTableModel;
+import org.openpdf.text.Document;
+import org.openpdf.text.DocumentException;
+import org.openpdf.text.Paragraph;
+import org.openpdf.text.pdf.PdfPTable;
+import org.openpdf.text.pdf.PdfWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.time.LocalDateTime;
+
+import cinema.dao.CustomerDAO;
+import cinema.dao.InvoiceDAO;
 import cinema.dao.MovieDAO;
 import cinema.dao.ShowTimeDAO;
 import static cinema.enums.GenreType.getNameGenreType;
+
+import cinema.models.Customer;
+import cinema.models.Employee;
+import cinema.models.Invoice;
 import cinema.models.Movie;
+import cinema.models.Seat;
 import cinema.models.ShowTime;
-import java.awt.Color;
+import cinema.models.Ticket;
+
+import java.util.ArrayList;
 import java.util.List;
 public class BanVePanel extends javax.swing.JPanel {
     MovieDAO movieDao ;
     ShowTimeDAO showtimeDao;
+    InvoiceDAO invoiceDao ;
+    CustomerDAO customerDao;
     List<Movie> movies ;
     List<ShowTime> showtimes ;
+    private PhongManagerPanel seatMap = new PhongManagerPanel();
     private java.util.Map<Movie, JPanel> movieCardCache = new java.util.HashMap<>();
     private javax.swing.Timer searchTimer;
     private int currentStep = 0;
     private JLabel[] stepLabels;
+    private Employee currentEmployee;
     public BanVePanel() {
         try{
             movieDao= new MovieDAO();
             showtimeDao = new ShowTimeDAO();
+            invoiceDao = new InvoiceDAO();
+            customerDao = new CustomerDAO();
             this.movies = movieDao.GetAvailableMovies();
             this.showtimes = showtimeDao.getAll();
         }
@@ -37,11 +68,50 @@ public class BanVePanel extends javax.swing.JPanel {
         customizeScrollBar(jScrollPane1);
         ShowPanel("ChonPhim");
         setJLabelChon();
-    
+        
+        SoDoGhePanel.setLayout(new java.awt.BorderLayout());
     }   
+    public void setCurrentEmployee(Employee e){
+        this.currentEmployee = e;
+    }
     public void loadData() {
         this.movies = movieDao.GetAvailableMovies();
         addMovies(this.movies);
+    }
+
+    public void openSeatBooking(ShowTime selectedShowTime) {
+        if (selectedShowTime == null) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy suất chiếu!");
+            return;
+        }
+
+        Movie selectedMovie = selectedShowTime.getMovie();
+        if (selectedMovie == null || selectedShowTime.getRoom() == null) {
+            JOptionPane.showMessageDialog(this, "Dữ liệu phim hoặc phòng chiếu không hợp lệ!");
+            return;
+        }
+
+        String maPhong = selectedShowTime.getRoom().getRoomId();
+        String maSuatChieu = selectedShowTime.getShowtimeId();
+
+        SoDoGhePanel.removeAll();
+        SoDoGhePanel.setLayout(new java.awt.BorderLayout());
+
+        seatMap.setSelectMode(true);
+        JPanel seatBox = seatMap.createSeatMapBox();
+        SoDoGhePanel.add(seatBox, java.awt.BorderLayout.CENTER);
+        SoDoGhePanel.revalidate();
+        SoDoGhePanel.repaint();
+
+        List<cinema.models.Seat> bookedSeats = showtimeDao.getSeatStatusByShowtimeId(maSuatChieu);
+        seatMap.loadSeatMapForSelling(maPhong, bookedSeats);
+
+        currentStep = 2;
+        updateNavigation();
+        ShowPanel("ChonGhe");
+
+        seatMap.setOnSeatClickAction(() -> updateSummaryInfo(selectedShowTime));
+        setupSummaryPanel(BookingSummaryPanel, selectedMovie, selectedShowTime);
     }
     private javax.swing.JPanel createMovieCard(Movie m) {
         javax.swing.JPanel card = new javax.swing.JPanel();
@@ -156,12 +226,18 @@ public class BanVePanel extends javax.swing.JPanel {
     }
     public void displayShowTime(Movie m){
         List<ShowTime> ST = showtimeDao.getByMovieId(m.getId());
+        List<String> maSuatChieuList = new java.util.ArrayList<>();
+        List<String> maPhongList = new java.util.ArrayList<>();
         String[] times = new String[ST.size()];
         for(int i=0; i<ST.size();i++){
             java.time.LocalDateTime start = ST.get(i).getStartTime();
             times[i] = String.format("%02d:%02d", start.getHour(), start.getMinute());
         }
-        renderSuatChieu(m, times);
+        for(int i=0;i<ST.size();i++){
+            maPhongList.add(ST.get(i).getRoom().getRoomId());
+            maSuatChieuList.add(ST.get(i).getShowtimeId());
+        }
+        renderSuatChieu(m, times, maPhongList, maSuatChieuList);
         ShowPanel("ChonSuatChieu"); 
         currentStep=1;
         updateNavigation();
@@ -186,7 +262,7 @@ public class BanVePanel extends javax.swing.JPanel {
     private void updateNavigation(){
         for(int i=0;i<stepLabels.length;i++){
             if(i==currentStep){
-                stepLabels[i].setBackground(Color.white);
+                stepLabels[i].setBackground(java.awt.Color.white);
             }
             else if(i<currentStep){
                 stepLabels[i].setBackground(new java.awt.Color(220,220,242));
@@ -237,17 +313,12 @@ public class BanVePanel extends javax.swing.JPanel {
         JScroll.setBorder(null);
         JScroll.getViewport().setBackground(java.awt.Color.WHITE);
     }
-    private JScrollPane wrap(JPanel panel){
-        JScrollPane sp = new JScrollPane(panel);
-        customizeScrollBar(sp);
-        return sp;
-    }
     private void ShowPanel(String name){
-        CardLayout cl = (CardLayout )(ContentPanel.getLayout());
+        java.awt.CardLayout cl = (java.awt.CardLayout )(ContentPanel.getLayout());
         cl.show(ContentPanel, name);
         jScrollPane1.getVerticalScrollBar().setValue(0);
     }
-    public void renderSuatChieu(Movie m, String[] times) {
+    public void renderSuatChieu(Movie m, String[] times, List<String> maPhong, List<String> maSuatChieu){ {
         ChonSuatChieuPanel.removeAll();
         ChonSuatChieuPanel.setLayout(new java.awt.GridBagLayout()); 
 
@@ -311,12 +382,9 @@ public class BanVePanel extends javax.swing.JPanel {
         lblSelectTime.setBorder(new javax.swing.border.EmptyBorder(10,10,10,10));
         javax.swing.JPanel pnlGridTime = new javax.swing.JPanel(new java.awt.GridLayout(0, 4, 15, 15));
         pnlGridTime.setOpaque(false);
-
-        for (String time : times) {
-            pnlGridTime.add(createTimeButton(time));
+        for(int i=0;i<times.length;i++){
+            pnlGridTime.add(createTimeButton(times[i], maPhong.get(i), maSuatChieu.get(i),m));
         }
-
-        // Add tất cả vào Main Card
         mainCard.add(pnlHeader);
         mainCard.add(javax.swing.Box.createVerticalStrut(25));
         mainCard.add(sep);
@@ -329,6 +397,7 @@ public class BanVePanel extends javax.swing.JPanel {
         ChonSuatChieuPanel.revalidate();
         ChonSuatChieuPanel.repaint();
     }
+    }
     private javax.swing.JLabel createTag(String text, java.awt.Color bg, java.awt.Color fg) {
         javax.swing.JLabel lbl = new javax.swing.JLabel(text);
         lbl.setFont(new java.awt.Font("Segoe UI", 1, 10));
@@ -339,7 +408,7 @@ public class BanVePanel extends javax.swing.JPanel {
         lbl.putClientProperty("Component.arc", 10);
         return lbl;
     }
-    private javax.swing.JButton createTimeButton(String time) {
+    private javax.swing.JButton createTimeButton(String time, String maPhong, String maSuatChieu, Movie m) {
         javax.swing.JButton btn = new javax.swing.JButton(time);
         btn.setFont(new java.awt.Font("Segoe UI", 1, 13));
         btn.setBackground(new java.awt.Color(248, 250, 252));
@@ -350,15 +419,33 @@ public class BanVePanel extends javax.swing.JPanel {
         btn.putClientProperty("Component.arc", 15);
 
         btn.addActionListener(e -> {
-            ShowPanel("ChonGhe"); 
-        });
+        SoDoGhePanel.removeAll();
+        SoDoGhePanel.setLayout(new java.awt.BorderLayout());
+        
+        seatMap.setSelectMode(true);
+        JPanel seatBox = seatMap.createSeatMapBox();
+        SoDoGhePanel.add(seatBox, java.awt.BorderLayout.CENTER);
+        SoDoGhePanel.revalidate();
+        SoDoGhePanel.repaint();
+
+        List<cinema.models.Seat> bookedSeats = showtimeDao.getSeatStatusByShowtimeId(maSuatChieu);
+        seatMap.loadSeatMapForSelling(maPhong, bookedSeats);
+
+        currentStep = 2;
+        updateNavigation();
+        ShowPanel("ChonGhe");
+        seatMap.setOnSeatClickAction(() -> updateSummaryInfo(showtimeDao.getShowtimeById(maSuatChieu)));
+        setupSummaryPanel(BookingSummaryPanel, m, showtimeDao.getShowtimeById(maSuatChieu));
+    });
         return btn;
     }
-    private void setupSummaryPanel(javax.swing.JPanel panel, Movie selectedMovie) {
+
+    private void setupSummaryPanel(javax.swing.JPanel panel, Movie selectedMovie, ShowTime selectedShowTime) {
         panel.removeAll();
         panel.setLayout(new java.awt.BorderLayout(20, 0));
         panel.setBackground(java.awt.Color.WHITE);
-
+        panel.setPreferredSize(new java.awt.Dimension(0, 100));
+        panel.setBorder(new javax.swing.border.EmptyBorder(10, 20, 10, 20));
         javax.swing.JPanel pnlLeft = new javax.swing.JPanel(new java.awt.GridLayout(2, 1, 0, 5));
         pnlLeft.setOpaque(false);
 
@@ -378,40 +465,423 @@ public class BanVePanel extends javax.swing.JPanel {
         btnConfirm.setFont(new java.awt.Font("Segoe UI", 1, 16));
         btnConfirm.setPreferredSize(new java.awt.Dimension(150, 45));
         btnConfirm.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-
-//        btnConfirm.addActionListener(e -> {
-//            if (selectedSeatsList.isEmpty()) {
-//                javax.swing.JOptionPane.showMessageDialog(this, "Vui lòng chọn ít nhất 1 ghế!");
-//            } else {
-//                currentStep = 3;
-//                updateNavigation();
-//                ShowPanel("HoaDon");
-//            }
-//        });
+        btnConfirm.addActionListener(e -> {
+            if (seatMap.getSelectedSeatsList().isEmpty()) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Vui lòng chọn ít nhất 1 ghế!");
+            } else {
+                currentStep = 3;
+                updateNavigation();
+                ShowPanel("HoaDon");
+                String maHD = invoiceDao.getNextInvoiceID();
+                List<Ticket> dsticket = new ArrayList<>();
+                String nextTicketIdFromDB = invoiceDao.getNextTicketIdByShowtimeId(selectedShowTime.getShowtimeId());
+                int lastI = nextTicketIdFromDB.lastIndexOf("-");
+                String ticketIdst = nextTicketIdFromDB.substring(0, lastI + 1); 
+                int ticketNumber = Integer.parseInt(nextTicketIdFromDB.substring(lastI + 1)); 
+                if (ticketNumber == 0) ticketNumber = 1;
+                for (cinema.models.Seat s : seatMap.getSelectedSeatsList()) {
+                    Ticket t = new Ticket();
+                    String ticketId = String.format("%s-%03d", ticketIdst, ticketNumber);
+                    t.setTicketId(ticketId);
+                    t.setSeat(s);
+                    t.setShowtime(selectedShowTime);
+                    if (s.getSeatType() != null) {
+                        String loaiGheStr = s.getSeatType().name();
+                        if ("VIP".equals(loaiGheStr)) {
+                            t.setPrice(selectedShowTime.getBasePrice() + selectedShowTime.getVipExtra());
+                        } else if ("COUPLE".equals(loaiGheStr)) {
+                            t.setPrice(selectedShowTime.getBasePrice() + selectedShowTime.getCoupleExtra());
+                        } else {
+                            t.setPrice(selectedShowTime.getBasePrice());
+                        }
+                    } else {
+                        t.setPrice(selectedShowTime.getBasePrice());
+                    }
+                    t.setStatus(cinema.enums.TicketStatus.Sold);
+                    t.setInvoiceId(maHD);
+                    ticketNumber++;
+                    dsticket.add(t);
+                }
+                String maNV = currentEmployee != null ? currentEmployee.getId() : "EMP002";
+                String tenNV = currentEmployee != null ? currentEmployee.getName() : "Tran Thi Thu";
+                renderHoaDon(maHD, maNV, tenNV, selectedMovie.getTitle(), LocalDateTime.now(), dsticket);
+            }
+        });
 
         panel.add(pnlLeft, java.awt.BorderLayout.CENTER);
         panel.add(btnConfirm, java.awt.BorderLayout.EAST);
         panel.revalidate();
         panel.repaint();
     }
-//    private void updateSummaryInfo() {
-//        if (lblSummaryInfo == null) return;
-//        long total = 0;
-//        java.util.StringJoiner joiner = new java.util.StringJoiner(", ");
-//        for (cinema.models.Seat s : selectedSeatsList) {
-//            joiner.add(s.getSeatLabel());
-//            if ("VIP".equals(s.getSeatType())) total += 30000;
-//            else if ("COUPLE".equals(s.getSeatType())) total += 50000;
-//            else total += 65000;
-//        }
-//
-//        String listGhe = selectedSeatsList.isEmpty() ? "Chưa chọn" : joiner.toString();
-//        java.text.NumberFormat formatter = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
-//
-//        lblSummaryInfo.setText("<html>Ghế: <b style='color:#3b82f6'>" + listGhe + 
-//                              "</b> | Tổng tiền: <b style='color:#ef4444'>" + formatter.format(total) + " VNĐ</b></html>");
-//    }
-    @SuppressWarnings("unchecked")
+    private void updateSummaryInfo(ShowTime st) {
+        if (lblSummaryInfo == null) return;
+        long total = 0;
+        java.util.StringJoiner joiner = new java.util.StringJoiner(", ");
+        
+        for (cinema.models.Seat s : seatMap.getSelectedSeatsList()) {
+            String tenGhe = (char) ('A' + s.getRowIndex()) + String.valueOf(s.getColIndex() + 1);
+            joiner.add(tenGhe);
+            
+            if (s.getSeatType() != null) {
+                String loaiGheStr = s.getSeatType().name();
+                
+                if ("VIP".equals(loaiGheStr)) {
+                    total += (st.getVipExtra() + st.getBasePrice());
+                } else if ("COUPLE".equals(loaiGheStr)) {
+                    total += (st.getCoupleExtra() + st.getBasePrice());
+                } else {
+                    total += st.getBasePrice();
+                }
+            }
+        }
+
+        String listGhe = seatMap.getSelectedSeatsList().isEmpty() ? "Chưa chọn" : joiner.toString();
+        java.text.NumberFormat formatter = java.text.NumberFormat.getInstance(java.util.Locale.forLanguageTag("vi-VN"));
+
+        lblSummaryInfo.setText("<html>Ghế: <b style='color:#3b82f6'>" + listGhe + 
+                                "</b> | Tổng tiền: <b style='color:#ef4444'>" + formatter.format(total) + " VNĐ</b></html>");
+    }
+
+    public void renderHoaDon(String maHD, String maNV, String tenNV, String tenPhim, LocalDateTime ngayLap, List<Ticket> danhSachVe) {
+        final List<Ticket> dsVeFinal = new ArrayList<>(danhSachVe); 
+        TTHoaDonPanel.removeAll();
+        TTHoaDonPanel.setLayout(new java.awt.BorderLayout(15, 15));
+        TTHoaDonPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200), 1, true), 
+        BorderFactory.createEmptyBorder(20, 30, 20, 30)));
+        double totalInvoiceAmount = 0;
+        for(Ticket t : dsVeFinal){
+            totalInvoiceAmount += t.getPrice();
+        }
+        final double totalInvoiceAmountFinal = totalInvoiceAmount;
+        final double[] discountRef = {0};
+        final double[] totalAfterRef = {totalInvoiceAmount};
+        final JLabel lblSaleVal = new JLabel("0 VNĐ");
+        final JLabel lblTotalVal = new JLabel(String.format("%,.0f VNĐ", totalInvoiceAmount));
+
+        //1.Title hóa đơn
+        JLabel lblTitle = new JLabel("THÔNG TIN HÓA ĐƠN");
+        lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 22));
+        lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
+        lblTitle.setForeground(new java.awt.Color(44, 62, 80));
+        TTHoaDonPanel.add(lblTitle, java.awt.BorderLayout.NORTH);
+
+        //2.Body hóa đơn
+        JPanel pnlBody = new JPanel();
+        pnlBody.setBackground(java.awt.Color.WHITE);
+        pnlBody.setLayout(new BoxLayout(pnlBody, BoxLayout.Y_AXIS));
+        
+        //2.1. Thông tin chung
+        JPanel pnlInfo = new JPanel(new java.awt.GridLayout(2, 2, 15, 10)); 
+        pnlInfo.setBackground(java.awt.Color.WHITE);
+        pnlInfo.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(java.awt.Color.LIGHT_GRAY, 1), "Thông tin chung"
+        ));
+        pnlInfo.add(new JLabel("<html><b>Mã hóa đơn:</b> " + maHD + "</html>"));
+        pnlInfo.add(new JLabel("<html><b>Ngày lập:</b> " + ngayLap + "</html>"));
+        pnlInfo.add(new JLabel("<html><b>Nhân viên:</b> " + maNV + " - " + tenNV + "</html>"));
+        pnlInfo.add(new JLabel("<html><b>Tên phim:</b> " + tenPhim + "</html>"));
+        
+        JPanel pnlTenKH = new JPanel(new java.awt.BorderLayout(5, 0));
+        pnlTenKH.setBackground(java.awt.Color.WHITE);
+        javax.swing.JTextField txtTenKH = new javax.swing.JTextField("Guest");
+        txtTenKH.setEditable(false);
+        txtTenKH.setBackground(new java.awt.Color(240, 240, 240));
+        javax.swing.JTextField txtSdtKH = new javax.swing.JTextField("");
+        txtSdtKH.addActionListener(ev -> {
+            String sdt = txtSdtKH.getText().trim();
+            if (sdt.isEmpty()) return;
+            Customer found = customerDao.getCustomerBySDT(sdt);
+            if (found != null) {
+                txtTenKH.setText(found.getName());
+                txtTenKH.setEditable(false);
+                txtTenKH.setBackground(new java.awt.Color(240, 240, 240));
+                if (!found.getName().equalsIgnoreCase("GUEST")) {
+                    discountRef[0] = found.calculateDiscount(totalInvoiceAmountFinal);
+                    totalAfterRef[0] = totalInvoiceAmountFinal - discountRef[0];
+                } else {
+                    discountRef[0] = 0;
+                    totalAfterRef[0] = totalInvoiceAmountFinal;
+                }
+                lblSaleVal.setText(String.format("%,.0f VNĐ", discountRef[0]));
+                lblTotalVal.setText(String.format("%,.0f VNĐ", totalAfterRef[0]));
+            } else {
+                txtTenKH.setText("");
+                txtTenKH.setEditable(true);
+                txtTenKH.setBackground(java.awt.Color.WHITE);
+                txtTenKH.requestFocus();
+                discountRef[0] = 0;
+                totalAfterRef[0] = totalInvoiceAmountFinal;
+                lblSaleVal.setText("0 VNĐ");
+                lblTotalVal.setText(String.format("%,.0f VNĐ", totalInvoiceAmountFinal));
+            }
+        });
+        txtTenKH.addActionListener(ev -> {
+            String tenKH = txtTenKH.getText().trim();
+            String sdt = txtSdtKH.getText().trim();
+            if (tenKH.isEmpty() || sdt.isEmpty()) {
+                JOptionPane.showMessageDialog(HoaDonPanel, "Vui lòng nhập đầy đủ tên và số điện thoại!");
+                return;
+            }
+            Customer newCustomer = new Customer(tenKH, sdt, ""); 
+            newCustomer.setId(customerDao.getNextCustomerId());
+            boolean success = customerDao.addCustomer(newCustomer);
+            if (success) {
+                JOptionPane.showMessageDialog(HoaDonPanel, "Đã thêm khách hàng mới: " + tenKH);
+                txtTenKH.setEditable(false);
+                txtTenKH.setBackground(new java.awt.Color(240, 240, 240));
+            } else {
+                JOptionPane.showMessageDialog(HoaDonPanel, "Lỗi khi thêm khách hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        pnlTenKH.add(new JLabel("<html><b>Tên khách hàng:</b></html>"), java.awt.BorderLayout.WEST);
+        pnlTenKH.add(txtTenKH, java.awt.BorderLayout.CENTER);
+        pnlInfo.add(pnlTenKH);
+        
+        JPanel pnlSdtKH = new JPanel(new java.awt.BorderLayout(5, 0));
+        pnlSdtKH.setBackground(java.awt.Color.WHITE);
+        pnlSdtKH.add(new JLabel("<html><b>Số điện thoại:</b></html>"), java.awt.BorderLayout.WEST);
+        pnlSdtKH.add(txtSdtKH, java.awt.BorderLayout.CENTER);
+        pnlInfo.add(pnlSdtKH);
+        pnlInfo.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, pnlInfo.getPreferredSize().height +50 ));
+        pnlBody.add(pnlInfo);
+        pnlBody.add(Box.createVerticalStrut(15));
+
+        //2.2. Bảng chi tiết vé
+        String[] columnHeaders = {"Mã Vé", "Loại Ghế", "Tên Ghế", "Đơn Giá", "Thành Tiền"};
+        DefaultTableModel tableModel = new DefaultTableModel(columnHeaders, 0);
+        JTable tblDetails = new JTable(tableModel);
+        tblDetails.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+        tblDetails.setRowHeight(25);
+        tblDetails.getTableHeader().setBackground(java.awt.Color.WHITE);
+        for (Ticket ticket : dsVeFinal) {
+            Seat ghe = ticket.getSeat();
+            String tenGhe = (char) ('A' + ghe.getRowIndex()) + String.valueOf(ghe.getColIndex() + 1);
+            String loaiGhe = ghe.getSeatType() != null ? ghe.getSeatType().toString() : "STANDARD";
+
+            tableModel.addRow(new Object[]{
+                ticket.getTicketId(),
+                loaiGhe,
+                tenGhe,
+                String.format("%,.0f VNĐ", ticket.getPrice()),
+                String.format("%,.0f VNĐ", ticket.getPrice())
+            });
+        }
+        
+        JScrollPane scrollPane = new JScrollPane(tblDetails);
+        scrollPane.setBackground(java.awt.Color.WHITE);
+        scrollPane.setPreferredSize(new java.awt.Dimension(400, 150));
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Chi tiết vị trí ghế đặt"));
+        pnlBody.add(scrollPane);
+        pnlBody.add(Box.createVerticalStrut(10));
+        
+        //3. Tổng tiền
+        JPanel pnlTotalWrapper = new JPanel(new java.awt.BorderLayout());
+        pnlTotalWrapper.setBackground(java.awt.Color.WHITE);
+        pnlTotalWrapper.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 100));
+
+        JPanel pnlTotal = new JPanel();
+        pnlTotal.setLayout(new BoxLayout(pnlTotal, BoxLayout.Y_AXIS));
+        pnlTotal.setBackground(java.awt.Color.WHITE);
+
+        // 3.1. Tổng tiền
+        JPanel row1 = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 5, 0));
+        row1.setBackground(java.awt.Color.WHITE);
+        row1.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 30));
+        JLabel lblTotalInvoiceText = new JLabel("Tổng tiền: ");
+        lblTotalInvoiceText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+        JLabel lblTotalInvoiceVal = new JLabel(String.format("%,.0f VNĐ", totalInvoiceAmount));
+        lblTotalInvoiceVal.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+        row1.add(lblTotalInvoiceText);
+        row1.add(lblTotalInvoiceVal);
+
+        // 3.2. Giảm giá
+        JPanel row2 = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 5, 0));
+        row2.setBackground(java.awt.Color.WHITE);
+        row2.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 30));
+        JLabel lblSaleOff = new JLabel("Giảm giá: ");
+        lblSaleOff.setForeground(java.awt.Color.BLUE);
+        lblSaleOff.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+        lblSaleVal.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+        lblSaleVal.setForeground(java.awt.Color.BLUE);
+        row2.add(lblSaleOff);
+        row2.add(lblSaleVal);
+
+        // 3.3. Tổng thanh toán
+        JPanel row3 = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 5, 0));
+        row3.setBackground(java.awt.Color.WHITE);
+        row3.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 30));
+        JLabel lblTotal = new JLabel("Tổng thanh toán: ");
+        lblTotal.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 15));
+        lblTotalVal.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
+        lblTotalVal.setForeground(java.awt.Color.RED);
+        row3.add(lblTotal);
+        row3.add(lblTotalVal);
+
+        pnlTotal.add(row1);
+        pnlTotal.add(row2);
+        pnlTotal.add(row3);
+        pnlTotalWrapper.add(pnlTotal, java.awt.BorderLayout.EAST);
+        pnlBody.add(pnlTotalWrapper);
+        
+        TTHoaDonPanel.add(pnlBody, java.awt.BorderLayout.CENTER);
+
+        //4. Phương thức thanh toán
+        JPanel pnlButtons = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 25, 5));
+        pnlButtons.setBackground(java.awt.Color.WHITE);
+        JButton btnTienMat = new JButton("Thanh toán Tiền Mặt");
+        JButton btnChuyenKhoan = new JButton("Thanh toán Chuyển Khoản");
+        
+        java.awt.Font btnFont = new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13);
+        btnTienMat.setFont(btnFont); btnChuyenKhoan.setFont(btnFont);
+        btnTienMat.setBackground(new java.awt.Color(46, 204, 113)); btnTienMat.setForeground(java.awt.Color.WHITE);
+        btnChuyenKhoan.setBackground(new java.awt.Color(52, 152, 219)); btnChuyenKhoan.setForeground(java.awt.Color.WHITE);
+        
+        java.awt.event.ActionListener paymentListener = new java.awt.event.ActionListener() {
+        @Override
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+            discountRef[0] = 0;
+            totalAfterRef[0] = totalInvoiceAmountFinal;
+            
+            String phuongThuc = (e.getSource() == btnTienMat) ? "Tiền mặt" : "Chuyển khoản";
+            String ten = txtTenKH.getText().trim();
+            String sdt = txtSdtKH.getText().trim();
+            String customerId = "CUS000";
+            
+            if (!sdt.isEmpty()) {
+                Customer found = customerDao.getCustomerBySDT(sdt);
+                if (found != null && !found.getName().equalsIgnoreCase("GUEST")) {
+                    customerId = found.getId();
+                    discountRef[0] = found.calculateDiscount(totalInvoiceAmountFinal);
+                    totalAfterRef[0] = totalInvoiceAmountFinal - discountRef[0];
+
+                }
+            }
+            JOptionPane.showMessageDialog(HoaDonPanel,
+                "Thanh toán thành công qua hình thức: " + phuongThuc, "Xác nhận", JOptionPane.INFORMATION_MESSAGE);
+            String ngayLapStr = ngayLap.toLocalDate().toString();
+            Invoice newInvoice = new Invoice(maHD, customerId, maNV, ngayLap, totalAfterRef[0]); 
+            if (invoiceDao.insert(newInvoice)) {
+                for (Ticket t : dsVeFinal) {
+                    invoiceDao.insertTicket(t);
+                }
+                // Cập nhật điểm và chi tiêu khách hàng
+            if (!sdt.isEmpty()) {
+                Customer found = customerDao.getCustomerBySDT(sdt);
+                if (found != null && !found.getName().equalsIgnoreCase("GUEST")) {
+                    double pointsUsed = discountRef[0] - (totalInvoiceAmountFinal * found.getType().getCashbackRate());
+                    if (pointsUsed > 0) found.usePoints(pointsUsed);
+                    found.makePurchase(totalAfterRef[0]);
+                    customerDao.updateCustomerLoyalty(found);
+                }
+            }
+                xuatVeRaFilePDF(maHD, tenPhim, ngayLapStr, ten, sdt, tableModel, totalInvoiceAmountFinal, discountRef[0], totalAfterRef[0] );
+                
+                ShowPanel("ChonPhim");
+                currentStep=0;
+                updateNavigation();
+                
+            }
+        }
+        };
+        
+        btnTienMat.addActionListener(paymentListener);
+        btnChuyenKhoan.addActionListener(paymentListener);
+        
+        pnlButtons.add(btnTienMat);
+        pnlButtons.add(btnChuyenKhoan);
+        TTHoaDonPanel.add(pnlButtons, java.awt.BorderLayout.SOUTH);
+        TTHoaDonPanel.revalidate();
+        TTHoaDonPanel.repaint();
+    }
+
+
+    private void xuatVeRaFilePDF(String maHD, String tenPhim, String ngayLap, String tenKH, String sdtKH, DefaultTableModel model, double tongTien, double giamGia, double tongThanhToan) {
+        Document document = new Document(org.openpdf.text.PageSize.A5);
+        String filePath = "HoaDon_" + maHD + ".pdf";
+        
+        try {
+            PdfWriter.getInstance(document, new FileOutputStream(filePath));
+            document.open();
+
+            Paragraph title = new Paragraph("HOA DON - BETA CINEMA");
+            title.setAlignment(org.openpdf.text.Element.ALIGN_CENTER);
+            title.setSpacingAfter(10);
+            document.add(title);
+
+            org.openpdf.text.pdf.draw.LineSeparator line = new org.openpdf.text.pdf.draw.LineSeparator();
+            document.add(new org.openpdf.text.Chunk(line));
+            document.add(org.openpdf.text.Chunk.NEWLINE);
+
+            PdfPTable infoTable = new PdfPTable(2);
+            infoTable.setWidthPercentage(100);
+            infoTable.setWidths(new float[]{1f, 1f});
+            infoTable.setSpacingAfter(10);
+
+            for (org.openpdf.text.pdf.PdfPCell c : new org.openpdf.text.pdf.PdfPCell[]{
+                cell("Ma HD: " + maHD),
+                cell("Ngay: " + ngayLap),
+                cell("Ten phim: " + tenPhim),
+                cell(""),
+                cell("Khach hang: " + tenKH),
+                cell("SDT: " + sdtKH),
+            }) { infoTable.addCell(c); }
+            document.add(infoTable);
+
+            PdfPTable table = new PdfPTable(5);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{3f, 2.5f, 2f, 2.5f, 2.5f});
+            table.setSpacingBefore(5);
+            table.setSpacingAfter(10);
+
+            for (String h : new String[]{"Ma Ve", "Loai Ghe", "Ten Ghe", "Don Gia", "Thanh Tien"}) {
+                org.openpdf.text.pdf.PdfPCell c = cell(h);
+                c.setHorizontalAlignment(org.openpdf.text.Element.ALIGN_CENTER);
+                table.addCell(c);
+            }
+
+            for (int i = 0; i < model.getRowCount(); i++) {
+                for (int col = 0; col < 5; col++) {
+                    org.openpdf.text.pdf.PdfPCell c = cell(model.getValueAt(i, col).toString());
+                    c.setHorizontalAlignment(org.openpdf.text.Element.ALIGN_CENTER);
+                    table.addCell(c);
+                }
+            }
+            document.add(table);
+            document.add(new org.openpdf.text.Chunk(line));
+            document.add(org.openpdf.text.Chunk.NEWLINE);
+
+            Paragraph total = new Paragraph("TONG TIEN: " + String.format("%,.0f VND", tongTien));
+            total.setAlignment(org.openpdf.text.Element.ALIGN_RIGHT);
+            Paragraph discount = new Paragraph("GIAM GIA: " + String.format("%,.0f VND", giamGia));
+            discount.setAlignment(org.openpdf.text.Element.ALIGN_RIGHT);
+            Paragraph finalTotal = new Paragraph("THANH TOAN: " + String.format("%,.0f VND", tongThanhToan));
+            finalTotal.setAlignment(org.openpdf.text.Element.ALIGN_RIGHT);
+            document.add(total);
+            document.add(discount);
+            document.add(finalTotal);
+
+            document.add(org.openpdf.text.Chunk.NEWLINE);
+            Paragraph footer = new Paragraph("Cam on quy khach! Chuc xem phim vui ve!");
+            footer.setAlignment(org.openpdf.text.Element.ALIGN_CENTER);
+            document.add(footer);
+
+            JOptionPane.showMessageDialog(HoaDonPanel, "Da xuat ve ra file: " + filePath);
+
+        } catch (DocumentException | IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(HoaDonPanel, "Loi: " + ex.getMessage(), "Loi", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            document.close();
+        }
+    }
+
+    private org.openpdf.text.pdf.PdfPCell cell(String text) {
+        org.openpdf.text.pdf.PdfPCell c = new org.openpdf.text.pdf.PdfPCell(new Paragraph(text));
+        c.setBorder(org.openpdf.text.Rectangle.NO_BORDER);
+        c.setPadding(4);
+        return c;
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 
@@ -683,6 +1153,12 @@ public class BanVePanel extends javax.swing.JPanel {
                 .addGap(0, 0, 0)
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+        HoaDonPanel.setLayout(new java.awt.BorderLayout());
+        HoaDonPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(40, 150, 40, 150));
+        TTHoaDonPanel = new javax.swing.JPanel();
+        TTHoaDonPanel.setBackground(java.awt.Color.WHITE);
+        TTHoaDonPanel.setPreferredSize(new java.awt.Dimension(400, 0));
+        HoaDonPanel.add(TTHoaDonPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>                        
 
     private void txtTimPhimKeyReleased(java.awt.event.KeyEvent evt) {                                       
@@ -690,7 +1166,7 @@ public class BanVePanel extends javax.swing.JPanel {
         if (searchTimer != null && searchTimer.isRunning()) {
             searchTimer.stop(); 
         }
-        java.util.List ds = movieDao.searchMovies(title, 0,0,movieDao.getMaxDuration());
+        List<Movie> ds = movieDao.searchMovies(title, 0,0,movieDao.getMaxDuration());
         searchTimer = new javax.swing.Timer(300, e -> {
             addMovies(ds);
         });
@@ -708,6 +1184,7 @@ public class BanVePanel extends javax.swing.JPanel {
     private javax.swing.JPanel ContentPanel;
     private javax.swing.JPanel DSPhimPanel;
     private javax.swing.JPanel HoaDonPanel;
+    private javax.swing.JPanel TTHoaDonPanel;
     private javax.swing.JLabel LChonGhe;
     private javax.swing.JLabel LChonPhim;
     private javax.swing.JLabel LChonSuatChieu;

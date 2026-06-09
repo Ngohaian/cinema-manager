@@ -3,10 +3,8 @@ import java.util.List;
 import java.sql.*;
 import java.util.ArrayList;
 import cinema.DBConnection;
-import cinema.enums.GenreType;
 import cinema.models.Movie;
 import cinema.enums.MovieStatus;
-import static cinema.enums.MovieStatus.fromInt;
 public class MovieDAO {
     public List<Movie> getDSPhim(){
         List<Movie> list = new ArrayList<>();
@@ -34,7 +32,7 @@ public class MovieDAO {
     }
     public List<Movie> GetAvailableMovies(){
         List<Movie> ds = new ArrayList<>();
-        String sql = "SELECT DISTINCT m.* FROM movie m JOIN showtime s ON m.movieId = s.movieId WHERE m.active = 1 AND s.startTime >= now();";
+        String sql = "SELECT DISTINCT m.* FROM movie m JOIN showtime s ON m.movieId = s.movieId WHERE m.active = 1 AND s.startTime >= now() AND DAY(s.startTime) = DAY(NOW()) AND s.active=1";
         try(Connection conn = DBConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);){
                 ResultSet rs = ps.executeQuery();
@@ -109,30 +107,6 @@ public class MovieDAO {
         }
         return null;
     }
-    public List<Movie> getByName(String name){
-        String sql = "Select * from movie where title=?";
-        List<Movie> list = new ArrayList<>();
-        try(Connection conn = DBConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);){
-                ps.setString(1, name);
-                ResultSet rs = ps.executeQuery();
-                if(rs.next()){
-                    Movie m = new Movie();
-                    m.setId(rs.getString("movieId"));
-                    m.setTitle(rs.getString("title"));
-                    m.setGenreId(rs.getInt("genreId"));
-                    m.setDuration(rs.getInt("duration"));
-                    m.setActive(MovieStatus.fromInt(rs.getInt("active")));
-                    m.setPoster(rs.getString("poster"));
-                    list.add(m);
-                }
-                
-            }
-        catch(SQLException ex){
-            System.out.print("Co loi" + ex.getMessage());
-        }
-        return list;
-    }
     public List<String> getDSTheLoai(){
         java.util.List<String> dsTheLoai = new java.util.ArrayList<>();
         dsTheLoai.add("Tất cả");
@@ -165,12 +139,11 @@ public class MovieDAO {
         }
         return "M001";
     }
-    public List<Movie> searchMovies(String title, int statusIdx, int genreIdx, int maxDuration ){
+    public List<Movie> searchMovies(String key, int statusIdx, int genreIdx, int maxDuration ){
         java.util.List<Movie> dsLoc = new java.util.ArrayList<>();
-        java.util.List<Movie> dsPhim = getDSPhim();
         String sql = "Select * from movie where ";
         sql += "duration <= " + maxDuration;
-        if (title != null && !title.trim().isEmpty()) {
+        if (key != null && !key.trim().isEmpty()) {
             sql += " AND (title LIKE ? OR movieId = ?)";
         }
         if (statusIdx > 0) {
@@ -182,9 +155,9 @@ public class MovieDAO {
         try (Connection conn = DBConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql)) {
            int paramIdx=1;
-           if (title != null && !title.trim().isEmpty()) {
-               ps.setString(paramIdx++, "%" + title + "%");
-               ps.setString(paramIdx++, title);
+           if (key != null && !key.trim().isEmpty()) {
+               ps.setString(paramIdx++, "%" + key + "%");
+               ps.setString(paramIdx++, key);
            }
            if (statusIdx > 0) {
                ps.setInt(paramIdx++, statusIdx);
@@ -238,5 +211,24 @@ public class MovieDAO {
             System.out.print("Co loi" + ex.getMessage());
         }
         return min; 
+    }
+    public Object[][] getTop5Movie(){
+        String sql = "SELECT p.title, SUM(v.price) AS `Doanh Thu`, COUNT(v.ticketId) AS `Tong Ve` " +
+                     "FROM movie p JOIN showtime sc ON p.movieId = sc.movieId JOIN ticket v ON sc.showtimeId = v.showtimeId " +
+                     "GROUP BY p.movieId, p.title ORDER BY SUM(v.price) DESC LIMIT 5";
+        java.util.List<Object[]> list = new java.util.ArrayList<>();
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                String tenPhim = rs.getString("title");
+                long doanhThu = rs.getLong("Doanh Thu");
+                int tongVe = rs.getInt("Tong Ve");
+                list.add(new Object[]{tenPhim, doanhThu, tongVe});
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list.toArray(new Object[0][]);
     }
 }

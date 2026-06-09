@@ -28,7 +28,8 @@ public class EmployeeDAO {
         ps.setDouble(6, employee.getSalary());
         ps.setDate(7, java.sql.Date.valueOf(employee.getHireDate()));
         ps.setString(8, employee.getUsername());
-        ps.setString(9, employee.getPassword());
+        String hashed = org.mindrot.jbcrypt.BCrypt.hashpw(employee.getPassword(), org.mindrot.jbcrypt.BCrypt.gensalt(12));
+        ps.setString(9, hashed);
         ps.setString(10, employee.getStatus().name());
         ps.setString(11, "");
         int rows = ps.executeUpdate();
@@ -167,7 +168,10 @@ public List<Employee> getAllEmployeesFromDB() {
         ps.setDouble(5, emp.getSalary());
         ps.setString(6, emp.getStatus().name());
         ps.setString(7, emp.getUsername());
-        ps.setString(8, emp.getPassword());
+        String pwd = emp.getPassword();
+        if (!pwd.startsWith("$2a$") && !pwd.startsWith("$2b$")) {
+        pwd = org.mindrot.jbcrypt.BCrypt.hashpw(pwd, org.mindrot.jbcrypt.BCrypt.gensalt(12));}
+        ps.setString(8, pwd);
         ps.setString(9, emp.getId());
         return ps.executeUpdate() > 0;
     } catch (java.sql.SQLException e) {
@@ -180,15 +184,16 @@ public List<Employee> getAllEmployeesFromDB() {
    public List<Object[]> getTop5NhanVienBanVeThang() {
     List<Object[]> list = new ArrayList<>();
 
-    String sql = "SELECT e.EmployeeId, e.EmployeeName, COUNT(i.invoiceId) as soLuongVe " +
-                 "FROM invoice i " +
-                 "JOIN employee e ON e.EmployeeId = i.employeeId " +
-                 "WHERE MONTH(i.invoiceDate) = MONTH(CURDATE()) " +
-                 "  AND YEAR(i.invoiceDate) = YEAR(CURDATE()) " +
-                 "  AND e.Position = 'Nhan vien ban ve' " +
-                 "GROUP BY i.employeeId " +
-                 "ORDER BY soLuongVe DESC " +
-                 "LIMIT 5";
+    String sql = "SELECT "+
+        " e.EmployeeId, e.EmployeeName, SUM(t.price) AS doanhThu"+
+        " FROM invoice i JOIN employee e ON e.EmployeeId = i.employeeId "+
+        " JOIN ticket t ON i.invoiceId = t.invoiceId "+
+        " WHERE MONTH(i.invoiceDate) = MONTH(CURDATE()) "+
+        " AND YEAR(i.invoiceDate) = YEAR(CURDATE())"+
+        " AND e.Position = 'Nhan vien ban ve'"+
+        " GROUP BY e.EmployeeId, e.EmployeeName"+
+        " ORDER BY doanhThu DESC "+
+        " LIMIT 5;";
 
     try (Connection conn = cinema.DBConnection.getConnection();
          PreparedStatement ps = conn.prepareStatement(sql);
@@ -198,7 +203,7 @@ public List<Employee> getAllEmployeesFromDB() {
             list.add(new Object[]{
                 rs.getString("EmployeeId"),
                 rs.getString("EmployeeName"),
-                rs.getInt("soLuongVe")
+                rs.getLong("doanhThu")
             });
         }
 
@@ -217,4 +222,27 @@ public List<Employee> getAllEmployeesFromDB() {
         }
         return null;
     }
+    public void migratePasswordsToBcrypt() {
+    String selectSql = "SELECT EmployeeId, password FROM employee";
+    String updateSql = "UPDATE employee SET password = ? WHERE EmployeeId = ?";
+    try (java.sql.Connection conn = cinema.DBConnection.getConnection();
+         java.sql.PreparedStatement sel = conn.prepareStatement(selectSql);
+         java.sql.ResultSet rs = sel.executeQuery()) {
+        while (rs.next()) {
+            String id = rs.getString("EmployeeId");
+            String plain = rs.getString("password");
+            if (!plain.startsWith("$2a$") && !plain.startsWith("$2b$")) {
+                String hashed = org.mindrot.jbcrypt.BCrypt.hashpw(plain, org.mindrot.jbcrypt.BCrypt.gensalt(12));
+                try (java.sql.PreparedStatement upd = conn.prepareStatement(updateSql)) {
+                    upd.setString(1, hashed);
+                    upd.setString(2, id);
+                    upd.executeUpdate();
+                }
+            }
+        }
+        System.out.println("Migration hoan tat!");
+    } catch (java.sql.SQLException e) {
+        e.printStackTrace();
+    }
+}
 }

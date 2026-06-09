@@ -8,7 +8,6 @@ public class Movie {
     private int duration;
     private MovieStatus active;
     private String poster;
-    private int count = 0;
     public Movie() {
     }
     public Movie(String id,String title, int genreId, int duration, MovieStatus active, String poster) {
@@ -39,7 +38,6 @@ public class Movie {
     public int getDuration() { return duration; }
     public MovieStatus getActive() { return active; }
     public String getPoster() { return poster; }
-    public int getCountId(){return count;}
     public void setId(String id){this.id = id;}
     public void setTitle(String title){this.title = title;}
     public void setGenreId(int genreId){this.genreId = genreId;}

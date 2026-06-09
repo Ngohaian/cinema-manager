@@ -34,7 +34,33 @@ public class LoginFrame extends javax.swing.JFrame {
         jLabel2.setForeground(new java.awt.Color(102, 102, 102));
         jLabel2.setText("Tên đăng nhập");
 
-        txt_password.setName("txt_password"); // NOI18N
+        txt_password.setName("txt_password"); 
+        btn_togglePassword = new javax.swing.JButton();
+        btn_togglePassword.setFocusable(false);
+        btn_togglePassword.setBackground(new java.awt.Color(255, 255, 255));
+        btn_togglePassword.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 6, 2, 6));
+        btn_togglePassword.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btn_togglePassword.setContentAreaFilled(false);
+
+        java.net.URL visOnUrl  = getClass().getResource("/cinema/images/visibility.png");
+        java.net.URL visOffUrl = getClass().getResource("/cinema/images/visibility_off.png");
+        javax.swing.ImageIcon iconShow = new javax.swing.ImageIcon(
+            new javax.swing.ImageIcon(visOnUrl).getImage().getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH));
+        javax.swing.ImageIcon iconHide = new javax.swing.ImageIcon(
+            new javax.swing.ImageIcon(visOffUrl).getImage().getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH));
+
+        btn_togglePassword.setIcon(iconHide); 
+
+        btn_togglePassword.addActionListener(e -> {
+            passwordVisible = !passwordVisible;
+            if (passwordVisible) {
+                txt_password.setEchoChar((char) 0);
+                btn_togglePassword.setIcon(iconShow);  // đang hiện → icon visibility
+            } else {
+                txt_password.setEchoChar('●');
+                btn_togglePassword.setIcon(iconHide);  // đang ẩn → icon visibility_off
+            }
+        });
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(102, 102, 102));
@@ -56,6 +82,14 @@ public class LoginFrame extends javax.swing.JFrame {
         lbl_error.setFont(new java.awt.Font("Segoe UI", 0, 12));
         lbl_error.setForeground(new java.awt.Color(220, 50, 50));
         lbl_error.setText("");
+        
+        passwordPanel = new javax.swing.JPanel(new java.awt.BorderLayout());
+        passwordPanel.setBackground(new java.awt.Color(255, 255, 255));
+        passwordPanel.setBorder(txt_password.getBorder());
+        txt_password.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 2, 0, 2));
+        passwordPanel.add(txt_password, java.awt.BorderLayout.CENTER);
+        passwordPanel.add(btn_togglePassword, java.awt.BorderLayout.EAST);
+        passwordPanel.setPreferredSize(new java.awt.Dimension(257, 30));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -71,8 +105,7 @@ public class LoginFrame extends javax.swing.JFrame {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
                             .addComponent(jLabel3)
-                            .addComponent(txt_password, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btn_login, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(passwordPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)                            .addComponent(btn_login, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txt_username, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(lbl_error, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(33, Short.MAX_VALUE))
@@ -89,7 +122,7 @@ public class LoginFrame extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(jLabel3)
                 .addGap(17, 17, 17)
-                .addComponent(txt_password, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(passwordPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(30, 30, 30)
                 .addGap(6, 6, 6)
                 .addComponent(lbl_error)
@@ -154,13 +187,16 @@ public class LoginFrame extends javax.swing.JFrame {
     }
 
     private cinema.models.Employee checkLogin(String username, String password) {
-        String sql = "SELECT * FROM employee WHERE username = ? AND password = ? AND status = 'ACTIVE'";
+        String sql = "SELECT * FROM employee WHERE username = ? AND status = 'ACTIVE'";
         try (java.sql.Connection conn = cinema.DBConnection.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
-            ps.setString(2, password);
             java.sql.ResultSet rs = ps.executeQuery();
             if (rs.next()) {
+                String hashedPassword = rs.getString("password");
+                if (!org.mindrot.jbcrypt.BCrypt.checkpw(password, hashedPassword)) {
+                    return null; // sai mật khẩu
+                }
                 String posStr = rs.getString("Position");
                 cinema.models.Employee.Position pos;
                 switch (posStr) {
@@ -194,20 +230,6 @@ public class LoginFrame extends javax.swing.JFrame {
         return null;
     }
 
-    public static void main(String args[]) {
-        // try {
-        //     com.formdev.flatlaf.FlatLightLaf.setup(); 
-        // } catch( Exception ex ) {
-        //     System.err.println( "Failed to initialize LaF" );
-        // }
- 
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new LoginFrame().setVisible(true);
-                
-            }
-        });
-    }
 
 
     private javax.swing.JButton btn_login;
@@ -218,5 +240,7 @@ public class LoginFrame extends javax.swing.JFrame {
     private javax.swing.JPasswordField txt_password;
     private javax.swing.JTextField txt_username;
     private javax.swing.JLabel lbl_error;
-
+    private javax.swing.JButton btn_togglePassword;
+    private boolean passwordVisible = false;
+    private javax.swing.JPanel passwordPanel; 
 }

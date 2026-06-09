@@ -2,87 +2,251 @@ package cinema.dao;
 
 import cinema.DBConnection;
 import cinema.models.SeatLayout;
+
+import java.lang.reflect.Method;
 import java.sql.*;
 
 public class SeatLayoutDAO {
 
-    public SeatLayout getByRoomId(String roomId) throws Exception {
-        SeatLayout layout = null;
-        String sql = "SELECT * FROM SeatLayout WHERE roomId = ?";
+    private Connection getConn() throws Exception {
+        Connection conn = DBConnection.getConnection();
 
-        try(Connection conn = DBConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setString(1, roomId);
-            ResultSet rs = ps.executeQuery();
-
-            if(rs.next()) {
-                layout = new SeatLayout(
-                    rs.getInt("numberOfRows"),
-                    rs.getInt("seatsPerRow"),
-                    rs.getInt("vipStartRow"),
-                    rs.getInt("vipEndRow"),
-                    rs.getInt("coupleRow")
-                );
-            }
-        } catch(Exception ex) {
-            System.out.println("Loi lay SeatLayout: " + ex);
-            throw ex;
+        if (conn == null) {
+            throw new Exception("Không kết nối được MySQL. Kiểm tra DBConnection, user, password, IP và MySQL Connector.");
         }
 
-        return layout;
+        return conn;
     }
-    public void insert(String roomId, SeatLayout layout) throws Exception {
-        String sql = "INSERT INTO SeatLayout (roomId, numberOfRows, seatsPerRow, vipStartRow, vipEndRow, coupleRow) VALUES (?, ?, ?, ?, ?, ?)";
 
-        try(Connection conn = DBConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+    public SeatLayout getByRoomId(String roomId) throws Exception {
+        String sql = "SELECT * FROM SeatLayout WHERE roomId = ?";
+
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, roomId);
-            ps.setInt(2, layout.getNumberOfRows());
-            ps.setInt(3, layout.getSeatsPerRow());
-            ps.setInt(4, layout.getVipStartRow());
-            ps.setInt(5, layout.getVipEndRow());
-            ps.setInt(6, layout.getCoupleRow());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new SeatLayout(
+                            rs.getInt("numberOfRows"),
+                            rs.getInt("seatsPerRow"),
+                            rs.getInt("vipStartRow"),
+                            rs.getInt("vipEndRow"),
+                            rs.getInt("coupleRow")
+                    );
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public void insert(String roomId, SeatLayout layout) throws Exception {
+        int vipStartRow = getIntValue(layout, "getVipStartRow", -1);
+        int vipEndRow = getIntValue(layout, "getVipEndRow", -1);
+        int coupleRow = getIntValue(layout, "getCoupleRow", -1);
+
+        insert(
+                roomId,
+                layout.getNumberOfRows(),
+                layout.getSeatsPerRow(),
+                vipStartRow,
+                vipEndRow,
+                coupleRow
+        );
+    }
+
+    public void insert(String roomId, int rows, int cols,
+                       int vipStartRow, int vipEndRow, int coupleRow) throws Exception {
+
+        String sql = "INSERT INTO SeatLayout(roomId, numberOfRows, seatsPerRow, vipStartRow, vipEndRow, coupleRow) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, roomId);
+            ps.setInt(2, rows);
+            ps.setInt(3, cols);
+            ps.setInt(4, vipStartRow);
+            ps.setInt(5, vipEndRow);
+            ps.setInt(6, coupleRow);
 
             ps.executeUpdate();
-        } catch(Exception ex) {
-            System.out.println("Loi insert SeatLayout: " + ex);
-            throw ex;
+        }
+    }
+
+    public void insert(Connection conn, String roomId, int rows, int cols,
+                       int vipStartRow, int vipEndRow, int coupleRow) throws Exception {
+
+        String sql = "INSERT INTO SeatLayout(roomId, numberOfRows, seatsPerRow, vipStartRow, vipEndRow, coupleRow) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, roomId);
+            ps.setInt(2, rows);
+            ps.setInt(3, cols);
+            ps.setInt(4, vipStartRow);
+            ps.setInt(5, vipEndRow);
+            ps.setInt(6, coupleRow);
+
+            ps.executeUpdate();
         }
     }
 
     public void update(String roomId, SeatLayout layout) throws Exception {
-        String sql = "UPDATE SeatLayout SET numberOfRows=?, seatsPerRow=?, vipStartRow=?, vipEndRow=?, coupleRow=? WHERE roomId=?";
+        int vipStartRow = getIntValue(layout, "getVipStartRow", -1);
+        int vipEndRow = getIntValue(layout, "getVipEndRow", -1);
+        int coupleRow = getIntValue(layout, "getCoupleRow", -1);
 
-        try(Connection conn = DBConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setInt(1, layout.getNumberOfRows());
-            ps.setInt(2, layout.getSeatsPerRow());
-            ps.setInt(3, layout.getVipStartRow());
-            ps.setInt(4, layout.getVipEndRow());
-            ps.setInt(5, layout.getCoupleRow());
+        update(
+                roomId,
+                layout.getNumberOfRows(),
+                layout.getSeatsPerRow(),
+                vipStartRow,
+                vipEndRow,
+                coupleRow
+        );
+    }
+
+    public void update(String roomId, int rows, int cols,
+                       int vipStartRow, int vipEndRow, int coupleRow) throws Exception {
+
+        String sql = "UPDATE SeatLayout " +
+                "SET numberOfRows = ?, seatsPerRow = ?, vipStartRow = ?, vipEndRow = ?, coupleRow = ? " +
+                "WHERE roomId = ?";
+
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, rows);
+            ps.setInt(2, cols);
+            ps.setInt(3, vipStartRow);
+            ps.setInt(4, vipEndRow);
+            ps.setInt(5, coupleRow);
             ps.setString(6, roomId);
 
             ps.executeUpdate();
-        } catch(Exception ex) {
-            System.out.println("Loi update SeatLayout: " + ex);
-            throw ex;
+        }
+    }
+
+    public void update(Connection conn, String roomId, int rows, int cols,
+                       int vipStartRow, int vipEndRow, int coupleRow) throws Exception {
+
+        String sql = "UPDATE SeatLayout " +
+                "SET numberOfRows = ?, seatsPerRow = ?, vipStartRow = ?, vipEndRow = ?, coupleRow = ? " +
+                "WHERE roomId = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, rows);
+            ps.setInt(2, cols);
+            ps.setInt(3, vipStartRow);
+            ps.setInt(4, vipEndRow);
+            ps.setInt(5, coupleRow);
+            ps.setString(6, roomId);
+
+            ps.executeUpdate();
+        }
+    }
+
+    public void insertOrUpdate(String roomId, SeatLayout layout) throws Exception {
+        int vipStartRow = getIntValue(layout, "getVipStartRow", -1);
+        int vipEndRow = getIntValue(layout, "getVipEndRow", -1);
+        int coupleRow = getIntValue(layout, "getCoupleRow", -1);
+
+        insertOrUpdate(
+                roomId,
+                layout.getNumberOfRows(),
+                layout.getSeatsPerRow(),
+                vipStartRow,
+                vipEndRow,
+                coupleRow
+        );
+    }
+
+    public void insertOrUpdate(String roomId, int rows, int cols,
+                               int vipStartRow, int vipEndRow, int coupleRow) throws Exception {
+
+        String sql = "INSERT INTO SeatLayout(roomId, numberOfRows, seatsPerRow, vipStartRow, vipEndRow, coupleRow) " +
+                "VALUES (?, ?, ?, ?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE " +
+                "numberOfRows = VALUES(numberOfRows), " +
+                "seatsPerRow = VALUES(seatsPerRow), " +
+                "vipStartRow = VALUES(vipStartRow), " +
+                "vipEndRow = VALUES(vipEndRow), " +
+                "coupleRow = VALUES(coupleRow)";
+
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, roomId);
+            ps.setInt(2, rows);
+            ps.setInt(3, cols);
+            ps.setInt(4, vipStartRow);
+            ps.setInt(5, vipEndRow);
+            ps.setInt(6, coupleRow);
+
+            ps.executeUpdate();
+        }
+    }
+
+    public void insertOrUpdate(Connection conn, String roomId, int rows, int cols,
+                               int vipStartRow, int vipEndRow, int coupleRow) throws Exception {
+
+        String sql = "INSERT INTO SeatLayout(roomId, numberOfRows, seatsPerRow, vipStartRow, vipEndRow, coupleRow) " +
+                "VALUES (?, ?, ?, ?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE " +
+                "numberOfRows = VALUES(numberOfRows), " +
+                "seatsPerRow = VALUES(seatsPerRow), " +
+                "vipStartRow = VALUES(vipStartRow), " +
+                "vipEndRow = VALUES(vipEndRow), " +
+                "coupleRow = VALUES(coupleRow)";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, roomId);
+            ps.setInt(2, rows);
+            ps.setInt(3, cols);
+            ps.setInt(4, vipStartRow);
+            ps.setInt(5, vipEndRow);
+            ps.setInt(6, coupleRow);
+
+            ps.executeUpdate();
         }
     }
 
     public void delete(String roomId) throws Exception {
         String sql = "DELETE FROM SeatLayout WHERE roomId = ?";
 
-        try(Connection conn = DBConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, roomId);
             ps.executeUpdate();
-        } catch(Exception ex) {
-            System.out.println("Loi delete SeatLayout: " + ex);
-            throw ex;
+        }
+    }
+
+    public void delete(Connection conn, String roomId) throws Exception {
+        String sql = "DELETE FROM SeatLayout WHERE roomId = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, roomId);
+            ps.executeUpdate();
+        }
+    }
+
+    private int getIntValue(SeatLayout layout, String methodName, int defaultValue) {
+        try {
+            Method method = layout.getClass().getMethod(methodName);
+            Object value = method.invoke(layout);
+
+            if (value instanceof Integer) {
+                return (Integer) value;
+            }
+
+            return defaultValue;
+        } catch (Exception e) {
+            return defaultValue;
         }
     }
 }
