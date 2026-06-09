@@ -358,7 +358,15 @@ private void openSuaHoSo(cinema.models.Employee emp) {
                 javax.swing.BorderFactory.createEmptyBorder(4,8,4,8)));
             return;
         }
-
+        // Kiểm tra không chỉnh sửa gì
+        if (ten.equals(emp.getName()) && user.equals(emp.getUsername())
+        && sdt.equals(emp.getPhone()) && email.equals(emp.getEmail())) {
+            javax.swing.JOptionPane.showMessageDialog(d,
+                "Bạn chưa thay đổi thông tin nào!",
+                "Không có thay đổi", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        
         emp.setName(ten);
         emp.setUsername(user);
         emp.setPhone(sdt);
