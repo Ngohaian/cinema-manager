@@ -14,7 +14,9 @@ public class Seat {
     private String seatLabel;
     private SeatType seatType;
     private boolean active; 
-
+    
+    public Seat() {
+    }
     public Seat(int rowIndex, int colIndex, String seatLabel, SeatType seatType) {
         this.rowIndex = rowIndex;
         this.colIndex = colIndex;
@@ -42,7 +44,18 @@ public class Seat {
     public boolean isActive() {
         return active;
     }
-
+        public void setSeatType(SeatType seatType) {
+        this.seatType = seatType;
+    }
+    public void setSeatLabel(String seatLabel) {
+        this.seatLabel = seatLabel;
+    }
+    public void setRowIndex(int rowIndex) {
+        this.rowIndex = rowIndex;
+    }
+    public void setColIndex(int colIndex) {
+        this.colIndex = colIndex;
+    }
     public void setActive(boolean active) {
         this.active = active;
     }

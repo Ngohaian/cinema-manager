@@ -1,49 +1,264 @@
 package cinema.dao;
 
+import cinema.DBConnection;
+import cinema.models.Customer;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import cinema.models.Customer;
 
 public class CustomerDAO {
-    private List<Customer> customerList = new ArrayList<>();
 
-    public boolean addCustomer(Customer customer){
-        if(findById(customer.getId()) != null){
-            return false;
+    public boolean addCustomer(Customer c) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "INSERT INTO customer VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, c.getId());
+            ps.setString(2, c.getName());
+            ps.setString(3, c.getPhone());
+            ps.setString(4, c.getEmail());
+            ps.setString(5, Customer.CustomerType.STANDARD.getDisplayName());
+            ps.setFloat(6, 0);
+            ps.setDouble(7, 0);
+            ps.setDate(8, java.sql.Date.valueOf(java.time.LocalDate.now()));
+            ps.setString(9, "ACTIVE");
+            ps.setString(10, "");
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        customerList.add(customer);
-        return true;
+        return false;
     }
-    public Customer findById(String id){
-        for(Customer c : customerList){
-            if(c.getId().equals(id)){
+
+    public boolean deleteCustomer(String id) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "UPDATE customer SET status='INACTIVE' WHERE CustomerId=?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateCustomerLoyalty(Customer c) {
+    try {
+        Connection conn = DBConnection.getConnection();
+
+        String sql = """
+            UPDATE customer
+            SET loyaltyPoints = ?,
+                totalSpent = ?,
+                CustomerType = ?
+            WHERE CustomerId = ?
+        """;
+
+        PreparedStatement ps = conn.prepareStatement(sql);
+
+        ps.setDouble(1, c.getLoyaltyPoints());
+        ps.setDouble(2, c.getTotalSpent());
+        ps.setString(3, c.getType().getDisplayName());
+        ps.setString(4, c.getId());
+
+        return ps.executeUpdate() > 0;
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return false;
+}
+
+    public boolean updateCustomer(Customer c) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "UPDATE customer SET CustomerName=?, CustomerPhone=?, CustomerEmail=? WHERE CustomerId=?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, c.getName());
+            ps.setString(2, c.getPhone());
+            ps.setString(3, c.getEmail());
+            ps.setString(4, c.getId());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    public boolean updateStatus(String id, String status) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "UPDATE customer SET status=? WHERE CustomerId=?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, status);
+            ps.setString(2, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    public List<Customer> getAllCustomers() {
+        List<Customer> list = new ArrayList<>();
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT * FROM customer";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Customer c = new Customer("", "", "");
+                c.setId(rs.getString("CustomerId"));
+                c.setName(rs.getString("CustomerName"));
+                c.setPhone(rs.getString("CustomerPhone"));
+                c.setEmail(rs.getString("CustomerEmail"));
+                c.setTotalSpent(rs.getDouble("totalSpent"));     
+                c.setLoyaltyPoints(rs.getDouble("loyaltyPoints")); 
+                String statusStr = rs.getString("status");
+                if ("INACTIVE".equalsIgnoreCase(statusStr)) {
+                    c.deactivate_Customer();
+                }
+                String typeStr = rs.getString("CustomerType");
+                if (typeStr != null) {
+                for (Customer.CustomerType t : Customer.CustomerType.values()) {
+                    if (t.getDisplayName().equalsIgnoreCase(typeStr)) {
+                        c.setType(t); 
+                    break;
+                        }
+                    }
+                }
+                list.add(c);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public String getNextCustomerId() {
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT MAX(CustomerId) AS maxId FROM customer";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                String maxId = rs.getString("maxId");
+                if (maxId != null && maxId.startsWith("CUS")) {
+                    int num = Integer.parseInt(maxId.substring(3)) + 1;
+                    return String.format("CUS%03d", num);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "CUS001";
+    }
+
+    public double getMaxTotalSpent() {
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT MAX(TotalSpent) AS maxSpent FROM customer";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getDouble("maxSpent");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 10000000; 
+    }
+    public Customer getCustomerBySDT(String sdt) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT * from customer where CustomerPhone = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, sdt);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Customer c = new Customer("", "", "");
+                c.setId(rs.getString("CustomerId"));
+                c.setName(rs.getString("CustomerName"));
+                c.setPhone(rs.getString("CustomerPhone"));
+                c.setEmail(rs.getString("CustomerEmail"));
+                String typeStr = rs.getString("CustomerType");
+                if (typeStr != null) {
+                    for (Customer.CustomerType t : Customer.CustomerType.values()) {
+                        if (t.getDisplayName().equalsIgnoreCase(typeStr)) {
+                            c.setType(t);
+                            break;
+                        }
+                    }
+                }
+                c.setTotalSpent(rs.getDouble("totalSpent"));     
+                c.setLoyaltyPoints(rs.getDouble("loyaltyPoints")); 
+                String statusStr = rs.getString("status");
+                if ("INACTIVE".equalsIgnoreCase(statusStr)) {
+                    c.deactivate_Customer();
+                }
+                java.sql.Date createdDate = rs.getDate("createdDate");
+                if (createdDate != null) {
+                    c.setCreatedDate(createdDate.toLocalDate());
+                }
                 return c;
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
-    public boolean deleteCustomer(String id){
-        Customer c = findById(id);
-        if(c != null){
-            c.deactivate_Customer();
-            return true;
+
+    public Customer getCustomerById(String id) {
+    try {
+        Connection conn = DBConnection.getConnection();
+
+        String sql = "SELECT * FROM customer WHERE CustomerId = ?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, id);
+
+        ResultSet rs = ps.executeQuery();
+
+        if (rs.next()) {
+            Customer c = new Customer("", "", "");
+
+            c.setId(rs.getString("CustomerId"));
+            c.setName(rs.getString("CustomerName"));
+            c.setPhone(rs.getString("CustomerPhone"));
+            c.setEmail(rs.getString("CustomerEmail"));
+
+            c.setTotalSpent(rs.getDouble("totalSpent"));
+            c.setLoyaltyPoints(rs.getDouble("loyaltyPoints"));
+
+            String typeStr = rs.getString("CustomerType");
+
+            if (typeStr != null) {
+                for (Customer.CustomerType t : Customer.CustomerType.values()) {
+                    if (t.getDisplayName().equalsIgnoreCase(typeStr)) {
+                        c.setType(t);
+                        break;
+                    }
+                }
+            }
+
+            String statusStr = rs.getString("status");
+
+            if ("INACTIVE".equalsIgnoreCase(statusStr)) {
+                c.deactivate_Customer();
+            }
+
+            java.sql.Date createdDate = rs.getDate("createdDate");
+
+            if (createdDate != null) {
+                c.setCreatedDate(createdDate.toLocalDate());
+            }
+
+            return c;
         }
-        return false;
+
+    } catch (Exception e) {
+        e.printStackTrace();
     }
-    public boolean updateCustomer(String id,String name,String phone,String email){
-        Customer c = findById(id);
-        if(c != null){
-            c.setName(name);
-            c.setPhone(phone);
-            c.setEmail(email);
-            return true;
-        }
-        return false;
-    }
-    public void displayAllCustomers(){
-        for(Customer c : customerList){
-            c.displayInfo();
-            System.out.println("----------------");
-        }
-    }
+
+    return null;
+}
 }
