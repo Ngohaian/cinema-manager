@@ -391,55 +391,100 @@ private void openDoiMatKhau(cinema.models.Employee emp) {
     javax.swing.JDialog d = new javax.swing.JDialog();
     d.setTitle("Đổi mật khẩu");
     d.setModal(true);
-    d.setSize(380, 260);
+    d.setSize(400, 280);
     d.setLocationRelativeTo(null);
     javax.swing.JPanel p = new javax.swing.JPanel(null);
     p.setBackground(java.awt.Color.WHITE);
 
+    javax.swing.ImageIcon iconShow = new javax.swing.ImageIcon(
+        new javax.swing.ImageIcon(getClass().getResource("/cinema/images/visibility.png"))
+        .getImage().getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH));
+    javax.swing.ImageIcon iconHide = new javax.swing.ImageIcon(
+        new javax.swing.ImageIcon(getClass().getResource("/cinema/images/visibility_off.png"))
+        .getImage().getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH));
+
     javax.swing.JLabel lbCu = new javax.swing.JLabel("Mật khẩu hiện tại");
-    lbCu.setBounds(30, 20, 310, 20);
+    lbCu.setBounds(30, 20, 320, 20);
     lbCu.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+
     javax.swing.JPasswordField tfCu = new javax.swing.JPasswordField();
-    tfCu.setBounds(30, 44, 310, 32);
+    tfCu.setBounds(30, 44, 285, 32);
     tfCu.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
     tfCu.setBorder(javax.swing.BorderFactory.createCompoundBorder(
         javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200,200,200)),
         javax.swing.BorderFactory.createEmptyBorder(4,8,4,8)));
 
+    javax.swing.JButton btnShowCu = new javax.swing.JButton(iconHide);
+    btnShowCu.setBounds(318, 44, 36, 32);
+    btnShowCu.setFocusPainted(false);
+    btnShowCu.setContentAreaFilled(false);
+    btnShowCu.setBorderPainted(false);
+    btnShowCu.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+    btnShowCu.addActionListener(e -> {
+        if (tfCu.getEchoChar() == 0) { tfCu.setEchoChar('●'); btnShowCu.setIcon(iconHide); }
+        else { tfCu.setEchoChar((char) 0); btnShowCu.setIcon(iconShow); }
+    });
+
     javax.swing.JLabel lbMoi = new javax.swing.JLabel("Mật khẩu mới");
-    lbMoi.setBounds(30, 90, 310, 20);
+    lbMoi.setBounds(30, 90, 320, 20);
     lbMoi.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+
     javax.swing.JPasswordField tfMoi = new javax.swing.JPasswordField();
-    tfMoi.setBounds(30, 114, 310, 32);
+    tfMoi.setBounds(30, 114, 285, 32);
     tfMoi.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
     tfMoi.setBorder(javax.swing.BorderFactory.createCompoundBorder(
         javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200,200,200)),
         javax.swing.BorderFactory.createEmptyBorder(4,8,4,8)));
+
+    javax.swing.JButton btnShowMoi = new javax.swing.JButton(iconHide);
+    btnShowMoi.setBounds(318, 114, 36, 32);
+    btnShowMoi.setFocusPainted(false);
+    btnShowMoi.setContentAreaFilled(false);
+    btnShowMoi.setBorderPainted(false);
+    btnShowMoi.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+    btnShowMoi.addActionListener(e -> {
+        if (tfMoi.getEchoChar() == 0) { tfMoi.setEchoChar('●'); btnShowMoi.setIcon(iconHide); }
+        else { tfMoi.setEchoChar((char) 0); btnShowMoi.setIcon(iconShow); }
+    });
+
+    javax.swing.JLabel lbError = new javax.swing.JLabel("");
+    lbError.setBounds(30, 152, 320, 18);
+    lbError.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 12));
+    lbError.setForeground(new java.awt.Color(220, 53, 69));
+
     javax.swing.JButton btn = new javax.swing.JButton("Xác nhận");
-    btn.setBounds(30, 165, 310, 38);
+    btn.setBounds(30, 175, 320, 38);
     btn.setBackground(new java.awt.Color(0, 146, 255));
     btn.setForeground(java.awt.Color.WHITE);
     btn.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
-    btn.setFocusPainted(false); btn.setBorderPainted(false);
+    btn.setFocusPainted(false);
+    btn.setBorderPainted(false);
     btn.addActionListener(e2 -> {
         String cu  = new String(tfCu.getPassword()).trim();
         String moi = new String(tfMoi.getPassword()).trim();
-        boolean matKhauDung = false;
-        try (java.sql.Connection conn = cinema.DBConnection.getConnection();
-            java.sql.PreparedStatement ps = conn.prepareStatement(
-                "SELECT 1 FROM employee WHERE username = ? AND password = ?")) {
-            ps.setString(1, emp.getUsername());
-            ps.setString(2, cu);
-            matKhauDung = ps.executeQuery().next();
-        } catch (java.sql.SQLException ex) { ex.printStackTrace(); }
-        if (!matKhauDung) {
-            javax.swing.JOptionPane.showMessageDialog(d, "Mật khẩu hiện tại không đúng!", "Lỗi",
-                javax.swing.JOptionPane.ERROR_MESSAGE);
+
+        // 1. Kiểm tra mật khẩu hiện tại
+        if (cu.isEmpty() || !org.mindrot.jbcrypt.BCrypt.checkpw(cu, emp.getPassword())) {
+            lbError.setText("Mật khẩu hiện tại không đúng!");
+            tfCu.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createLineBorder(new java.awt.Color(220,53,69)),
+                javax.swing.BorderFactory.createEmptyBorder(4,8,4,8)));
             return;
         }
+        // 2. Kiểm tra mật khẩu mới không trống
         if (moi.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(d, "Mật khẩu mới không được để trống!", "Lỗi",
-                javax.swing.JOptionPane.WARNING_MESSAGE);
+            lbError.setText("Mật khẩu mới không được để trống!");
+            tfMoi.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createLineBorder(new java.awt.Color(220,53,69)),
+                javax.swing.BorderFactory.createEmptyBorder(4,8,4,8)));
+            return;
+        }
+        // 3. Kiểm tra không được trùng mật khẩu cũ
+        if (org.mindrot.jbcrypt.BCrypt.checkpw(moi, emp.getPassword())) {
+            lbError.setText("Mật khẩu mới không được trùng mật khẩu hiện tại!");
+            tfMoi.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createLineBorder(new java.awt.Color(220,53,69)),
+                javax.swing.BorderFactory.createEmptyBorder(4,8,4,8)));
             return;
         }
         emp.setPassword(moi);
@@ -447,8 +492,10 @@ private void openDoiMatKhau(cinema.models.Employee emp) {
         d.dispose();
         javax.swing.JOptionPane.showMessageDialog(null, "Đổi mật khẩu thành công!");
     });
-    p.add(lbCu); p.add(tfCu);
-    p.add(lbMoi); p.add(tfMoi);
+
+    p.add(lbCu);  p.add(tfCu);  p.add(btnShowCu);
+    p.add(lbMoi); p.add(tfMoi); p.add(btnShowMoi);
+    p.add(lbError); // ← label lỗi inline thay vì JOptionPane
     p.add(btn);
     d.setContentPane(p);
     d.setVisible(true);
