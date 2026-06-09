@@ -78,7 +78,7 @@ public class MovieDAO {
             ps.setInt(4, m.getActive().getValue());
             ps.setString(5, m.getPoster());
             ps.setString(6, m.getId());
-            return ps.executeUpdate() >0;
+            return ps.executeUpdate() > 0;
         }
         catch(SQLException ex){
             System.out.println("Loi "+ ex);
