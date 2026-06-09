@@ -263,4 +263,24 @@ public class SeatDao {
             ps.executeUpdate();
         }
     }
+    public void updateSeatStatusToSold(Connection conn, int seatId) throws Exception {
+    String sql = "UPDATE Seat SET status = 'Sold' WHERE seatId = ?";
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, seatId);
+        ps.executeUpdate();
+    }
+    }
+ 
+public int getSeatId(Connection conn, String roomId, int rowIndex, int colIndex) throws Exception {
+    String sql = "SELECT seatId FROM Seat WHERE roomId = ? AND rowIndex = ? AND colIndex = ?";
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, roomId);
+        ps.setInt(2, rowIndex);
+        ps.setInt(3, colIndex);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt("seatId");
+            else throw new Exception("Không tìm thấy ghế: " + roomId + "/" + rowIndex + "/" + colIndex);
+        }
+    }
 }
+    }

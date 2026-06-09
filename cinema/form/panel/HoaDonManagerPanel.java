@@ -499,6 +499,11 @@ public class HoaDonManagerPanel extends JPanel {
                 } else { super.setValue(value); }
             }
         });
+        table.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value,
+                                                   boolean isSelected, boolean hasFocus,
+                                                   int row, int column) {
 
         // Màu + căn giữa cột Trạng thái
         table.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
