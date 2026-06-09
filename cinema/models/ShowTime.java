@@ -6,8 +6,6 @@ import java.util.List;
 import cinema.enums.SeatStatus;
 import cinema.enums.SeatType;
 
-import java.time.LocalDateTime;
-
 /**
  * Showtime đại diện cho 1 suất chiếu cụ thể.
  * Mỗi suất có trạng thái ghế riêng.
@@ -24,7 +22,6 @@ public class ShowTime {
 
     private SeatStatus[][] seatStatus;
     private List<Ticket> tickets;
-    private int ticketCounter = 1;
 
     private double basePrice;
     private double vipExtra;

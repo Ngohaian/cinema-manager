@@ -11,25 +11,31 @@ public class Invoice {
     private String employeeId;
     private LocalDateTime invoiceDate;
     private double totalAmount;
-
     private String status;
-    private String phone;
-
     private List<Ticket> tickets;
 
     public Invoice() {
         tickets = new ArrayList<>();
     }
-    public Invoice(String invoiceId, String customerId, String employeeId, LocalDateTime invoiceDate, double totalAmount) {
+
+    public Invoice(String invoiceId, String customerId,String employeeId, LocalDateTime invoiceDate, double totalAmount) {
         this.invoiceId = invoiceId;
         this.customerId = customerId;
         this.employeeId = employeeId;
         this.invoiceDate = invoiceDate;
         this.totalAmount = totalAmount;
-        this.status = 
-        tickets = new ArrayList<>();
+        this.tickets = new ArrayList<>();
+        this.status = "Đã thanh toán";
     }
-    // ===== GET =====
+
+    public double calculateTotalAmount() {
+        double total = 0;
+        for (Ticket ticket : tickets) {
+            total += ticket.getPrice();
+        }
+        this.totalAmount = total;
+        return total;
+    }
 
     public String getInvoiceId() {
         return invoiceId;
@@ -49,14 +55,6 @@ public class Invoice {
 
     public double getTotalAmount() {
         return totalAmount;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public String getPhone() {
-        return phone;
     }
 
     public List<Ticket> getTickets() {
@@ -88,8 +86,7 @@ public class Invoice {
     public void setStatus(String status) {
         this.status = status;
     }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public String getStatus(){
+        return this.status;
     }
 }

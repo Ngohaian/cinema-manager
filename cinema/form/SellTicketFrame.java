@@ -1,6 +1,5 @@
 package cinema.form;
 import cinema.form.panel.*;
-import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -102,7 +101,9 @@ public class SellTicketFrame extends javax.swing.JFrame {
             case "BanVe":
                 BanVePanel banVe = new BanVePanel();
                 banVe.setCurrentEmployee(currentEmployee);
-                if (data != null) {
+                if (data instanceof cinema.models.ShowTime) {
+                    banVe.openSeatBooking((cinema.models.ShowTime) data); 
+                } else if (data instanceof cinema.models.Movie) {
                     banVe.displayShowTime((cinema.models.Movie) data); 
                 }
                 pContent.add(banVe, java.awt.BorderLayout.CENTER);
@@ -118,7 +119,12 @@ public class SellTicketFrame extends javax.swing.JFrame {
                 break;
                 
             case "LichChieu":
-                pContent.add(wrap(new LichChieuPanel()), java.awt.BorderLayout.CENTER);
+                LichChieuPanel lichchieu = new LichChieuPanel();
+                lichchieu.setOnBookShowTime(showtime -> {
+                    showPanel("BanVe", showtime);
+                    setSelectedButton(btnBanVe);
+                });
+                pContent.add(wrap(lichchieu), java.awt.BorderLayout.CENTER);
                 break;
             case "LichSu":
                 pContent.add(wrap(new LichSuHDPanel()), java.awt.BorderLayout.CENTER);

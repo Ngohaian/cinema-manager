@@ -2,6 +2,7 @@ package cinema.form.panel;
 
 import cinema.dao.ShowTimeDAO;
 import cinema.dao.ShowTimeDAO.LichChieuItem;
+import cinema.models.ShowTime;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -18,7 +19,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -47,6 +47,8 @@ public class LichChieuPanel extends javax.swing.JPanel {
     private JPanel pnlMovieList;
     private LocalDate selectedDate;
     private List<LocalDate> availableDates = new ArrayList<>();
+    private java.util.function.Consumer<cinema.models.ShowTime> onBookShowTime;
+
 
     public LichChieuPanel() {
         initComponents();
@@ -116,7 +118,9 @@ public class LichChieuPanel extends javax.swing.JPanel {
         revalidate();
         repaint();
     }
-
+    public void setOnBookShowTime(java.util.function.Consumer<cinema.models.ShowTime> callback) {
+        this.onBookShowTime = callback;
+    }
     private void loadDates() {
         availableDates = showTimeDAO.getAvailableScheduleDates();
 
@@ -253,8 +257,6 @@ public class LichChieuPanel extends javax.swing.JPanel {
         JPanel card = new JPanel(new BorderLayout(24, 0));
         card.setBackground(Color.WHITE);
         card.setBorder(new LineBorder(BORDER, 1));
-        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 260));
-        card.setPreferredSize(new Dimension(1000, 260));
 
         JPanel posterPanel = new JPanel(new GridBagLayout());
         posterPanel.setBackground(Color.WHITE);
@@ -351,6 +353,7 @@ public class LichChieuPanel extends javax.swing.JPanel {
             btn.setForeground(new Color(140, 140, 140));
             btn.setBorder(new LineBorder(new Color(220, 220, 220), 1));
         } else if (item.isFastSelling()) {
+            btn.setPreferredSize(new Dimension(120, 54));
             btn.setText("<html><center><b>" + start + "  🔥</b><br><span style='font-size:9px'>~" + end + "</span></center></html>");
             btn.setBackground(Color.WHITE);
             btn.setForeground(ORANGE);
@@ -362,23 +365,33 @@ public class LichChieuPanel extends javax.swing.JPanel {
         }
 
         btn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(
-                this,
-                "Bạn đã chọn suất chiếu: " + item.getShowtimeId()
-                    + "\nPhim: " + item.getMovieTitle()
-                    + "\nPhòng: " + item.getRoomName()
-                    + "\nGiờ: " + start,
-                "Thông tin suất chiếu",
-                JOptionPane.INFORMATION_MESSAGE
-            );
-
-            // Sau này khi nối màn chọn ghế thì gọi ở đây:
-            // openSeatMap(item.getShowtimeId());
+            openBooking(item);
         });
 
         return btn;
     }
+    private void openBooking(LichChieuItem item) {
+         if (!selectedDate.equals(LocalDate.now())) {
+            JOptionPane.showMessageDialog(
+                null,
+                "Chỉ có thể đặt vé cho suất chiếu hôm nay!",
+                "Không thể đặt vé",
+                JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
 
+        ShowTime selectedShowTime = showTimeDAO.getShowtimeById(item.getShowtimeId());
+
+        if (selectedShowTime == null) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy suất chiếu này!");
+            return;
+        }
+
+        if (onBookShowTime != null) {
+            onBookShowTime.accept(selectedShowTime);
+        }
+    }
     private JPanel createLegendPanel() {
         JPanel legend = new JPanel(new BorderLayout());
         legend.setBackground(Color.WHITE);
@@ -457,7 +470,7 @@ public class LichChieuPanel extends javax.swing.JPanel {
             java.net.URL url;
 
             if (posterPath.startsWith("http://") || posterPath.startsWith("https://")) {
-                url = new java.net.URL(posterPath);
+                url = java.net.URI.create(posterPath).toURL();
             } else {
                 url = getClass().getResource(posterPath);
             }
@@ -495,7 +508,7 @@ public class LichChieuPanel extends javax.swing.JPanel {
         return new ImageIcon(img);
     }
 
-    @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 

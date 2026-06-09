@@ -273,7 +273,6 @@ public class ThongTinPanel extends javax.swing.JPanel {
         emp.getStatus() == cinema.models.Employee.EmployeeStatus.ACTIVE 
         ? "Vẫn còn làm việc" : "Đã nghỉ việc");
 
-    jButton1.addActionListener(null); 
     for (var l : jButton1.getActionListeners()) jButton1.removeActionListener(l);
     jButton1.addActionListener(e -> openSuaHoSo(emp));
 
@@ -310,14 +309,63 @@ public void openSuaHoSo(cinema.models.Employee emp) {
     btn.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
     btn.setFocusPainted(false); btn.setBorderPainted(false);
     btn.addActionListener(e2 -> {
-        emp.setName(tfTen.getText().trim());
-        emp.setUsername(tfUser.getText().trim());
-        emp.setPhone(tfSDT.getText().trim());
-        emp.setEmail(tfEmail.getText().trim());
+        String ten   = tfTen.getText().trim();
+        String user  = tfUser.getText().trim();
+        String sdt   = tfSDT.getText().trim();
+        String email = tfEmail.getText().trim();
+        // Highlight border đỏ nếu trống, xám nếu có chữ
+        java.awt.Color errorColor  = new java.awt.Color(220, 53, 69);
+        java.awt.Color normalColor = new java.awt.Color(200, 200, 200);
+        tfTen.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+            javax.swing.BorderFactory.createLineBorder(ten.isEmpty()   ? errorColor : normalColor),
+            javax.swing.BorderFactory.createEmptyBorder(4,8,4,8)));
+        tfUser.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+            javax.swing.BorderFactory.createLineBorder(user.isEmpty()  ? errorColor : normalColor),
+            javax.swing.BorderFactory.createEmptyBorder(4,8,4,8)));
+        tfSDT.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+            javax.swing.BorderFactory.createLineBorder(sdt.isEmpty()   ? errorColor : normalColor),
+            javax.swing.BorderFactory.createEmptyBorder(4,8,4,8)));
+        tfEmail.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+            javax.swing.BorderFactory.createLineBorder(email.isEmpty() ? errorColor : normalColor),
+            javax.swing.BorderFactory.createEmptyBorder(4,8,4,8)));
+
+        // Nếu có ô nào trống thì dừng, không lưu
+        if (ten.isEmpty() || user.isEmpty() || sdt.isEmpty() || email.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(d,
+                "Vui lòng điền đầy đủ thông tin, không được để trống!",
+                "Thiếu thông tin", javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        
+        }
+        if (!sdt.matches("\\d{10}")) {
+            javax.swing.JOptionPane.showMessageDialog(d,
+                "Số điện thoại chỉ được chứa chữ số và tối đa 10 ký tự!",
+                "Không hợp lệ", javax.swing.JOptionPane.WARNING_MESSAGE);
+            tfSDT.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createLineBorder(errorColor),
+                javax.swing.BorderFactory.createEmptyBorder(4,8,4,8)));
+            return;
+        }
+
+        // Kiểm tra email phải có @gmail.com
+        if (!email.endsWith("@gmail.com")) {
+            javax.swing.JOptionPane.showMessageDialog(d,
+                "Email phải có dạng ...@gmail.com!",
+                "Không hợp lệ", javax.swing.JOptionPane.WARNING_MESSAGE);
+            tfEmail.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createLineBorder(errorColor),
+                javax.swing.BorderFactory.createEmptyBorder(4,8,4,8)));
+            return;
+        }
+
+        emp.setName(ten);
+        emp.setUsername(user);
+        emp.setPhone(sdt);
+        emp.setEmail(email);
         new cinema.dao.EmployeeDAO().updateEmployee(emp);
-        loadEmployee(emp); // refresh panel
+        loadEmployee(emp);
         d.dispose();
-        javax.swing.JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+        javax.swing.JOptionPane.showMessageDialog(null, "Cập nhật thành công!");
     });
     p.add(btn);
     d.setContentPane(p);
@@ -396,7 +444,7 @@ public void openDoiMatKhau(cinema.models.Employee emp) {
         emp.setPassword(moi);
         new cinema.dao.EmployeeDAO().updateEmployee(emp);
         d.dispose();
-        javax.swing.JOptionPane.showMessageDialog(this, "Đổi mật khẩu thành công!");
+        javax.swing.JOptionPane.showMessageDialog(null, "Đổi mật khẩu thành công!");
     });
     p.add(lbCu); p.add(tfCu);
     p.add(lbMoi); p.add(tfMoi);

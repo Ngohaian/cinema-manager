@@ -16,13 +16,7 @@ public class InvoiceDAO {
     public List<Invoice> getAll() {
 
         List<Invoice> list = new ArrayList<>();
-
-        String sql = """
-            SELECT i.*, c.phone
-            FROM Invoice i
-            LEFT JOIN Customer c
-                ON i.customerId = c.customerId
-        """;
+        String sql = "SELECT * FROM Invoice";
 
         try (
                 Connection conn = DBConnection.getConnection();
@@ -33,37 +27,12 @@ public class InvoiceDAO {
             while (rs.next()) {
 
                 Invoice inv = new Invoice();
-
-                inv.setInvoiceId(
-                        rs.getString("invoiceId")
-                );
-
-                inv.setCustomerId(
-                        rs.getString("customerId")
-                );
-
-                inv.setEmployeeId(
-                        rs.getString("employeeId")
-                );
-
-                inv.setInvoiceDate(
-                        rs.getTimestamp("invoiceDate")
-                                .toLocalDateTime()
-                );
-
-                inv.setTotalAmount(
-                        rs.getDouble("totalAmount")
-                );
-
-                inv.setStatus(
-                        rs.getString("status")
-                );
-
-                // SĐT khách hàng
-                inv.setPhone(
-                        rs.getString("phone")
-                );
-
+                inv.setInvoiceId(rs.getString("invoiceId"));
+                inv.setCustomerId(rs.getString("customerId"));
+                inv.setInvoiceDate(rs.getTimestamp("invoiceDate").toLocalDateTime());
+                inv.setTotalAmount(rs.getDouble("totalAmount"));
+                inv.setEmployeeId(rs.getString("EmployeeId"));
+                inv.setStatus(rs.getString("status"));
                 list.add(inv);
             }
 
@@ -373,12 +342,7 @@ public class InvoiceDAO {
 
     public boolean cancelInvoiceAndTickets(String invoiceId) {
 
-        String sqlTicket = """
-            UPDATE Ticket
-            SET status = 'Canceled',
-                invoiceId = NULL
-            WHERE invoiceId = ?
-        """;
+        String sqlTicket = "UPDATE Ticket SET status = 'Canceled', invoiceID =NULL  WHERE invoiceId = ?";
 
         String sqlInvoice = """
             UPDATE Invoice
@@ -419,4 +383,158 @@ public class InvoiceDAO {
             return false;
         }
     }
+    // ================= DOANH THU HÔM NAY =================
+
+    public double getTodayRevenue() {
+
+        String sql = """
+            SELECT IFNULL(SUM(totalAmount), 0) AS revenue
+            FROM Invoice
+            WHERE DATE(invoiceDate) = CURDATE()
+            AND status = 'Đã thanh toán'
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()
+        ) {
+
+            if (rs.next()) {
+                return rs.getDouble("revenue");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    // ================= TỔNG VÉ BÁN HÔM NAY =================
+
+    public int getTodayTicketSold() {
+
+        String sql = """
+            SELECT COUNT(*) AS total
+            FROM Ticket t
+            JOIN Invoice i
+                ON t.invoiceId = i.invoiceId
+            WHERE DATE(i.invoiceDate) = CURDATE()
+            AND t.status IN ('Sold', 'Used')
+            AND i.status = 'Đã thanh toán'
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()
+        ) {
+
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    // ================= DOANH THU THEO NGÀY =================
+
+    public double getRevenueByDay(String date) {
+
+        String sql = """
+            SELECT IFNULL(SUM(totalAmount), 0) AS revenue
+            FROM Invoice
+            WHERE DATE(invoiceDate) = ?
+            AND status = 'Đã thanh toán'
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+
+            ps.setString(1, date);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getDouble("revenue");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    // ================= DOANH THU THEO THÁNG =================
+
+    public double getRevenueByMonth(int month, int year) {
+
+        String sql = """
+            SELECT IFNULL(SUM(totalAmount), 0) AS revenue
+            FROM Invoice
+            WHERE MONTH(invoiceDate) = ?
+            AND YEAR(invoiceDate) = ?
+            AND status = 'Đã thanh toán'
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+
+            ps.setInt(1, month);
+            ps.setInt(2, year);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getDouble("revenue");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    // ================= DOANH THU THEO NĂM =================
+
+    public double getRevenueByYear(int year) {
+
+        String sql = """
+            SELECT IFNULL(SUM(totalAmount), 0) AS revenue
+            FROM Invoice
+            WHERE YEAR(invoiceDate) = ?
+            AND status = 'Đã thanh toán'
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+
+            ps.setInt(1, year);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getDouble("revenue");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
 }

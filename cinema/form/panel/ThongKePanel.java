@@ -5,20 +5,23 @@ import java.awt.*;
 import java.util.List;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
 import cinema.dao.EmployeeDAO;
+import cinema.dao.InvoiceDAO;
 import cinema.dao.MovieDAO;
+import cinema.dao.ShowTimeDAO;
 
 public class ThongKePanel extends javax.swing.JPanel {
     private DefaultCategoryDataset dataDoanhThu, dataNhanVien;
     private DefaultCategoryDataset dataNgay, dataThang, dataNam;
     private org.jfree.chart.plot.CategoryPlot globalPlot;
-    private DefaultPieDataset dataSuatChieu;
-    MovieDAO moviedao = new MovieDAO();
-    EmployeeDAO employeedao = new EmployeeDAO();
+    private DefaultPieDataset<String> dataSuatChieu;
+    private MovieDAO moviedao = new MovieDAO();
+    private InvoiceDAO invoicedao = new InvoiceDAO();
+    private EmployeeDAO employeedao = new EmployeeDAO();
+    private ShowTimeDAO showtimedao = new ShowTimeDAO();
     public ThongKePanel() {
         initComponents();
         loadData();
@@ -38,38 +41,45 @@ public class ThongKePanel extends javax.swing.JPanel {
             dataNhanVien.addValue(doanhThu, "Doanh thu", id);
         }
 
-        dataSuatChieu = new DefaultPieDataset();
-        dataSuatChieu.setValue("08:00 - 11:59", 5);    
-        dataSuatChieu.setValue("12:00 - 15:59", 10);    
-        dataSuatChieu.setValue("16:00 - 18:00", 25);    
-        dataSuatChieu.setValue("19:00 - 22:59", 45);          
-        dataSuatChieu.setValue("23:00 - 07:59", 15);
-        
-        dataNgay = new org.jfree.data.category.DefaultCategoryDataset();
-        dataNgay.addValue(120, "Doanh thu", "01/05");
-        dataNgay.addValue(150, "Doanh thu", "02/05");
-        dataNgay.addValue(120, "Doanh thu", "03/05");
-        dataNgay.addValue(150, "Doanh thu", "04/05");
-        dataNgay.addValue(120, "Doanh thu", "05/05");
-        dataNgay.addValue(150, "Doanh thu", "06/05");
-        dataNgay.addValue(120, "Doanh thu", "07/05");
-        dataNgay.addValue(150, "Doanh thu", "08/05");
-        dataNgay.addValue(120, "Doanh thu", "09/05");
-        dataNgay.addValue(150, "Doanh thu", "10/05");
+        dataSuatChieu = new DefaultPieDataset<String>();
+        dataSuatChieu.setValue("08:00 - 11:59", 0);
+        dataSuatChieu.setValue("12:00 - 15:59", 0);
+        dataSuatChieu.setValue("16:00 - 18:00", 0);
+        dataSuatChieu.setValue("19:00 - 22:59", 0);
+        dataSuatChieu.setValue("23:00 - 07:59", 0);
 
-        dataThang = new org.jfree.data.category.DefaultCategoryDataset();
-        dataThang.addValue(4500, "Doanh thu", "Tháng 1");
-        dataThang.addValue(5200, "Doanh thu", "Tháng 2");
-        dataThang.addValue(4500, "Doanh thu", "Tháng 3");
-        dataThang.addValue(5200, "Doanh thu", "Tháng 4");
-        dataThang.addValue(4500, "Doanh thu", "Tháng 5");
-
-        dataNam = new org.jfree.data.category.DefaultCategoryDataset();
-        dataNam.addValue(55000, "Doanh thu", "2023");
-        dataNam.addValue(72000, "Doanh thu", "2024");
-        dataNam.addValue(59990, "Doanh thu", "2025");
-        dataNam.addValue(80000, "Doanh thu", "2026");
+        Object[][] dsKhachTheoKhungGio = showtimedao.getCustomerByTimeSlotThisMonth();
+        for (Object[] row : dsKhachTheoKhungGio) {
+            String khungGio = row[0].toString();
+            int soKhach = Integer.parseInt(row[1].toString());
+            dataSuatChieu.setValue(khungGio, soKhach);
+        }
         
+        // ---- Doanh thu theo ngày (10 ngày gần nhất) ----
+        dataNgay = new DefaultCategoryDataset();
+        java.time.LocalDate today = java.time.LocalDate.now();
+        for (int i = 9; i >= 0; i--) {
+            java.time.LocalDate date = today.minusDays(i);
+            String label = date.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM"));
+            String dateStr = date.toString(); // yyyy-MM-dd
+            double revenue = invoicedao.getRevenueByDay(dateStr);
+            dataNgay.addValue(revenue, "Doanh thu", label);
+    }
+
+        // ---- Doanh thu theo tháng (12 tháng năm nay) ----
+        dataThang = new DefaultCategoryDataset();
+        int currentYear = today.getYear();
+        for (int m = 1; m <= 12; m++) {
+            double revenue = invoicedao.getRevenueByMonth(m, currentYear);
+            dataThang.addValue(revenue, "Doanh thu", "T " + m);
+        }
+
+        // ---- Doanh thu theo năm (4 năm gần nhất) ----
+        dataNam = new DefaultCategoryDataset();
+        for (int y = currentYear - 3; y <= currentYear; y++) {
+            double revenue = invoicedao.getRevenueByYear(y);
+            dataNam.addValue(revenue, "Doanh thu", String.valueOf(y));
+        }
     }
     private void setupCustomUI() {
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
@@ -105,10 +115,15 @@ public class ThongKePanel extends javax.swing.JPanel {
     }
 
     private JPanel createKpiRow() {
+        double todayRevenue = invoicedao.getTodayRevenue();
+        int todayTickets    = invoicedao.getTodayTicketSold();
+
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#,###đ");
+
         JPanel row = new JPanel(new GridLayout(1, 4, 20, 0));
         row.setOpaque(false);
-        row.add(createCard("Doanh thu vé (Hôm nay)", "123.456.000đ", Color.black));
-        row.add(createCard("Số vé bán (Hôm nay)", "567 vé", Color.black));
+        row.add(createCard("Doanh thu vé (Hôm nay)", df.format(todayRevenue), Color.black));
+        row.add(createCard("Số vé bán (Hôm nay)", todayTickets + " vé", Color.black));
         return row;
     }
 
@@ -143,7 +158,7 @@ public class ThongKePanel extends javax.swing.JPanel {
         pieChart.setBackgroundPaint(Color.WHITE);
         pieChart.getTitle().setFont(new Font("Segoe UI", Font.BOLD, 18));
         pieChart.getTitle().setPadding(10, 0, 20, 0);
-        org.jfree.chart.plot.PiePlot piePlot = (org.jfree.chart.plot.PiePlot) pieChart.getPlot();
+        org.jfree.chart.plot.PiePlot<?> piePlot = (org.jfree.chart.plot.PiePlot<?>) pieChart.getPlot();
         piePlot.setBackgroundPaint(Color.WHITE);
         piePlot.setOutlineVisible(false);
         piePlot.setShadowPaint(null);
@@ -245,7 +260,6 @@ public class ThongKePanel extends javax.swing.JPanel {
         listPanel.setOpaque(false);
         Object[][] dsTopPhim = moviedao.getTop5Movie(); 
 
-        java.text.DecimalFormat df = new java.text.DecimalFormat("#,###đ");
         for (int i = 0; i < dsTopPhim.length; i++) {
             String ten   = (String) dsTopPhim[i][0];
             long tien  = (long) dsTopPhim[i][1];
@@ -304,7 +318,7 @@ public class ThongKePanel extends javax.swing.JPanel {
 
         return item;
     }
-    @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 

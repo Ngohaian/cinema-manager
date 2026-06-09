@@ -4,12 +4,11 @@ import cinema.DBConnection;
 import cinema.enums.TicketStatus;
 import cinema.form.panel.ThongTinPanel;
 import cinema.models.Employee;
-
-import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import javax.swing.*;
 
 public class CheckerTicket extends JFrame {
 
@@ -56,7 +55,7 @@ public class CheckerTicket extends JFrame {
             BorderFactory.createEmptyBorder(10, 20, 10, 20)
         ));
 
-        lblUsername.setText("👤 " + currentEmployee.getName());
+        lblUsername.setText(currentEmployee.getName());
         lblUsername.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblUsername.setForeground(new Color(60, 60, 60));
 
@@ -64,7 +63,10 @@ public class CheckerTicket extends JFrame {
         btnXemTK.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         btnXemTK.setForeground(BLUE_MENU);
         btnXemTK.setBackground(Color.WHITE);
-        btnXemTK.setBorder(BorderFactory.createLineBorder(BLUE_MENU));
+        btnXemTK.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(BLUE_MENU),         
+            BorderFactory.createEmptyBorder(5, 15, 5, 15)        
+        ));
         btnXemTK.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnXemTK.setFocusPainted(false);
         btnXemTK.addActionListener(e -> tttaikhoan());
@@ -316,9 +318,5 @@ public class CheckerTicket extends JFrame {
         e.printStackTrace();
     }
 }
-    public static void main(String[] args) {
-    java.awt.EventQueue.invokeLater(() -> {
-        new LoginFrame().setVisible(true);
-    });
 }
-}
+

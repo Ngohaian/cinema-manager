@@ -77,10 +77,14 @@ public class Customer{
     public double calculateDiscount(double amount) {
         if (amount <= 0) return 0;
         if (status == CustomerStatus.INACTIVE) return 0;
-        if (name.equals("GUEST")) return 0; 
-        double discount = Math.min(loyaltyPoints, amount); 
-        return discount;
-    }
+        if (name.equalsIgnoreCase("GUEST")) return 0;
+        
+        double memberDiscount = amount * type.getCashbackRate();
+        double remainingAmount = amount - memberDiscount;
+        double usedPoints = Math.min(loyaltyPoints, remainingAmount);
+        usePoints(usedPoints);
+        return memberDiscount + usedPoints;
+}
 
     private void updateCustomerType(){
         if(totalSpent >= DIAMOND_THRESHOLD) type = CustomerType.DIAMOND;

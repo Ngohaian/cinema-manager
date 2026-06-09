@@ -26,7 +26,6 @@ import cinema.dao.CustomerDAO;
 import cinema.dao.InvoiceDAO;
 import cinema.dao.MovieDAO;
 import cinema.dao.ShowTimeDAO;
-import cinema.dao.CustomerDAO;
 import static cinema.enums.GenreType.getNameGenreType;
 
 import cinema.models.Customer;
@@ -78,6 +77,41 @@ public class BanVePanel extends javax.swing.JPanel {
     public void loadData() {
         this.movies = movieDao.GetAvailableMovies();
         addMovies(this.movies);
+    }
+
+    public void openSeatBooking(ShowTime selectedShowTime) {
+        if (selectedShowTime == null) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy suất chiếu!");
+            return;
+        }
+
+        Movie selectedMovie = selectedShowTime.getMovie();
+        if (selectedMovie == null || selectedShowTime.getRoom() == null) {
+            JOptionPane.showMessageDialog(this, "Dữ liệu phim hoặc phòng chiếu không hợp lệ!");
+            return;
+        }
+
+        String maPhong = selectedShowTime.getRoom().getRoomId();
+        String maSuatChieu = selectedShowTime.getShowtimeId();
+
+        SoDoGhePanel.removeAll();
+        SoDoGhePanel.setLayout(new java.awt.BorderLayout());
+
+        seatMap.setSelectMode(true);
+        JPanel seatBox = seatMap.createSeatMapBox();
+        SoDoGhePanel.add(seatBox, java.awt.BorderLayout.CENTER);
+        SoDoGhePanel.revalidate();
+        SoDoGhePanel.repaint();
+
+        List<cinema.models.Seat> bookedSeats = showtimeDao.getSeatStatusByShowtimeId(maSuatChieu);
+        seatMap.loadSeatMapForSelling(maPhong, bookedSeats);
+
+        currentStep = 2;
+        updateNavigation();
+        ShowPanel("ChonGhe");
+
+        seatMap.setOnSeatClickAction(() -> updateSummaryInfo(selectedShowTime));
+        setupSummaryPanel(BookingSummaryPanel, selectedMovie, selectedShowTime);
     }
     private javax.swing.JPanel createMovieCard(Movie m) {
         javax.swing.JPanel card = new javax.swing.JPanel();
@@ -468,7 +502,9 @@ public class BanVePanel extends javax.swing.JPanel {
                     ticketNumber++;
                     dsticket.add(t);
                 }
-                renderHoaDon(maHD, currentEmployee.getId(), currentEmployee.getName(), selectedMovie.getTitle(), LocalDateTime.now(), dsticket);
+                String maNV = currentEmployee != null ? currentEmployee.getId() : "EMP002";
+                String tenNV = currentEmployee != null ? currentEmployee.getName() : "Tran Thi Thu";
+                renderHoaDon(maHD, maNV, tenNV, selectedMovie.getTitle(), LocalDateTime.now(), dsticket);
             }
         });
 
@@ -554,26 +590,31 @@ public class BanVePanel extends javax.swing.JPanel {
         txtSdtKH.addActionListener(ev -> {
             String sdt = txtSdtKH.getText().trim();
             if (sdt.isEmpty()) return;
-                Customer found = customerDao.getCustomerBySDT(sdt);
-                if (found != null) {
-                    txtTenKH.setText(found.getName());
-                    txtTenKH.setEditable(false);
-                    txtTenKH.setBackground(new java.awt.Color(240, 240, 240));
+            Customer found = customerDao.getCustomerBySDT(sdt);
+            if (found != null) {
+                txtTenKH.setText(found.getName());
+                txtTenKH.setEditable(false);
+                txtTenKH.setBackground(new java.awt.Color(240, 240, 240));
+                if (!found.getName().equalsIgnoreCase("GUEST")) {
                     discountRef[0] = found.calculateDiscount(totalInvoiceAmountFinal);
                     totalAfterRef[0] = totalInvoiceAmountFinal - discountRef[0];
-                    lblSaleVal.setText(String.format("%,.0f VNĐ", discountRef[0]));
-                    lblTotalVal.setText(String.format("%,.0f VNĐ", totalAfterRef[0]));
                 } else {
-                    txtTenKH.setText("");
-                    txtTenKH.setEditable(true);
-                    txtTenKH.setBackground(java.awt.Color.WHITE);
-                    txtTenKH.requestFocus();
                     discountRef[0] = 0;
                     totalAfterRef[0] = totalInvoiceAmountFinal;
-                    lblSaleVal.setText("0 VNĐ");
-                    lblTotalVal.setText(String.format("%,.0f VNĐ", totalInvoiceAmountFinal));
                 }
-            });
+                lblSaleVal.setText(String.format("%,.0f VNĐ", discountRef[0]));
+                lblTotalVal.setText(String.format("%,.0f VNĐ", totalAfterRef[0]));
+            } else {
+                txtTenKH.setText("");
+                txtTenKH.setEditable(true);
+                txtTenKH.setBackground(java.awt.Color.WHITE);
+                txtTenKH.requestFocus();
+                discountRef[0] = 0;
+                totalAfterRef[0] = totalInvoiceAmountFinal;
+                lblSaleVal.setText("0 VNĐ");
+                lblTotalVal.setText(String.format("%,.0f VNĐ", totalInvoiceAmountFinal));
+            }
+        });
         txtTenKH.addActionListener(ev -> {
             String tenKH = txtTenKH.getText().trim();
             String sdt = txtSdtKH.getText().trim();
@@ -612,7 +653,6 @@ public class BanVePanel extends javax.swing.JPanel {
         tblDetails.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
         tblDetails.setRowHeight(25);
         tblDetails.getTableHeader().setBackground(java.awt.Color.WHITE);
-        List<String> seatType = new ArrayList<>();
         for (Ticket ticket : dsVeFinal) {
             Seat ghe = ticket.getSeat();
             String tenGhe = (char) ('A' + ghe.getRowIndex()) + String.valueOf(ghe.getColIndex() + 1);
@@ -699,14 +739,21 @@ public class BanVePanel extends javax.swing.JPanel {
         java.awt.event.ActionListener paymentListener = new java.awt.event.ActionListener() {
         @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
+            discountRef[0] = 0;
+            totalAfterRef[0] = totalInvoiceAmountFinal;
+            
             String phuongThuc = (e.getSource() == btnTienMat) ? "Tiền mặt" : "Chuyển khoản";
             String ten = txtTenKH.getText().trim();
             String sdt = txtSdtKH.getText().trim();
-            String customerId = "CUS006";
+            String customerId = "CUS000";
+            
             if (!sdt.isEmpty()) {
                 Customer found = customerDao.getCustomerBySDT(sdt);
-                if (found != null) {
+                if (found != null && !found.getName().equalsIgnoreCase("GUEST")) {
                     customerId = found.getId();
+                    discountRef[0] = found.calculateDiscount(totalInvoiceAmountFinal);
+                    totalAfterRef[0] = totalInvoiceAmountFinal - discountRef[0];
+
                 }
             }
             JOptionPane.showMessageDialog(HoaDonPanel,
@@ -717,8 +764,22 @@ public class BanVePanel extends javax.swing.JPanel {
                 for (Ticket t : dsVeFinal) {
                     invoiceDao.insertTicket(t);
                 }
+                // Cập nhật điểm và chi tiêu khách hàng
+            if (!sdt.isEmpty()) {
+                Customer found = customerDao.getCustomerBySDT(sdt);
+                if (found != null && !found.getName().equalsIgnoreCase("GUEST")) {
+                    double pointsUsed = discountRef[0] - (totalInvoiceAmountFinal * found.getType().getCashbackRate());
+                    if (pointsUsed > 0) found.usePoints(pointsUsed);
+                    found.makePurchase(totalAfterRef[0]);
+                    customerDao.updateCustomerLoyalty(found);
+                }
+            }
                 xuatVeRaFilePDF(maHD, tenPhim, ngayLapStr, ten, sdt, tableModel, totalInvoiceAmountFinal, discountRef[0], totalAfterRef[0] );
+                
                 ShowPanel("ChonPhim");
+                currentStep=0;
+                updateNavigation();
+                
             }
         }
         };
@@ -736,13 +797,13 @@ public class BanVePanel extends javax.swing.JPanel {
 
     private void xuatVeRaFilePDF(String maHD, String tenPhim, String ngayLap, String tenKH, String sdtKH, DefaultTableModel model, double tongTien, double giamGia, double tongThanhToan) {
         Document document = new Document(org.openpdf.text.PageSize.A5);
-        String filePath = "VeXemPhim_" + maHD + ".pdf";
+        String filePath = "HoaDon_" + maHD + ".pdf";
         
         try {
             PdfWriter.getInstance(document, new FileOutputStream(filePath));
             document.open();
 
-            Paragraph title = new Paragraph("VE XEM PHIM - BETA CINEMA");
+            Paragraph title = new Paragraph("HOA DON - BETA CINEMA");
             title.setAlignment(org.openpdf.text.Element.ALIGN_CENTER);
             title.setSpacingAfter(10);
             document.add(title);
@@ -820,7 +881,7 @@ public class BanVePanel extends javax.swing.JPanel {
         c.setPadding(4);
         return c;
     }
-    @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 

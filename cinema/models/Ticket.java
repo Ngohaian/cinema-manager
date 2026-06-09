@@ -18,12 +18,6 @@ public class Ticket{
         this.seat = seat;
         this.status = TicketStatus.Available;
     }
-    public void cancel(){
-        if (status == TicketStatus.Sold) {
-            status = TicketStatus.Canceled;
-            showtime.cancelSeat(seat.getRowIndex(), seat.getColIndex());
-        }
-    }
     public void setTicketId(String ticketId) {
         this.ticketId = ticketId;
     }

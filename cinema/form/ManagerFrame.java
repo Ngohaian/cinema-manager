@@ -535,13 +535,6 @@ public class ManagerFrame extends javax.swing.JFrame {
     private void btnHoaDonMouseClicked(java.awt.event.MouseEvent evt) {                                       
         showPanel("HoaDon");
     }                                      
-public static void main(String[] args) {
-    java.awt.EventQueue.invokeLater(new Runnable() {
-        public void run() {
-            new ManagerFrame().setVisible(true);
-        }
-    });
-}
 
     // Variables declaration - do not modify                     
     private javax.swing.JLabel btnDangXuat;

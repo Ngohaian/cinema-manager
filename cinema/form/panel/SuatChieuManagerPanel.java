@@ -67,7 +67,6 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
         loadShowtimeData();
     }
 
-    @SuppressWarnings("unchecked")
     private void initComponents() {
         setBackground(BACKGROUND);
         setPreferredSize(new java.awt.Dimension(759, 779));
@@ -233,7 +232,7 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
         panel.setPreferredSize(new Dimension(1000, 500));
 
         String[] columns = {
-                "Mã SC",
+                "Mã ST",
                 "Phim",
                 "Phòng",
                 "Ngày chiếu",
@@ -599,7 +598,7 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
             lblRangeInfo.setFont(new Font("Segoe UI", Font.BOLD, 16));
             lblRangeInfo.setForeground(Color.BLACK);
 
-            JLabel note = new JLabel("Khung thời gian sẽ thay đổi theo Từ ngày - Đến ngày. Mã SC tự tăng khi bấm Tạo và Lưu.");
+            JLabel note = new JLabel("Khung thời gian sẽ thay đổi theo Từ ngày - Đến ngày. Mã ST tự tăng khi bấm Tạo và Lưu.");
             note.setFont(new Font("Segoe UI", Font.PLAIN, 13));
             note.setForeground(Color.GRAY);
 
@@ -935,6 +934,8 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
 
         private void createDraftSchedule() {
             try {
+                draftList.clear();
+
                 List<String> selectedMovieIds = new ArrayList<>();
 
                 for (MovieCheckBoxItem item : movieCheckBoxItems) {
@@ -979,7 +980,7 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
                 renderDraftCalendar();
 
                 JOptionPane.showMessageDialog(this,
-                        "Đã tạo " + draftList.size() + " suất chiếu dự kiến.\nMã SC đã được sinh tự động.");
+                        "Đã tạo " + draftList.size() + " suất chiếu dự kiến.\nMã ST đã được sinh tự động.");
 
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this,
@@ -998,6 +999,7 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
 
                 int count = showTimeDAO.insertGeneratedShowtimes(draftList);
 
+                draftList.clear();
                 saved = true;
 
                 JOptionPane.showMessageDialog(this,
@@ -1357,11 +1359,9 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
         private JComboBox<String> cboActive;
 
         private boolean saved = false;
-        private String editingId;
 
         public ShowtimeFormDialog(Window owner, String title, String editingId) {
             super(owner, title, ModalityType.APPLICATION_MODAL);
-            this.editingId = editingId;
 
             buildFormUI();
             loadMovieCombobox();
@@ -1600,7 +1600,7 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
         }
 
         private String generateShowtimeId() {
-            return "SC" + System.currentTimeMillis() % 100000;
+            return "ST" + System.currentTimeMillis() % 100000;
         }
 
         private boolean validateForm() {
@@ -1621,7 +1621,14 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
 
             try {
                 LocalDateTime.parse(txtStartTime.getText().trim(), DATETIME_FORMAT);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this,
+                    "Giờ bắt đầu không đúng định dạng.\nNhập dạng: yyyy-MM-dd HH:mm\nVí dụ: 2025-12-25 08:45",
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
 
+            try {
                 double basePrice = Double.parseDouble(txtBasePrice.getText().trim());
                 double vipExtra = Double.parseDouble(txtVipExtra.getText().trim());
                 double coupleExtra = Double.parseDouble(txtCoupleExtra.getText().trim());
@@ -1630,12 +1637,10 @@ public class SuatChieuManagerPanel extends javax.swing.JPanel {
                     JOptionPane.showMessageDialog(this, "Giá và phụ thu phải lớn hơn hoặc bằng 0!");
                     return false;
                 }
-
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this,
-                        "Dữ liệu chưa đúng.\nGiờ nhập dạng: yyyy-mm-dd hh:mm\nVí dụ: 2025-12-25 08:45",
-                        "Lỗi",
-                        JOptionPane.ERROR_MESSAGE);
+                    "Giá tiền và phụ thu phải là số hợp lệ!",
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
 

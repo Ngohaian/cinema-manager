@@ -770,17 +770,6 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         selectedSeats = null;
     }
 }
-    private void rebuildWhiteSeatMapIfEditing() {
-        if (loadingForm) {
-            return;
-        }
-
-        if (!addMode && !editMode) {
-            return;
-        }
-
-        createWhiteDraftFromForm();
-    }
 
     private void createWhiteDraftFromForm() {
         createRegularDraftFromForm();
@@ -1159,7 +1148,7 @@ public class PhongManagerPanel extends javax.swing.JPanel {
         loadRoomData();
     }
 
-    @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">
     private void initComponents() {
 
