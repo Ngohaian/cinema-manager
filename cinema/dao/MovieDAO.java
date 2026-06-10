@@ -215,6 +215,7 @@ public class MovieDAO {
     public Object[][] getTop5Movie(){
         String sql = "SELECT p.title, SUM(v.price) AS `Doanh Thu`, COUNT(v.ticketId) AS `Tong Ve` " +
                      "FROM movie p JOIN showtime sc ON p.movieId = sc.movieId JOIN ticket v ON sc.showtimeId = v.showtimeId " +
+                     "                     where month(sc.startTime) = month(current_date()) and year(sc.startTime) = year(current_date())"+
                      "GROUP BY p.movieId, p.title ORDER BY SUM(v.price) DESC LIMIT 5";
         java.util.List<Object[]> list = new java.util.ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
