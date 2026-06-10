@@ -19,13 +19,6 @@ public class ManagerFrame extends javax.swing.JFrame {
         lTen.setText(emp.getName());
         lChucVu.setText(emp.getPosition().getDisplayName());
         currentEmployee = emp;
-        pThongTin.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        pThongTin.addMouseListener(new java.awt.event.MouseAdapter() {
-        @Override
-        public void mouseClicked(java.awt.event.MouseEvent e) {
-            showPanel("ThongTin");
-        }
-    });
 }
 
     public ManagerFrame() {

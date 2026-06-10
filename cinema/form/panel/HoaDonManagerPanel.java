@@ -499,19 +499,14 @@ public class HoaDonManagerPanel extends JPanel {
                 } else { super.setValue(value); }
             }
         });
-        table.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
-    @Override
-    public Component getTableCellRendererComponent(JTable table, Object value,
-                                                   boolean isSelected, boolean hasFocus,
-                                                   int row, int column) {
 
         // Màu + căn giữa cột Trạng thái
         table.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable tbl, Object value,
-                    boolean isSelected, boolean hasFocus, int row, int col) {
+                    boolean isSelected, boolean hasFocus, int row, int column) {
                 Component c = super.getTableCellRendererComponent(
-                        tbl, value, isSelected, hasFocus, row, col);
+                        tbl, value, isSelected, hasFocus, row, column);
                 setHorizontalAlignment(SwingConstants.CENTER);
                 if (!isSelected && value != null) {
                     c.setForeground(statusColor(value.toString()));

@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.table.DefaultTableModel;
 import org.openpdf.text.Document;
@@ -52,25 +53,29 @@ public class BanVePanel extends javax.swing.JPanel {
     private JLabel[] stepLabels;
     private Employee currentEmployee;
     public BanVePanel() {
-        try{
-            movieDao= new MovieDAO();
-            showtimeDao = new ShowTimeDAO();
-            invoiceDao = new InvoiceDAO();
-            customerDao = new CustomerDAO();
-            this.movies = movieDao.GetAvailableMovies();
-            this.showtimes = showtimeDao.getAll();
-        }
-        catch(Exception ex){
-            System.out.println("Loi: " + ex.getMessage());
-        }
+        movieDao = new MovieDAO();
+        showtimeDao = new ShowTimeDAO();
+        invoiceDao = new InvoiceDAO();
+        customerDao = new CustomerDAO();
+        this.movies = new java.util.ArrayList<>();
+        this.showtimes = new java.util.ArrayList<>();
+
         initComponents();
-        addMovies(movies);
         customizeScrollBar(jScrollPane1);
         ShowPanel("ChonPhim");
         setJLabelChon();
-        
         SoDoGhePanel.setLayout(new java.awt.BorderLayout());
-    }   
+
+        SwingUtilities.invokeLater(() -> {
+            new Thread(() -> {
+                List<Movie> loaded = movieDao.GetAvailableMovies();
+                SwingUtilities.invokeLater(() -> {
+                    movies = loaded;
+                    addMovies(movies);
+                });
+            }).start();
+        });
+    }
     public void setCurrentEmployee(Employee e){
         this.currentEmployee = e;
     }
