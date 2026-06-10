@@ -782,7 +782,34 @@ public class BanVePanel extends javax.swing.JPanel {
         };
         
         btnTienMat.addActionListener(paymentListener);
-        btnChuyenKhoan.addActionListener(paymentListener);
+        btnChuyenKhoan.addActionListener(e -> {
+            javax.swing.ImageIcon qrIcon = generateQRCode("VPB", "0826051897", (long) totalAfterRef[0], "HD" + maHD);
+
+            javax.swing.JLabel lblQR = new javax.swing.JLabel(qrIcon);
+            javax.swing.JLabel lblInfo = new javax.swing.JLabel(
+                "<html><center>STK: 0826051897 - VPBank<br>" +
+                "Số tiền: " + String.format("%,.0f", totalAfterRef[0]) + " VNĐ<br>" +
+                "Nội dung: HD" + maHD + "</center></html>"
+            );
+            lblInfo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
+            javax.swing.JPanel pnlQR = new javax.swing.JPanel(new java.awt.BorderLayout(10, 10));
+            pnlQR.add(lblQR, java.awt.BorderLayout.CENTER);
+            pnlQR.add(lblInfo, java.awt.BorderLayout.SOUTH);
+
+            int result = javax.swing.JOptionPane.showConfirmDialog(
+                HoaDonPanel, pnlQR,
+                "Quét QR để thanh toán", 
+                javax.swing.JOptionPane.OK_CANCEL_OPTION,
+                javax.swing.JOptionPane.PLAIN_MESSAGE 
+            );
+
+            if (result == javax.swing.JOptionPane.OK_OPTION) {
+                paymentListener.actionPerformed(
+                    new java.awt.event.ActionEvent(btnChuyenKhoan, 0, "")
+                );
+            }
+        });
         
         pnlButtons.add(btnTienMat);
         pnlButtons.add(btnChuyenKhoan);
@@ -878,7 +905,21 @@ public class BanVePanel extends javax.swing.JPanel {
         c.setPadding(4);
         return c;
     }
-    
+    private javax.swing.ImageIcon generateQRCode(String bankId, String accountNo, long amount, String description) {
+        try {
+            String url = String.format(
+                "https://img.vietqr.io/image/%s-%s-compact2.png?amount=%d&addInfo=%s&accountName=BETA%%20CINEMA",
+                bankId, accountNo, amount, java.net.URLEncoder.encode(description, "UTF-8")
+            );
+            java.net.URL imgUrl = new java.net.URI(url).toURL();
+            java.awt.Image img = javax.imageio.ImageIO.read(imgUrl);
+            java.awt.Image scaled = img.getScaledInstance(250, 250, java.awt.Image.SCALE_SMOOTH);
+            return new javax.swing.ImageIcon(scaled);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 
