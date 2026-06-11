@@ -155,6 +155,8 @@ public class ShowTimeDAO {
                         rs.getDouble("basePrice")
                 );
 
+                s.setVipExtra(rs.getDouble("vipExtra"));      
+                s.setCoupleExtra(rs.getDouble("coupleExtra"));
                 s.setActive(rs.getBoolean("active"));
                 list.add(s);
             }
@@ -180,6 +182,8 @@ public class ShowTimeDAO {
                     rs.getTimestamp("startTime").toLocalDateTime(),
                     rs.getDouble("basePrice")
                 );
+                s.setVipExtra(rs.getDouble("vipExtra"));       
+                s.setCoupleExtra(rs.getDouble("coupleExtra"));
                 list.add(s);
             }
         }

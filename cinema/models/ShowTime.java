@@ -46,8 +46,8 @@ public class ShowTime {
         // Tính endTime theo thời lượng phim
         this.endTime = startTime.plusMinutes(movie.getDuration());
 
-        this.vipExtra = 30;
-        this.coupleExtra = 50;
+        this.vipExtra = 0;
+        this.coupleExtra = 0;
 
         this.active = true;
 
