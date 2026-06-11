@@ -140,7 +140,7 @@ public class MovieDAO {
         return "M001";
     }
     public List<Movie> searchMovies(String key, int statusIdx, int genreIdx, int maxDuration ){
-        java.util.List<Movie> dsLoc = new java.util.ArrayList<>();
+        List<Movie> dsLoc = new ArrayList<>();
         String sql = "Select * from movie where ";
         sql += "duration <= " + maxDuration;
         if (key != null && !key.trim().isEmpty()) {
@@ -217,7 +217,7 @@ public class MovieDAO {
                      "FROM movie p JOIN showtime sc ON p.movieId = sc.movieId JOIN ticket v ON sc.showtimeId = v.showtimeId " +
                      "                     where month(sc.startTime) = month(current_date()) and year(sc.startTime) = year(current_date())"+
                      "GROUP BY p.movieId, p.title ORDER BY SUM(v.price) DESC LIMIT 5";
-        java.util.List<Object[]> list = new java.util.ArrayList<>();
+        List<Object[]> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
