@@ -149,7 +149,7 @@ public class LoginFrame extends javax.swing.JFrame {
         String username = txt_username.getText().trim();
         String password = new String(txt_password.getPassword()).trim();
  
-        if (username.isEmpty() || password.isEmpty()) {
+        if (username.trim().isEmpty() || password.trim().isEmpty()) {
             lbl_error.setText("Vui lòng nhập đầy đủ thông tin.");
             return;
         }

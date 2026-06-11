@@ -189,6 +189,8 @@ public class PhimManagerPanel extends javax.swing.JPanel {
         cbThemTrangThai = new javax.swing.JComboBox<>();
         jLabel8 = new javax.swing.JLabel();
         txtURLThemAnh = new javax.swing.JTextField();
+        txtURLThemAnh.setEditable(false);
+        txtURLThemAnh.setBackground(java.awt.Color.WHITE);
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
@@ -207,6 +209,8 @@ public class PhimManagerPanel extends javax.swing.JPanel {
         cbSuaTrangThai = new javax.swing.JComboBox<>();
         jLabel14 = new javax.swing.JLabel();
         txtSuaURLAnh = new javax.swing.JTextField();
+        txtSuaURLAnh.setEditable(false);
+        txtSuaURLAnh.setBackground(java.awt.Color.WHITE);
         jLabel15 = new javax.swing.JLabel();
         jLabel16 = new javax.swing.JLabel();
         jLabel17 = new javax.swing.JLabel();
@@ -802,7 +806,7 @@ public class PhimManagerPanel extends javax.swing.JPanel {
     }                                      
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
-        java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+        java.awt.Window parentWindow = ThemPhimDialog;
         String id= txtThemMaPhim.getText().trim();
         String tenPhim = txtThemTenPhim.getText().trim();       
         String urlAnh = txtURLThemAnh.getText().trim();
@@ -847,7 +851,7 @@ public class PhimManagerPanel extends javax.swing.JPanel {
     }                                        
 
     private void jButton2MouseClicked(java.awt.event.MouseEvent evt) {                                      
-        java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+        java.awt.Window parentWindow = SuaPhimDialog;
         String id= txtSuaMaPhim.getText().trim();
         String tenPhim = txtSuaTenPhim.getText().trim();       
         String urlAnh = txtSuaURLAnh.getText().trim();
