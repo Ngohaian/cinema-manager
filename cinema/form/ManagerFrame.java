@@ -151,7 +151,7 @@ public class ManagerFrame extends javax.swing.JFrame {
         btnHoaDon = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setName("frameSellTicket"); // NOI18N
+        setName("frameManager"); // NOI18N
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowOpened(java.awt.event.WindowEvent evt) {

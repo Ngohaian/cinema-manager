@@ -22,11 +22,11 @@ public class SellTicketFrame extends javax.swing.JFrame {
         
         pThongTin.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         pThongTin.addMouseListener(new java.awt.event.MouseAdapter() {
-        @Override
-        public void mouseClicked(java.awt.event.MouseEvent e) {
-            showPanel("ThongTin");
-        }
-    });
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                showPanel("ThongTin");
+            }
+        });
         
         menuLabels = new JLabel[]{btnBanVe, btnPhim, btnLichChieu, btnLichSu};
         for(int i=0;i<menuLabels.length;i++){
@@ -205,7 +205,6 @@ public class SellTicketFrame extends javax.swing.JFrame {
         btnPhim.setForeground(new java.awt.Color(255, 255, 255));
         btnPhim.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         btnPhim.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cinema/images/video.png"))); // NOI18N
-        btnPhim.setLabelFor(btnBanVe);
         btnPhim.setText(" Phim");
         btnPhim.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 5, 1, 1));
         btnPhim.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
