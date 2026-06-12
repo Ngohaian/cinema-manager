@@ -21,7 +21,6 @@ public class CheckerTicket extends JFrame {
     private JButton btnDangXuat;
     private JLabel lblUsername;
     private Employee currentEmployee;
-    private ManagerFrame managerFrame;
     private static final Color BLUE_MENU = new Color(24, 144, 255);
 
     public CheckerTicket(Employee employee) {
