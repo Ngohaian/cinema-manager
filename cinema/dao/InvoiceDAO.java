@@ -572,7 +572,6 @@ public class InvoiceDAO {
 
                 for (Ticket t : tickets) {
                     int seatId = seatDao.getSeatId(
-                        conn, 
                         t.getShowtime().getRoom().getRoomId(),
                         t.getSeat().getRowIndex(),
                         t.getSeat().getColIndex()
