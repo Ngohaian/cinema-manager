@@ -281,6 +281,15 @@ public class NhanVienManagerPanel extends javax.swing.JPanel {
 
         try {
             double luong = Double.parseDouble(luongStr.replace(",", ""));
+            if (luong < 0) {
+                txtLuong.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(errorColor),
+                    BorderFactory.createEmptyBorder(4,8,4,8)));
+                JOptionPane.showMessageDialog(dialog,
+                    "Mức lương không được âm!", "Không hợp lệ",
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
             Employee.Position pos = Employee.Position.values()[cbCV.getSelectedIndex()];
             Employee emp = new Employee(ten, sdt, email, user, pass, pos, luong);
             emp.setId(dao.getNextEmployeeId());
@@ -438,6 +447,16 @@ public class NhanVienManagerPanel extends javax.swing.JPanel {
             emp.setPosition(Employee.Position.values()[cbCV.getSelectedIndex()]);
             emp.setStatus(Employee.EmployeeStatus.valueOf(cbTT.getSelectedItem().toString()));
             double luong = Double.parseDouble(luongStr.replace(",", ""));
+            if (luong < 0) {
+                txtLuong.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(errorColor),
+                    BorderFactory.createEmptyBorder(4,8,4,8)));
+                JOptionPane.showMessageDialog(dialog,
+                    "Mức lương không được âm!", "Không hợp lệ",
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            emp.setSalary(luong);
             emp.setSalary(luong);
             if (dao.updateEmployee(emp)) {
                 JOptionPane.showMessageDialog(dialog, "Cập nhật thành công!");
