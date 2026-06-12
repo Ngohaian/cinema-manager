@@ -142,8 +142,9 @@ public class CheckerTicket extends JFrame {
     }
     private JScrollPane wrap(JPanel panel){
         JScrollPane sp = new JScrollPane(panel);
-        managerFrame = new ManagerFrame();
-        managerFrame.customizeScrollBar(sp);
+        sp.getVerticalScrollBar().setUnitIncrement(20);
+        sp.setBorder(null);
+        sp.getViewport().setBackground(java.awt.Color.WHITE);
         return sp;
     }
     
