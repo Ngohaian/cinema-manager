@@ -12,7 +12,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.table.DefaultTableModel;
 import org.openpdf.text.Document;
 import org.openpdf.text.DocumentException;
@@ -59,9 +58,10 @@ public class BanVePanel extends javax.swing.JPanel {
         customerDao = new CustomerDAO();
         this.movies = new java.util.ArrayList<>();
         this.showtimes = new java.util.ArrayList<>();
-
         initComponents();
-        customizeScrollBar(jScrollPane1);
+        jScrollPane1.getVerticalScrollBar().setUnitIncrement(20);
+        jScrollPane1.setBorder(null);
+        jScrollPane1.getViewport().setBackground(java.awt.Color.WHITE);
         ShowPanel("ChonPhim");
         setJLabelChon();
         SoDoGhePanel.setLayout(new java.awt.BorderLayout());
@@ -278,45 +278,6 @@ public class BanVePanel extends javax.swing.JPanel {
                 stepLabels[i].setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
             }
         }
-    }
-    private void customizeScrollBar(JScrollPane JScroll){
-        JScroll.getVerticalScrollBar().setUnitIncrement(20);
-        JScroll.getVerticalScrollBar().setUI(new BasicScrollBarUI(){
-
-        @Override
-        protected void paintThumb(java.awt.Graphics g, javax.swing.JComponent c, java.awt.Rectangle thumbBounds) {
-            java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
-            g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-
-            g2.setPaint(new java.awt.Color(180, 180, 180));
-            // Bo góc thanh trượt
-            g2.fillRoundRect(thumbBounds.x + 4, thumbBounds.y + 2, thumbBounds.width - 8, thumbBounds.height - 4, 10, 10);
-            g2.dispose();
-        }
-
-        @Override
-        protected void paintTrack(java.awt.Graphics g, javax.swing.JComponent c, java.awt.Rectangle trackBounds) {
-            g.setColor(java.awt.Color.WHITE);
-            g.fillRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
-        }
-        @Override
-        protected javax.swing.JButton createDecreaseButton(int orientation) {
-            return createZeroButton();
-        }
-        @Override
-        protected javax.swing.JButton createIncreaseButton(int orientation) {
-            return createZeroButton();
-        }
-        private javax.swing.JButton createZeroButton() {
-            javax.swing.JButton b = new javax.swing.JButton();
-            b.setPreferredSize(new java.awt.Dimension(0, 0));
-            return b;
-        }
-        
-        });
-
-        JScroll.setBorder(null);
-        JScroll.getViewport().setBackground(java.awt.Color.WHITE);
     }
     private void ShowPanel(String name){
         java.awt.CardLayout cl = (java.awt.CardLayout )(ContentPanel.getLayout());
